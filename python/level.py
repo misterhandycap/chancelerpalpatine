@@ -26,6 +26,8 @@ async def on_message(message):
 
     with open('users.json', 'w') as f:
         json.dump(users, f)
+    
+    await client.process_commands(message)
 
 async def update_data(users, user):
     if not user.id in users:
