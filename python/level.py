@@ -12,7 +12,7 @@ async def on_member_join(member):
 
         await update_data(users, member)
 
-    with open('users.json' 'w') as f:
+    with open('users.json', 'w') as f:
         json.dump(users, f)
 
 @client.event
@@ -44,3 +44,4 @@ async def level_up(users, user, channel):
     if level_start < level_end:
         await client.send_message(channel, '{} se tornou mais valioso ao subir ao nível {}'.format(user.mention, level_end))
         users[user.id]['level'] = level_end
+        await client.process_commands(message)
