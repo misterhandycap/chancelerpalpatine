@@ -16,7 +16,7 @@ async def on_ready():
 
 @client.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.MissingRequiredPermissions):
+    if isinstance(error, commands.MissingRequiredPermission):
         await ('Parece que você não tem poder aqui, Jedi, cheque com os mestres do Conselho e volte mais tarde.')
 
 @client.event
@@ -35,12 +35,13 @@ async def clear(ctx, amount=5+1):
 
 @client.command(aliases=['8ball'])
 async def vision(ctx, *, question):
-    responses = ['Assim é.', 'Está me ameaçando?', 'É certo.', 'Acho que devemos buscar mais informações.', 'Isso não está correto.', 'Você está errado.', '[Não, não, NÃO!!]']
+    responses = ['Assim é.', 'Está me ameaçando?', 'É certo.', 'Acho que devemos buscar mais informações.', 'Isso não está correto.', 'Você está errado.', 'Não, não, NÃO!!', 'Acredito que esteja errado, Mestre', 'Isso necessita de mais análises']
     await ctx.send(f'{random.choice(responses)}')
 
 @vision.error
 async def clear_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send('Queria me perguntar algo, Jedi?')
+
 
 #os.system('python level.py')

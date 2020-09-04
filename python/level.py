@@ -44,19 +44,3 @@ async def level_up(users, user, channel):
     if level_start < level_end:
         await client.send_message(channel, '{} se tornou mais valioso ao subir ao nível {}'.format(user.mention, level_end))
         users[user.id]['level'] = level_end
-
-    @client.command(aliases=['nível'])
-    async def level(ctx):
-        current_lvl = users[f'{member.id}']['level']
-        current_xp = users[f'{member.id}']['experiencia']
-        member = ctx.message.author
-        member_icon = member.avatar_url
-        guild = client.get_guild(684329516385959945)
-        with open('users.json', 'r') as f:
-            json.dump(users, f)
-        lvl_embed=discord.Embed(title=" " + member + " ♥ " + guild.name, color=0xcc2800)
-        lvl_embed.set_thumbnail(member_icon)
-        lvl_embed.add_field(name="🔻 " + current_lvl + " LVL", value="Gain more xp to level up.", inline=False)
-        lvl_embed.add_field(name="🔺 " + current_xp + " XP", value="Type in chat fore more xp.", inline=True)
-        print('printira')
-        await ctx.send(embed=lvl_embed)
