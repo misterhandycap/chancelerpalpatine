@@ -33,11 +33,6 @@ async def ping(ctx):
 async def clear(ctx, amount=5+1):
     await ctx.channel.purge(limit=amount)
 
-client.command()
-@commands.has_permissions(manage_messages=True)
-async def kick(ctx, member : discord.Member):
-    await member.kick   
-
 @client.command(aliases=['8ball'])
 async def vision(ctx, *, question):
     responses = ['Assim é.', 'Está me ameaçando?', 'É certo.', 'Acho que devemos buscar mais informações.', 'Isso não está correto.', 'Você está errado.', 'Não, não, NÃO!!', 'Acredito que esteja errado, Mestre', 'Isso necessita de mais análises']
