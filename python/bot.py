@@ -43,4 +43,9 @@ async def clear_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send('Queria me perguntar algo, Jedi?')
 
+@client.command()
+async def sorte(ctx):
+    previsao = ['Cara', 'Coroa']
+    await ctx.send(f'{random.choice(previsao)}')
+
 #os.system('python level.py')
