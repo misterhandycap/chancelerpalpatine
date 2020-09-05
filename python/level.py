@@ -52,4 +52,4 @@ async def level_up(users, user, channel):
     if level_start < level_end:
         await channel.send('{} se tornou mais valioso ao subir ao nível {}'.format(user.mention, level_end))
         users[str(user.id)]['level'] = level_end
-        await client.process_commands(message)
+
