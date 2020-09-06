@@ -63,6 +63,6 @@ async def level_up(users, user, channel):
 @client.command()
 async def level(ctx):
     if message.author.id == users[str(user.id)]['id']:
-        await channel.send(f'{user.mention} se encontra atualmente no nível {users[str(user.id)]['level']}')
+        await channel.send(f'{user.mention} se encontra atualmente no nível {level}')
     else:
         return
