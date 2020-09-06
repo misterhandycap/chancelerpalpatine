@@ -3,7 +3,7 @@ import random
 import json
 import os
 from discord.ext import commands
-from client import client
+from bot import client
 
 @client.check
 async def globally_block_dms(ctx):
