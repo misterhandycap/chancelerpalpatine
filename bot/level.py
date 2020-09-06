@@ -2,6 +2,7 @@ import discord
 import random
 import json
 import os
+import time
 from discord.ext import commands
 from bot import client
 
@@ -40,9 +41,15 @@ async def update_data(users, user):
         users[str(user.id)] = {}
         users[str(user.id)]['experiencia'] = 0
         users[str(user.id)]['level'] = 1
+        users[str(user.id)]['ultima_mesg'] = 0
+        users[str(user.id)]['id'] = user.id
 
 async def add_xp(users, user, xp):
-    users[str(user.id)]['experiencia'] += xp
+    if time.time() - users[str(user.id)]['ultima_mesg'] >20:
+        users[str(user.id)]['experiencia'] += xp
+        users[str(user.id)]['ultima_mesg'] = time.time()
+    else:
+        return
 
 async def level_up(users, user, channel):
     experiencia = users[str(user.id)]['experiencia']
@@ -53,3 +60,9 @@ async def level_up(users, user, channel):
         await channel.send('{} se tornou mais valioso ao subir ao nível {}'.format(user.mention, level_end))
         users[str(user.id)]['level'] = level_end
 
+@client.command()
+async def level(ctx):
+    if message.author.id == users[str(user.id)]['id']:
+        await channel.send(f'{user.mention} se encontra atualmente no nível {users[str(user.id)]['level']}')
+    else:
+        return
