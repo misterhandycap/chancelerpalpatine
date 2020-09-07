@@ -67,15 +67,17 @@ async def level(ctx):
     with open('users.json', 'r') as f:
         users = json.load(f)
 
-        levelbed = discord.Embed(title='Nível', description=f'{ctx.author.mention} se encontra atualmente no nível {users[str(ctx.author.id)]["level"]}', colour=discord.Color.red(), timestamp=ctx.message.created_at)
-        levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
-        await ctx.send(embed=levelbed)
+    levelbed = discord.Embed(title='Nível', description=f'{ctx.author.mention} se encontra atualmente no nível {users[str(ctx.author.id)]["level"]}', colour=discord.Color.red(), timestamp=ctx.message.created_at)
+    levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
+    await ctx.send(embed=levelbed)
 
 @client.command(aliases=['board'])
 async def rank(ctx):
+    user_id = str(ctx.author.id)
     with open('users.json', 'r') as f:
         users = json.load(f)
 
-        rank = sorted(users[str(user.id)]['experiencia'])
+    rank = sorted(users.items(), key=lambda x: x[1]['experiencia'])
+    msg = ', '.join([str(x[1]['experiencia']) for x in rank])
 
-        await ctx.send(rank)
+    await ctx.send(msg)
