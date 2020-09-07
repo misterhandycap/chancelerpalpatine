@@ -2,6 +2,7 @@ import discord
 import random
 import json
 import os
+import time
 from discord.ext import commands
 from bot import client
 
@@ -24,9 +25,23 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.send('Esta ordem não existe, agora se me der licença...')
 
+@client.remove_command('help')
+
+@client.command(aliases=['ajuda'])
+async def help(ctx):
+    ajuda = discord.Embed(title='Ajuda', description='Comandos:', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
+    ajuda.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
+    ajuda.add_field(name='cp!ping', value='Confere se o bot está online e sua velocidade de resposta')
+    ajuda.add_field(name='cp!clear', value='Limpa o chat, com o padrão sendo 5 mensagens. \n aka:limpar, clean')
+    ajuda.add_field(name='cp!vision', value='Faça uma pergunta ao Chanceler e ele irá lhe responder. \n aka:8ball')
+    ajuda.add_field(name='cp!sorte', value='Cara ou coroa. \n aka:caracoroa')
+    ajuda.add_field(name='cp!level', value='Mostra o nível de usuário ao uúario que pediu \n aka:nivel')
+    await ctx.send(embed=ajuda)
+
 @client.command()
 async def ping(ctx):
-    await ctx.send(f'Pong... {round(client.latency * 1000)}ms')
+    ping = discord.Embed(title='Pong...', description=f'{round(client.latency * 1000)}ms', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
+    await ctx.send(embed=ping)
 
 @client.command(aliases=['limpar', 'clean'])
 @commands.has_permissions(manage_messages=True)
@@ -43,7 +58,7 @@ async def clear_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send('Queria me perguntar algo, Jedi?')
 
-@client.command()
+@client.command(aliases=['caracoroa'])
 async def sorte(ctx):
     previsao = ['Cara', 'Coroa']
     await ctx.send(f'{random.choice(previsao)}')
