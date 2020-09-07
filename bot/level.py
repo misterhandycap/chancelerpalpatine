@@ -57,12 +57,25 @@ async def level_up(users, user, channel):
     level_end = int(experiencia **(1/4))
 
     if level_start < level_end:
+
         await channel.send('{} se tornou mais valioso ao subir ao nível {}'.format(user.mention, level_end))
         users[str(user.id)]['level'] = level_end
 
-@client.command()
+@client.command(aliases=['nivel'])
 async def level(ctx):
-    if message.author.id == users[str(user.id)]['id']:
-        await channel.send(f'{user.mention} se encontra atualmente no nível {level}')
-    else:
-        return
+    user_id = str(ctx.author.id)
+    with open('users.json', 'r') as f:
+        users = json.load(f)
+
+        levelbed = discord.Embed(title='Nível', description=f'{ctx.author.mention} se encontra atualmente no nível {users[str(ctx.author.id)]["level"]}', colour=discord.Color.red(), timestamp=ctx.message.created_at)
+        levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
+        await ctx.send(embed=levelbed)
+
+@client.command(aliases=['board'])
+async def rank(ctx):
+    with open('users.json', 'r') as f:
+        users = json.load(f)
+
+        rank = sorted(users[str(user.id)]['experiencia'])
+
+        await ctx.send(rank)
