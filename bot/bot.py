@@ -64,16 +64,4 @@ async def sorte(ctx):
     previsao = ['Cara', 'Coroa']
     await ctx.send(f'{random.choice(previsao)}')
 
-
-@client.event
-async def on_message(message):
-  try:
-    if message.content.lower().startswith('odeio'):
-      await channel.send('Sim, deixe o ódio fluir por você... :sheev:')
-    await client.process_commands(message)
-  except Exception as e:
-    print(e)
-
-
-
 #os.system('python level.py')
