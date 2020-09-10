@@ -36,6 +36,7 @@ async def help(ctx):
     ajuda.add_field(name='cp!vision', value='Faça uma pergunta ao Chanceler e ele irá lhe responder. \n aka:8ball')
     ajuda.add_field(name='cp!sorte', value='Cara ou coroa. \n aka:caracoroa')
     ajuda.add_field(name='cp!level', value='Mostra o nível de usuário ao uúario que pediu \n aka:nivel')
+    ajuda.add_field(name='cp!rank', value='Mostra a tabela de niveis de usuários em ordem de maior pra menor \n aka:board')
     await ctx.send(embed=ajuda)
 
 @client.command()
@@ -62,5 +63,17 @@ async def clear_error(ctx, error):
 async def sorte(ctx):
     previsao = ['Cara', 'Coroa']
     await ctx.send(f'{random.choice(previsao)}')
+
+
+@client.event
+async def on_message(message):
+  try:
+    if message.content.lower().startswith('odeio'):
+      await channel.send('Sim, deixe o ódio fluir por você... :sheev:')
+    await client.process_commands(message)
+  except Exception as e:
+    print(e)
+
+
 
 #os.system('python level.py')
