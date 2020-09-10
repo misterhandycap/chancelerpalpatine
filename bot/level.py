@@ -18,6 +18,9 @@ async def on_member_join(member):
 
 @client.event
 async def on_message(message):
+    if message.content.lower().startswith('odeio'):
+      await message.channel.send('Sim, deixe o ódio fluir por você... <:sheev:735473486046298173>')
+
     with open('users.json', 'r') as f:
         users = json.load(f)
 
@@ -67,9 +70,9 @@ async def level(ctx):
     with open('users.json', 'r') as f:
         users = json.load(f)
 
-    levelbed = discord.Embed(title='Nível', description=f'{ctx.author.mention} se encontra atualmente no nível {users[str(ctx.author.id)]["level"]}', colour=discord.Color.red(), timestamp=ctx.message.created_at)
-    levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
-    await ctx.send(embed=levelbed)
+        levelbed = discord.Embed(title='Nível', description=f'{ctx.author.mention} se encontra atualmente no nível {users[str(ctx.author.id)]["level"]}', colour=discord.Color.red(), timestamp=ctx.message.created_at)
+        levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
+        await ctx.send(embed=levelbed)
 
 @client.command(aliases=['board'])
 async def rank(ctx):
@@ -77,7 +80,7 @@ async def rank(ctx):
     with open('users.json', 'r') as f:
         users = json.load(f)
 
-    rank = sorted(users.items(), key=lambda x: x[1]['experiencia'])
-    msg = ', '.join([str(x[1]['experiencia']) for x in rank])
+    rank = sorted(users.items(), key=lambda x: x[1]['experiencia'], reverse=True)
+    msg = '\n '.join([str(x[1]['experiencia']) for x in rank])
 
     await ctx.send(msg)
