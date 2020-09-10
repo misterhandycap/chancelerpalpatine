@@ -67,6 +67,10 @@ async def level_up(users, user, channel):
 @client.command(aliases=['nivel'])
 async def level(ctx):
     user_id = str(ctx.author.id)
+    if len(ctx.message.content)==27:
+        new_id=ctx.message.content[9:]
+        if new_id in users:
+            user_id = new_id
     with open('users.json', 'r') as f:
         users = json.load(f)
 
