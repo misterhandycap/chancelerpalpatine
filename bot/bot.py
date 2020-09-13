@@ -17,7 +17,7 @@ async def on_ready():
 
 @client.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.MissingRequiredPermission):
+    if isinstance(error, commands.MissingRequiredPermissions):
         await ('Parece que você não tem poder aqui, Jedi, cheque com os mestres do Conselho e volte mais tarde.')
 
 @client.event
@@ -37,6 +37,7 @@ async def help(ctx):
     ajuda.add_field(name='cp!sorte', value='Cara ou coroa. \n aka:caracoroa')
     ajuda.add_field(name='cp!level', value='Mostra o nível de usuário ao uúario que pediu \n aka:nivel')
     ajuda.add_field(name='cp!rank', value='Mostra a tabela de niveis de usuários em ordem de maior pra menor \n aka:board')
+    ajuda.add_field(name='cp!rps', value='Pedra, papel e tesoura com dinossauros \n aka pedrapapeltesoura, ppt, dino')
     await ctx.send(embed=ajuda)
 
 @client.command()
@@ -51,7 +52,7 @@ async def clear(ctx, amount=5+1):
 
 @client.command(aliases=['8ball'])
 async def vision(ctx, *, question):
-    responses = ['Assim é.', 'Está me ameaçando?', 'É certo.', 'Acho que devemos buscar mais informações.', 'Isso não está correto.', 'Você está errado.', 'Não, não, NÃO!!', 'Acredito que esteja errado, Mestre', 'Isso necessita de mais análises']
+    responses = ['Assim é.', 'Está me ameaçando?', 'É certo.', 'Acho que devemos buscar mais informações.', 'Isso não está correto.', 'Você está errado(a).', 'Não, não, NÃO!!', 'Acredito que esteja errado(a), Mestre', 'Isso necessita de mais análises']
     await ctx.send(f'{random.choice(responses)}')
 
 @vision.error
@@ -63,5 +64,40 @@ async def clear_error(ctx, error):
 async def sorte(ctx):
     previsao = ['Cara', 'Coroa']
     await ctx.send(f'{random.choice(previsao)}')
+
+@client.command(aliases=['pedrapapeltesoura', 'ppt', 'dino'])
+async def rps(ctx):
+    player_choice_str = ctx.message.content.lower().replace('cp!rps', '').strip().title()
+    available_options = ['Deus', 'Homem', 'Dinossauro']
+    if player_choice_str not in available_options:
+        await ctx.send("Opção inválida")
+        return
+
+    player_choice = available_options.index(player_choice_str)
+    bot_choice = random.randint(0,2)
+    bot_choice_str = available_options[bot_choice]
+
+    if bot_choice == player_choice:
+        #empate
+        result = "Mulher herda a Terra"
+    else:
+        winner_choice = max(bot_choice, player_choice) if abs(bot_choice - player_choice) == 1 else min(bot_choice, player_choice)
+        action_txt = ' destrói '
+        if winner_choice == player_choice:
+            who = 'Você ganhou o jogo'
+            winner, loser = player_choice_str, bot_choice_str
+        else:
+            who = 'Você perdeu o jogo'
+            winner, loser = bot_choice_str, player_choice_str
+        if winner == 'dinossauro':
+            action_txt = ' come o '
+        result = f'{winner}{action_txt}{loser}\n{who}'
+
+    resp_message = f"O bot escolheu: {bot_choice_str}\n{result}"
+    #result+='\n\nTodo sábado sessão de Jurassic Park na SWW'
+    await ctx.send(resp_message)
+
+
+
 
 #os.system('python level.py')

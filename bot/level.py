@@ -19,7 +19,31 @@ async def on_member_join(member):
 @client.event
 async def on_message(message):
     if message.content.lower().startswith('odeio'):
-      await message.channel.send('Sim, deixe o ódio fluir por você... <:sheev:735473486046298173>')
+        await message.channel.send('Sim, deixe o ódio fluir por você... <:sheev:735473486046298173>')
+
+    if message.content.lower().startswith('ban'):
+        await message.channel.send('Mate-o, mate-o agora...')
+
+    if message.content.lower().startswith('i shouldnt'):
+        await message.channel.send('DEW IT!')
+
+    if message.content.lower().startswith('i shouldn\'t'):
+        await message.channel.send('DEW IT!')
+
+    if message.content.lower().startswith('-poll'):
+        await message.channel.send('Eu amo democracia!')
+
+    if message.content.lower().startswith('votação'):
+        await message.channel.send('Eu amo democracia!')
+
+    if message.content.lower().startswith('voto'):
+        await message.channel.send('Eu amo democracia!')
+
+    if message.content.lower().startswith('democracia'):
+        await message.channel.send('Eu amo democracia!')
+
+    if message.content.lower().startswith('estou muito fraco'):
+        await message.channel.send('PODER ILIMITADOOOOOO!')
 
     with open('users.json', 'r') as f:
         users = json.load(f)
@@ -48,7 +72,7 @@ async def update_data(users, user):
         users[str(user.id)]['id'] = user.id
 
 async def add_xp(users, user, xp):
-    if time.time() - users[str(user.id)]['ultima_mesg'] >20:
+    if time.time() - users[str(user.id)]['ultima_mesg'] >40:
         users[str(user.id)]['experiencia'] += xp
         users[str(user.id)]['ultima_mesg'] = time.time()
     else:
@@ -61,16 +85,13 @@ async def level_up(users, user, channel):
 
     if level_start < level_end:
 
-        await channel.send('{} se tornou mais valioso ao subir ao nível {}'.format(user.mention, level_end))
+
+        await channel.send('{} subiu ao nível {}! Assistiremos sua carreira com grande interesse.'.format(user.mention, level_end))
         users[str(user.id)]['level'] = level_end
 
 @client.command(aliases=['nivel'])
 async def level(ctx):
     user_id = str(ctx.author.id)
-    if len(ctx.message.content)==27:
-        new_id=ctx.message.content[9:]
-        if new_id in users:
-            user_id = new_id
     with open('users.json', 'r') as f:
         users = json.load(f)
 
