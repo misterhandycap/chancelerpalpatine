@@ -1,1 +1,1 @@
-from bot.client import client
+from bot.client import client, chess_bot

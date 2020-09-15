@@ -4,7 +4,7 @@ import json
 import os
 import time
 from discord.ext import commands
-from bot import client
+from bot import client, chess_bot
 
 @client.check
 async def globally_block_dms(ctx):
@@ -38,6 +38,8 @@ async def help(ctx):
     ajuda.add_field(name='cp!level', value='Mostra o nível de usuário ao uúario que pediu \n aka:nivel')
     ajuda.add_field(name='cp!rank', value='Mostra a tabela de niveis de usuários em ordem de maior pra menor \n aka:board')
     ajuda.add_field(name='cp!rps', value='Pedra, papel e tesoura com dinossauros \n aka pedrapapeltesoura, ppt, dino')
+    ajuda.add_field(name='cp!xadrez_novo', value='Inicie uma nova partida de xadrez com alguém.\n Passe o ID de usuário para começar uma partida')
+    ajuda.add_field(name='cp!xadrez_jogar', value='Faça uma jogada em sua partida atual.')
     await ctx.send(embed=ajuda)
 
 @client.command()
@@ -97,7 +99,18 @@ async def rps(ctx):
     #result+='\n\nTodo sábado sessão de Jurassic Park na SWW'
     await ctx.send(resp_message)
 
+@client.command()
+async def xadrez_novo(ctx, player2):
+    result = chess_bot.new_game(str(ctx.author.id), player2)
+    await ctx.send(result)
 
+@client.command()
+async def xadrez_jogar(ctx, move):
+    result, board_png_bytes = chess_bot.make_move(str(ctx.author.id), move)
+    await ctx.send(result)
+    if board_png_bytes:
+        await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
+        chess_bot.save_games()
 
 
 #os.system('python level.py')
