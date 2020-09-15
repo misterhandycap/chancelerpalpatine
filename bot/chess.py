@@ -65,15 +65,20 @@ class Chess():
             return 'Invalid move', None
 
         game.board.push(move)
+        board_png_bytes = self._build_png_board(game)
         if game.board.is_game_over(claim_draw=True):
-            return 'Game over!', None
+            self.games.remove(game)
+            return 'Game over!', board_png_bytes
         
         game.current_player = game.player1 if usr_id == game.player2 else game.player2
-        board_png_bytes = self._build_png_board(game)
         return f'It\'s your turn, {game.current_player}', board_png_bytes
 
     def _build_png_board(self, game):
-        png_bytes = svg2png(bytestring=chess.svg.board(board=game.board))
+        try:
+            last_move = game.board.peek()
+        except IndexError:
+            last_move = None
+        png_bytes = svg2png(bytestring=chess.svg.board(board=game.board, lastmove=last_move))
         return BytesIO(png_bytes)
 
     def save_games(self):

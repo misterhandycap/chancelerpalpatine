@@ -88,6 +88,25 @@ class TestChess(TestCase):
         self.assertEqual(len(game.board.move_stack), 3)
         self.assertEqual(game.current_player, game.player2)
 
+    def test_make_move_finish_game(self):
+        board = chess.Board()
+        board.push_san("g4")
+        board.push_san("e5")
+        board.push_san("f4")
+        game = Game()
+        game.board = board
+        game.player1 = 1
+        game.player2 = 2
+        game.current_player = game.player1
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+        result, result_board = chess_bot.make_move(game.player1, 'd8h4')
+
+        self.assertIn("Game over", result)
+        self.assertIsNotNone(result_board)
+        self.assertEqual(len(chess_bot.games), 0)
+
     def test_make_move_illegal_move_in_players_turn(self):
         board = chess.Board()
         board.push_san("e4")
