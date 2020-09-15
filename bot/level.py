@@ -72,7 +72,7 @@ async def update_data(users, user):
         users[str(user.id)]['id'] = user.id
 
 async def add_xp(users, user, xp):
-    if time.time() - users[str(user.id)]['ultima_mesg'] >40:
+    if time.time() - users[str(user.id)].get('ultima_mesg', 0) > 40:
         users[str(user.id)]['experiencia'] += xp
         users[str(user.id)]['ultima_mesg'] = time.time()
     else:
