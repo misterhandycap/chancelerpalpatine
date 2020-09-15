@@ -142,3 +142,7 @@ cython_debug/
 
 # Environment variables file
 .env
+
+# Chess games pickle
+games.pickle
+games_test.pickle
