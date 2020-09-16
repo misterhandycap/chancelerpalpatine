@@ -50,7 +50,7 @@ class Chess():
             return self.games
 
     def new_game(self, user1, user2):
-        player1, player2 = self._convert_user_to_player(user1, user2)
+        player1, player2 = self._convert_users_to_players(user1, user2)
         current_players_pairs = map(lambda x: [x.player1, x.player2], self.games)
         given_players_pairs = [player1, player2]
 
@@ -79,7 +79,7 @@ class Chess():
         return game[0]
     
     def make_move(self, user, move, other_user=None):
-        player, other_player = self._convert_user_to_player(user, other_user)
+        player, other_player = self._convert_users_to_players(user, other_user)
         try:
             game = self._find_current_game(player, other_player)
             game.board.push_uci(move)
@@ -100,7 +100,7 @@ class Chess():
         return f'It\'s your turn, {game.current_player.name}', board_png_bytes
 
     def resign(self, user, other_user=None):
-        player, other_player = self._convert_user_to_player(user, other_user)
+        player, other_player = self._convert_users_to_players(user, other_user)
         try:
             game = self._find_current_game(player, other_player)
         except Exception as e:
@@ -122,10 +122,5 @@ class Chess():
         with open(self.pickle_filename, 'wb') as f:
             pickle.dump(self.games, f)
 
-    def _convert_user_to_player(self, user, other_user=None):
-        player = Player(user)
-        if other_user:
-            other_player = Player(other_user)
-        else:
-            other_player = None
-        return player, other_player
+    def _convert_users_to_players(self, *args):
+        return tuple(map(lambda user: Player(user) if user else None, args))
