@@ -21,6 +21,19 @@ class Game():
         except:
             return False
 
+
+class Player():
+    def __init__(self, user):
+        self.id = user.id
+        self.name = user.name
+
+    def __eq__(self, value):
+        try:
+            return self.id == value.id
+        except:
+            return False
+
+
 class Chess():
 
     def __init__(self, pickle_filename='games.pickle'):
@@ -36,24 +49,25 @@ class Chess():
         finally:
             return self.games
 
-    def new_game(self, usr_id1, usr_id2):
+    def new_game(self, user1, user2):
+        player1, player2 = self._convert_users_to_players(user1, user2)
         current_players_pairs = map(lambda x: [x.player1, x.player2], self.games)
-        given_players_pairs = [usr_id1, usr_id2]
+        given_players_pairs = [player1, player2]
 
         if given_players_pairs in current_players_pairs:
             return 'Game already in progress'
         
         game = Game()
         game.board = chess.Board()
-        game.player1 = usr_id1
-        game.player2 = usr_id2
-        game.current_player = usr_id1
+        game.player1 = player1
+        game.player2 = player2
+        game.current_player = player1
 
         self.games.append(game)
-        return 'Game started! Player1, make your move'
+        return f'Game started! {player1.name}, make your move'
 
-    def _find_current_game(self, usr_id, other_player):
-        game = [g for g in self.games if g.current_player == usr_id]
+    def _find_current_game(self, player: Player, other_player: Player):
+        game = [g for g in self.games if g.current_player == player]
         if game == []:
             raise Exception('You are either not playing a game or it is not your move')
         if len(game) > 1:
@@ -64,9 +78,10 @@ class Chess():
                 raise Exception('Game not found')
         return game[0]
     
-    def make_move(self, usr_id, move, other_player=None):
+    def make_move(self, user, move, other_user=None):
+        player, other_player = self._convert_users_to_players(user, other_user)
         try:
-            game = self._find_current_game(usr_id, other_player)
+            game = self._find_current_game(player, other_player)
             game.board.push_uci(move)
         except ValueError:
             try:
@@ -81,18 +96,19 @@ class Chess():
             self.games.remove(game)
             return 'Game over!', board_png_bytes
         
-        game.current_player = game.player1 if usr_id == game.player2 else game.player2
-        return f'It\'s your turn, {game.current_player}', board_png_bytes
+        game.current_player = game.player1 if player == game.player2 else game.player2
+        return f'It\'s your turn, {game.current_player.name}', board_png_bytes
 
-    def resign(self, usr_id, other_player=None):
+    def resign(self, user, other_user=None):
+        player, other_player = self._convert_users_to_players(user, other_user)
         try:
-            game = self._find_current_game(usr_id, other_player)
+            game = self._find_current_game(player, other_player)
         except Exception as e:
             return str(e), None
         
         board_png_bytes = self._build_png_board(game)
         self.games.remove(game)
-        return f'{usr_id} resign the game!', board_png_bytes
+        return f'{player.name} resign the game!', board_png_bytes
     
     def _build_png_board(self, game):
         try:
@@ -105,3 +121,6 @@ class Chess():
     def save_games(self):
         with open(self.pickle_filename, 'wb') as f:
             pickle.dump(self.games, f)
+
+    def _convert_users_to_players(self, *args):
+        return tuple(map(lambda user: Player(user) if user else None, args))

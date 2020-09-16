@@ -4,8 +4,7 @@ from unittest import TestCase
 
 import chess
 
-from bot.chess import Chess, Game
-
+from bot.chess import Chess, Game, Player
 
 PICKLE_FILENAME = 'games_test.pickle'
 
@@ -24,14 +23,14 @@ class TestChess(TestCase):
         board1.push_san("e5")
         game1 = Game()
         game1.board = board1
-        game1.player1 = 1
-        game1.player2 = 2
+        game1.player1 = FakeDiscordUser(id=1)
+        game1.player2 = FakeDiscordUser(id=2)
         board2 = chess.Board()
         board2.push_san("Nf3")
         game2 = Game()
         game2.board = board2
-        game2.player1 = 2
-        game2.player2 = 3
+        game2.player1 = FakeDiscordUser(id=2)
+        game2.player2 = FakeDiscordUser(id=3)
         games = [game1, game2]
 
         with open(PICKLE_FILENAME, 'wb') as f:
@@ -44,8 +43,8 @@ class TestChess(TestCase):
         self.assertEqual([], Chess(pickle_filename=PICKLE_FILENAME).load_games())
 
     def test_new_game_new_players(self):
-        player1 = 1
-        player2 = 2
+        player1 = FakeDiscordUser(id=1)
+        player2 = FakeDiscordUser(id=2)
 
         chess_bot = Chess()
         result = chess_bot.new_game(player1, player2)
@@ -59,8 +58,8 @@ class TestChess(TestCase):
 
     def test_new_game_game_already_started(self):
         game = Game()
-        game.player1 = 1
-        game.player2 = 2
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
         
         chess_bot = Chess()
         chess_bot.games.append(game)
@@ -75,8 +74,8 @@ class TestChess(TestCase):
         board.push_san("e5")
         game = Game()
         game.board = board
-        game.player1 = 1
-        game.player2 = 2
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
 
         chess_bot = Chess()
@@ -94,8 +93,8 @@ class TestChess(TestCase):
         board.push_san("e5")
         game = Game()
         game.board = board
-        game.player1 = 1
-        game.player2 = 2
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
 
         chess_bot = Chess()
@@ -114,8 +113,8 @@ class TestChess(TestCase):
         board.push_san("f4")
         game = Game()
         game.board = board
-        game.player1 = 1
-        game.player2 = 2
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
 
         chess_bot = Chess()
@@ -132,8 +131,8 @@ class TestChess(TestCase):
         board.push_san("e5")
         game = Game()
         game.board = board
-        game.player1 = 1
-        game.player2 = 2
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
 
         chess_bot = Chess()
@@ -151,8 +150,8 @@ class TestChess(TestCase):
         board.push_san("e5")
         game = Game()
         game.board = board
-        game.player1 = 1
-        game.player2 = 2
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
 
         chess_bot = Chess()
@@ -170,8 +169,8 @@ class TestChess(TestCase):
         board1.push_san("e5")
         game1 = Game()
         game1.board = board1
-        game1.player1 = 1
-        game1.player2 = 2
+        game1.player1 = FakeDiscordUser(id=1)
+        game1.player2 = FakeDiscordUser(id=2)
         game1.current_player = game1.player1
         
         board2 = chess.Board()
@@ -185,7 +184,7 @@ class TestChess(TestCase):
         chess_bot = Chess()
         chess_bot.games.append(game1)
         chess_bot.games.append(game2)
-        result, result_board = chess_bot.make_move(game1.player1, 'g1f3', other_player=game1.player2)
+        result, result_board = chess_bot.make_move(game1.player1, 'g1f3', other_user=game1.player2)
 
         self.assertIn("It's your turn", result)
         self.assertIsNotNone(result_board)
@@ -200,8 +199,8 @@ class TestChess(TestCase):
         board1.push_san("e5")
         game1 = Game()
         game1.board = board1
-        game1.player1 = 1
-        game1.player2 = 2
+        game1.player1 = FakeDiscordUser(id=1)
+        game1.player2 = FakeDiscordUser(id=2)
         game1.current_player = game1.player1
         
         board2 = chess.Board()
@@ -230,22 +229,22 @@ class TestChess(TestCase):
         board1.push_san("e5")
         game1 = Game()
         game1.board = board1
-        game1.player1 = 1
-        game1.player2 = 2
+        game1.player1 = FakeDiscordUser(id=1)
+        game1.player2 = FakeDiscordUser(id=2)
         game1.current_player = game1.player1
         
         board2 = chess.Board()
         board2.push_san("Nf3")
         game2 = Game()
         game2.board = board2
-        game2.player1 = 3
+        game2.player1 = FakeDiscordUser(id=3)
         game2.player2 = game1.player1
         game2.current_player = game1.player1
 
         chess_bot = Chess()
         chess_bot.games.append(game1)
         chess_bot.games.append(game2)
-        result, result_board = chess_bot.make_move(game1.player1, 'g1f3', other_player=14)
+        result, result_board = chess_bot.make_move(game1.player1, 'g1f3', other_user=FakeDiscordUser(id=14))
 
         self.assertIn("Game not found", result)
         self.assertIsNone(result_board)
@@ -260,8 +259,8 @@ class TestChess(TestCase):
         board.push_san("e5")
         game = Game()
         game.board = board
-        game.player1 = 1
-        game.player2 = 2
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
 
         chess_bot = Chess()
@@ -278,8 +277,8 @@ class TestChess(TestCase):
         board.push_san("e5")
         game = Game()
         game.board = board
-        game.player1 = 1
-        game.player2 = 2
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
 
         chess_bot = Chess()
@@ -297,8 +296,8 @@ class TestChess(TestCase):
         board1.push_san("e5")
         game1 = Game()
         game1.board = board1
-        game1.player1 = 1
-        game1.player2 = 2
+        game1.player1 = FakeDiscordUser(id=1)
+        game1.player2 = FakeDiscordUser(id=2)
         board2 = chess.Board()
         board2.push_san("Nf3")
         game2 = Game()
@@ -311,3 +310,16 @@ class TestChess(TestCase):
 
         with open(PICKLE_FILENAME, 'rb') as f:
             self.assertEqual(chess_bot.games, pickle.load(f))
+
+
+class FakeDiscordUser():
+
+    def __init__(self, id=None, name=None):
+        self.id = id
+        self.name = name
+
+    def __eq__(self, value):
+        try:
+            return self.id == value.id
+        except:
+            return False
