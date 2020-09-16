@@ -52,17 +52,27 @@ class Chess():
         self.games.append(game)
         return 'Game started! Player1, make your move'
 
-    def make_move(self, usr_id, move_uci):
-        game = next((g for g in self.games if g.current_player == usr_id), None)
-        if game == None:
-            return 'You are either not playing a game or it is not your move', None
-        # TODO Deal with player playing multiple games at once
-
+    def _find_current_game(self, usr_id, other_player):
+        game = [g for g in self.games if g.current_player == usr_id]
+        if game == []:
+            raise Exception('You are either not playing a game or it is not your move')
+        if len(game) > 1:
+            if not other_player:
+                raise Exception(f'You are currently playing {len(game)} games. Please tell which player you\'re facing.')
+            game = [g for g in game if other_player in [g.player1, g.player2]]
+            if game == []:
+                raise Exception('Game not found')
+        return game[0]
+    
+    def make_move(self, usr_id, move_uci, other_player=None):
         try:
+            game = self._find_current_game(usr_id, other_player)
             move = chess.Move.from_uci(move_uci)
             list(game.board.legal_moves).index(move)
-        except:
+        except ValueError:
             return 'Invalid move', None
+        except Exception as e:
+            return str(e), None
 
         game.board.push(move)
         board_png_bytes = self._build_png_board(game)
@@ -73,6 +83,16 @@ class Chess():
         game.current_player = game.player1 if usr_id == game.player2 else game.player2
         return f'It\'s your turn, {game.current_player}', board_png_bytes
 
+    def resign(self, usr_id, other_player=None):
+        try:
+            game = self._find_current_game(usr_id, other_player)
+        except Exception as e:
+            return str(e), None
+        
+        board_png_bytes = self._build_png_board(game)
+        self.games.remove(game)
+        return f'{usr_id} resign the game!', board_png_bytes
+    
     def _build_png_board(self, game):
         try:
             last_move = game.board.peek()

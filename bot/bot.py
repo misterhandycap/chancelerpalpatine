@@ -40,6 +40,7 @@ async def help(ctx):
     ajuda.add_field(name='cp!rps', value='Pedra, papel e tesoura com dinossauros \n aka pedrapapeltesoura, ppt, dino')
     ajuda.add_field(name='cp!xadrez_novo', value='Inicie uma nova partida de xadrez com alguém.\n Passe o ID de usuário para começar uma partida')
     ajuda.add_field(name='cp!xadrez_jogar', value='Faça uma jogada em sua partida atual.')
+    ajuda.add_field(name='cp!xadrez_abandonar', value='Abandone a partida atual.')
     await ctx.send(embed=ajuda)
 
 @client.command()
@@ -107,6 +108,14 @@ async def xadrez_novo(ctx, player2):
 @client.command()
 async def xadrez_jogar(ctx, move):
     result, board_png_bytes = chess_bot.make_move(str(ctx.author.id), move)
+    await ctx.send(result)
+    if board_png_bytes:
+        await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
+        chess_bot.save_games()
+
+@client.command()
+async def xadrez_abandonar(ctx):
+    result, board_png_bytes = chess_bot.resign(str(ctx.author.id))
     await ctx.send(result)
     if board_png_bytes:
         await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
