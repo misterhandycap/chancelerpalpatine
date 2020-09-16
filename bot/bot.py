@@ -24,6 +24,7 @@ async def on_command_error(ctx, error):
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.send('Esta ordem não existe, agora se me der licença...')
+    print(error)
 
 @client.remove_command('help')
 
@@ -101,30 +102,22 @@ async def rps(ctx, player_choice_str=''):
     await ctx.send(resp_message)
 
 @client.command()
-async def xadrez_novo(ctx, player2: discord.User):
-    result = chess_bot.new_game(str(ctx.author.id), str(player2.id))
+async def xadrez_novo(ctx, user2: discord.User):
+    result = chess_bot.new_game(ctx.author, user2)
     await ctx.send(result)
 
 @client.command()
-async def xadrez_jogar(ctx, move, player2: discord.User=None):
-    if player2:
-        player2_id = str(player2.id)
-    else:
-        player2_id = None
+async def xadrez_jogar(ctx, move, user2: discord.User=None):
     result, board_png_bytes = chess_bot.make_move(
-        str(ctx.author.id), move, other_player=player2_id)
+        ctx.author, move, other_user=user2)
     await ctx.send(result)
     if board_png_bytes:
         await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
         chess_bot.save_games()
 
 @client.command()
-async def xadrez_abandonar(ctx, player2: discord.User=None):
-    if player2:
-        player2_id = str(player2.id)
-    else:
-        player2_id = None
-    result, board_png_bytes = chess_bot.resign(str(ctx.author.id), other_player=player2_id)
+async def xadrez_abandonar(ctx, user2: discord.User=None):
+    result, board_png_bytes = chess_bot.resign(ctx.author, other_user=user2)
     await ctx.send(result)
     if board_png_bytes:
         await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
