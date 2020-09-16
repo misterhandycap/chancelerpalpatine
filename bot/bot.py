@@ -6,6 +6,12 @@ import time
 from discord.ext import commands
 from bot import client, chess_bot
 
+#Não sei se isso aqui vai funcionar, espero que sim :), se funcionar o ideal é jogar para uma nova página
+#com funções auxiliares.
+def extraiprefixo(ctx):
+    start=ctx.message.content.find(' ')+1
+    return ctx.message.content[start:]
+
 @client.check
 async def globally_block_dms(ctx):
     return ctx.guild is not None
@@ -70,7 +76,7 @@ async def sorte(ctx):
 
 @client.command(aliases=['pedrapapeltesoura', 'ppt', 'dino'])
 async def rps(ctx):
-    player_choice_str = ctx.message.content.lower().replace('cp!rps', '').strip().title()
+    player_choice_str = extraiprefixo(ctx).strip().title()
     available_options = ['Deus', 'Homem', 'Dinossauro']
     if player_choice_str not in available_options:
         await ctx.send("Opção inválida")
