@@ -64,17 +64,18 @@ class Chess():
                 raise Exception('Game not found')
         return game[0]
     
-    def make_move(self, usr_id, move_uci, other_player=None):
+    def make_move(self, usr_id, move, other_player=None):
         try:
             game = self._find_current_game(usr_id, other_player)
-            move = chess.Move.from_uci(move_uci)
-            list(game.board.legal_moves).index(move)
+            game.board.push_uci(move)
         except ValueError:
-            return 'Invalid move', None
+            try:
+                game.board.push_san(move)
+            except ValueError:
+                return 'Invalid move', None
         except Exception as e:
             return str(e), None
 
-        game.board.push(move)
         board_png_bytes = self._build_png_board(game)
         if game.board.is_game_over(claim_draw=True):
             self.games.remove(game)

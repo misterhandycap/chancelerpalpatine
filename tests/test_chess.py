@@ -41,7 +41,7 @@ class TestChess(TestCase):
         self.assertEqual(games, chess_bot.load_games())
 
     def test_load_games_file_doesnt_exist(self):
-        self.assertEqual([], Chess().load_games())
+        self.assertEqual([], Chess(pickle_filename=PICKLE_FILENAME).load_games())
 
     def test_new_game_new_players(self):
         player1 = 1
@@ -69,7 +69,7 @@ class TestChess(TestCase):
         self.assertIn('Game already in progress', result)
         self.assertEqual(len(chess_bot.games), 1)
 
-    def test_make_move_legal_move_in_players_turn(self):
+    def test_make_move_legal_uci_move_in_players_turn(self):
         board = chess.Board()
         board.push_san("e4")
         board.push_san("e5")
@@ -82,6 +82,25 @@ class TestChess(TestCase):
         chess_bot = Chess()
         chess_bot.games.append(game)
         result, result_board = chess_bot.make_move(game.player1, 'g1f3')
+
+        self.assertIn("It's your turn", result)
+        self.assertIsNotNone(result_board)
+        self.assertEqual(len(game.board.move_stack), 3)
+        self.assertEqual(game.current_player, game.player2)
+
+    def test_make_move_legal_san_move_in_players_turn(self):
+        board = chess.Board()
+        board.push_san("e4")
+        board.push_san("e5")
+        game = Game()
+        game.board = board
+        game.player1 = 1
+        game.player2 = 2
+        game.current_player = game.player1
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+        result, result_board = chess_bot.make_move(game.player1, 'Nf3')
 
         self.assertIn("It's your turn", result)
         self.assertIsNotNone(result_board)
