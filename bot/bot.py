@@ -69,8 +69,8 @@ async def sorte(ctx):
     await ctx.send(f'{random.choice(previsao)}')
 
 @client.command(aliases=['pedrapapeltesoura', 'ppt', 'dino'])
-async def rps(ctx):
-    player_choice_str = ctx.message.content.lower().replace('cp!rps', '').strip().title()
+async def rps(ctx, player_choice_str=''):
+    player_choice_str = player_choice_str.title()
     available_options = ['Deus', 'Homem', 'Dinossauro']
     if player_choice_str not in available_options:
         await ctx.send("Opção inválida")
