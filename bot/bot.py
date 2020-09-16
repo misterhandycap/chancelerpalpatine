@@ -101,21 +101,30 @@ async def rps(ctx):
     await ctx.send(resp_message)
 
 @client.command()
-async def xadrez_novo(ctx, player2):
-    result = chess_bot.new_game(str(ctx.author.id), player2)
+async def xadrez_novo(ctx, player2: discord.User):
+    result = chess_bot.new_game(str(ctx.author.id), str(player2.id))
     await ctx.send(result)
 
 @client.command()
-async def xadrez_jogar(ctx, move):
-    result, board_png_bytes = chess_bot.make_move(str(ctx.author.id), move)
+async def xadrez_jogar(ctx, move, player2: discord.User=None):
+    if player2:
+        player2_id = str(player2.id)
+    else:
+        player2_id = None
+    result, board_png_bytes = chess_bot.make_move(
+        str(ctx.author.id), move, other_player=player2_id)
     await ctx.send(result)
     if board_png_bytes:
         await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
         chess_bot.save_games()
 
 @client.command()
-async def xadrez_abandonar(ctx):
-    result, board_png_bytes = chess_bot.resign(str(ctx.author.id))
+async def xadrez_abandonar(ctx, player2: discord.User=None):
+    if player2:
+        player2_id = str(player2.id)
+    else:
+        player2_id = None
+    result, board_png_bytes = chess_bot.resign(str(ctx.author.id), other_player=player2_id)
     await ctx.send(result)
     if board_png_bytes:
         await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
