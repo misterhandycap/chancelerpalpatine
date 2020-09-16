@@ -4,6 +4,7 @@ from io import BytesIO
 from cairosvg import svg2png
 import chess
 import chess.svg
+from chess.pgn import Game as ChessGame
 
 from bot import client
 
@@ -93,8 +94,9 @@ class Chess():
 
         board_png_bytes = self._build_png_board(game)
         if game.board.is_game_over(claim_draw=True):
+            pgn = self.generate_pgn(user, other_user)
             self.games.remove(game)
-            return 'Game over!', board_png_bytes
+            return f'Game over!\n\n{pgn}', board_png_bytes
         
         game.current_player = game.player1 if player == game.player2 else game.player2
         return f'It\'s your turn, {game.current_player.name}', board_png_bytes
@@ -121,6 +123,23 @@ class Chess():
     def save_games(self):
         with open(self.pickle_filename, 'wb') as f:
             pickle.dump(self.games, f)
+
+    def generate_pgn(self, user, other_user=None):
+        try:
+            player, other_player = self._convert_users_to_players(user, other_user)
+            game = self._find_current_game(player, other_player)
+        except Exception as e:
+            return str(e)
+            
+        chess_game = ChessGame()
+        chess_game.headers["White"] = str(game.player1.name)
+        chess_game.headers["Black"] = str(game.player2.name)
+        chess_game.headers["Result"] = str(game.board.result())
+        last_node = chess_game
+        for move in game.board.move_stack:
+            last_node = last_node.add_variation(move)
+
+        return f"```\n{str(chess_game)}\n```"
 
     def _convert_users_to_players(self, *args):
         return tuple(map(lambda user: Player(user) if user else None, args))

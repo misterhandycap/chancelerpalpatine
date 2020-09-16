@@ -122,6 +122,7 @@ class TestChess(TestCase):
         result, result_board = chess_bot.make_move(game.player1, 'd8h4')
 
         self.assertIn("Game over", result)
+        self.assertIn("1. g4 e5 2. f4 Qh4# 0-1", result)
         self.assertIsNotNone(result_board)
         self.assertEqual(len(chess_bot.games), 0)
 
@@ -310,6 +311,25 @@ class TestChess(TestCase):
 
         with open(PICKLE_FILENAME, 'rb') as f:
             self.assertEqual(chess_bot.games, pickle.load(f))
+
+    def test_generate_pgn(self):
+        board = chess.Board()
+        board.push_san("g4")
+        board.push_san("e5")
+        board.push_san("f4")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1, name='Player1')
+        game.player2 = FakeDiscordUser(id=2, name='Player2')
+        game.current_player = game.player1
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+        result = chess_bot.generate_pgn(user=FakeDiscordUser(id=1))
+
+        self.assertIn('[White "Player1"]', result)
+        self.assertIn('[Black "Player2"]', result)
+        self.assertIn('1. g4 e5 2. f4 *', result)
 
 
 class FakeDiscordUser():

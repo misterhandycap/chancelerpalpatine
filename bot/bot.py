@@ -39,9 +39,10 @@ async def help(ctx):
     ajuda.add_field(name='cp!level', value='Mostra o nível de usuário ao uúario que pediu \n aka:nivel')
     ajuda.add_field(name='cp!rank', value='Mostra a tabela de niveis de usuários em ordem de maior pra menor \n aka:board')
     ajuda.add_field(name='cp!rps', value='Pedra, papel e tesoura com dinossauros \n aka pedrapapeltesoura, ppt, dino')
-    ajuda.add_field(name='cp!xadrez_novo', value='Inicie uma nova partida de xadrez com alguém.\n Passe o ID de usuário para começar uma partida')
-    ajuda.add_field(name='cp!xadrez_jogar', value='Faça uma jogada em sua partida atual.')
-    ajuda.add_field(name='cp!xadrez_abandonar', value='Abandone a partida atual.')
+    ajuda.add_field(name='cp!xadrez_novo', value='Inicie uma nova partida de xadrez com alguém.\n Passe o ID de usuário para começar uma partida.\n aka:xn')
+    ajuda.add_field(name='cp!xadrez_jogar', value='Faça uma jogada em sua partida atual. \n aka:xj')
+    ajuda.add_field(name='cp!xadrez_abandonar', value='Abandone a partida atual.\n aka:xa')
+    ajuda.add_field(name='cp!xadrez_pgn', value='Gera o PGN da partida atual.\n aka:xpgn')
     await ctx.send(embed=ajuda)
 
 @client.command()
@@ -101,12 +102,12 @@ async def rps(ctx, player_choice_str=''):
     #result+='\n\nTodo sábado sessão de Jurassic Park na SWW'
     await ctx.send(resp_message)
 
-@client.command()
+@client.command(aliases=['xn'])
 async def xadrez_novo(ctx, user2: discord.User):
     result = chess_bot.new_game(ctx.author, user2)
     await ctx.send(result)
 
-@client.command()
+@client.command(aliases=['xj'])
 async def xadrez_jogar(ctx, move, user2: discord.User=None):
     result, board_png_bytes = chess_bot.make_move(
         ctx.author, move, other_user=user2)
@@ -115,13 +116,18 @@ async def xadrez_jogar(ctx, move, user2: discord.User=None):
         await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
         chess_bot.save_games()
 
-@client.command()
+@client.command(aliases=['xa'])
 async def xadrez_abandonar(ctx, user2: discord.User=None):
     result, board_png_bytes = chess_bot.resign(ctx.author, other_user=user2)
     await ctx.send(result)
     if board_png_bytes:
         await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
         chess_bot.save_games()
+
+@client.command(aliases=['xpgn'])
+async def xadrez_pgn(ctx, user2: discord.User=None):
+    result = chess_bot.generate_pgn(ctx.author, user2)
+    await ctx.send(result)
 
 
 #os.system('python level.py')
