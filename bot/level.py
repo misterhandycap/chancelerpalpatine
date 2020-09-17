@@ -45,6 +45,15 @@ async def on_message(message):
     if message.content.lower().startswith('estou muito fraco'):
         await message.channel.send('PODER ILIMITADOOOOOO!')
 
+    if message.content.lower().startswith('você é muito sábio'):
+        await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
+
+    if message.content.lower().startswith('tão sábio'):
+        await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
+
+    if message.content.lower().startswith('sábio'):
+        await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
+
     with open('users.json', 'r') as f:
         users = json.load(f)
 
@@ -95,7 +104,7 @@ async def level(ctx):
     with open('users.json', 'r') as f:
         users = json.load(f)
 
-        levelbed = discord.Embed(title='Nível', description=f'{ctx.author.mention} se encontra atualmente no nível {users[str(ctx.author.id)]["level"]}', colour=discord.Color.red(), timestamp=ctx.message.created_at)
+        levelbed = discord.Embed(title='Nível', description=f'{ctx.author.mention} se encontra atualmente no nível {users[str(ctx.author.id)]["level"]} com {users[str(ctx.author.id)]["experiencia"]}', colour=discord.Color.red(), timestamp=ctx.message.created_at)
         levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
         await ctx.send(embed=levelbed)
 

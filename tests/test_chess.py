@@ -16,7 +16,7 @@ class TestChess(TestCase):
             os.remove(PICKLE_FILENAME)
         except FileNotFoundError:
             pass
-    
+
     def test_load_games_file_exists(self):
         board1 = chess.Board()
         board1.push_san("e4")
@@ -50,7 +50,7 @@ class TestChess(TestCase):
         result = chess_bot.new_game(player1, player2)
         games = chess_bot.games
 
-        self.assertIn('Game started', result)
+        self.assertIn('Partida iniciada', result)
         self.assertEqual(len(games), 1)
         self.assertEqual(games[0].player1, player1)
         self.assertEqual(games[0].player2, player2)
@@ -66,7 +66,7 @@ class TestChess(TestCase):
         result = chess_bot.new_game(player1, player2, color_schema=color_schema)
         games = chess_bot.games
 
-        self.assertIn('Game started', result)
+        self.assertIn('Partida iniciada', result)
         self.assertEqual(len(games), 1)
         self.assertEqual(games[0].player1, player1)
         self.assertEqual(games[0].player2, player2)
@@ -77,12 +77,12 @@ class TestChess(TestCase):
         game = Game()
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
-        
+
         chess_bot = Chess()
         chess_bot.games.append(game)
 
         result = chess_bot.new_game(game.player1, game.player2)
-        self.assertIn('Game already in progress', result)
+        self.assertIn('Partida em andamento', result)
         self.assertEqual(len(chess_bot.games), 1)
 
     def test_make_move_legal_uci_move_in_players_turn(self):
@@ -99,7 +99,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         result, result_board = chess_bot.make_move(game.player1, 'g1f3')
 
-        self.assertIn("It's your turn", result)
+        self.assertIn("Seu turno é agora", result)
         self.assertIsNotNone(result_board)
         self.assertEqual(len(game.board.move_stack), 3)
         self.assertEqual(game.current_player, game.player2)
@@ -118,7 +118,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         result, result_board = chess_bot.make_move(game.player1, 'Nf3')
 
-        self.assertIn("It's your turn", result)
+        self.assertIn("Seu turno é agora", result)
         self.assertIsNotNone(result_board)
         self.assertEqual(len(game.board.move_stack), 3)
         self.assertEqual(game.current_player, game.player2)
@@ -138,7 +138,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         result, result_board = chess_bot.make_move(game.player1, 'd8h4')
 
-        self.assertIn("Game over", result)
+        self.assertIn("Fim de jogo", result)
         self.assertIn("1. g4 e5 2. f4 Qh4# 0-1", result)
         self.assertIsNotNone(result_board)
         self.assertEqual(len(chess_bot.games), 0)
@@ -157,7 +157,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         result, result_board = chess_bot.make_move(game.player1, 'invalid')
 
-        self.assertIn("Invalid move", result)
+        self.assertIn("Movimento inválido", result)
         self.assertIsNone(result_board)
         self.assertEqual(len(game.board.move_stack), 2)
         self.assertEqual(game.current_player, game.player1)
@@ -176,7 +176,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         result, result_board = chess_bot.make_move(game.player2, 'g1f3')
 
-        self.assertIn("it is not your move", result)
+        self.assertIn("Não é o seu turno", result)
         self.assertIsNone(result_board)
         self.assertEqual(len(game.board.move_stack), 2)
         self.assertEqual(game.current_player, game.player1)
@@ -190,7 +190,7 @@ class TestChess(TestCase):
         game1.player1 = FakeDiscordUser(id=1)
         game1.player2 = FakeDiscordUser(id=2)
         game1.current_player = game1.player1
-        
+
         board2 = chess.Board()
         board2.push_san("Nf3")
         game2 = Game()
@@ -204,7 +204,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game2)
         result, result_board = chess_bot.make_move(game1.player1, 'g1f3', other_user=game1.player2)
 
-        self.assertIn("It's your turn", result)
+        self.assertIn("Seu turno é agora", result)
         self.assertIsNotNone(result_board)
         self.assertEqual(len(game1.board.move_stack), 3)
         self.assertEqual(game1.current_player, game1.player2)
@@ -220,7 +220,7 @@ class TestChess(TestCase):
         game1.player1 = FakeDiscordUser(id=1)
         game1.player2 = FakeDiscordUser(id=2)
         game1.current_player = game1.player1
-        
+
         board2 = chess.Board()
         board2.push_san("Nf3")
         game2 = Game()
@@ -250,7 +250,7 @@ class TestChess(TestCase):
         game1.player1 = FakeDiscordUser(id=1)
         game1.player2 = FakeDiscordUser(id=2)
         game1.current_player = game1.player1
-        
+
         board2 = chess.Board()
         board2.push_san("Nf3")
         game2 = Game()
@@ -264,7 +264,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game2)
         result, result_board = chess_bot.make_move(game1.player1, 'g1f3', other_user=FakeDiscordUser(id=14))
 
-        self.assertIn("Game not found", result)
+        self.assertIn("Partida não encontrada", result)
         self.assertIsNone(result_board)
         self.assertEqual(len(game1.board.move_stack), 2)
         self.assertEqual(game1.current_player, game1.player1)
@@ -285,7 +285,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         result, result_board = chess_bot.resign(game.player1)
 
-        self.assertIn("resign the game!", result)
+        self.assertIn("abandonou a partida!", result)
         self.assertIsNotNone(result_board)
         self.assertEqual(len(chess_bot.games), 0)
 
@@ -303,7 +303,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         result, result_board = chess_bot.resign(game.player2)
 
-        self.assertIn("it is not your move", result)
+        self.assertIn("Não é o seu turno", result)
         self.assertIsNone(result_board)
         self.assertEqual(len(chess_bot.games), 1)
 
