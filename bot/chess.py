@@ -120,7 +120,7 @@ class Chess():
             last_move = game.board.peek()
         except IndexError:
             last_move = None
-        light, dark = self._board_colors(game.color_schema)
+        colors = self._board_colors(game.color_schema)
         css = """
         .square.light {
             fill: %s;
@@ -128,7 +128,13 @@ class Chess():
         .square.dark {
             fill: %s;
         }
-        """ % (light, dark)
+        .square.light.lastmove {
+            fill: %s;
+        }
+        .square.dark.lastmove {
+            fill: %s;
+        }
+        """ % colors
         png_bytes = svg2png(bytestring=chess.svg.board(board=game.board, lastmove=last_move, style=css))
         return BytesIO(png_bytes)
 
@@ -158,12 +164,12 @@ class Chess():
 
     def _board_colors(self, color_schema):
         colors = {
-            "blue": ("#dee3e6", "#8ca2ad"),
-            "purple": ("#e7dcf1", "#967bb1"),
-            "green": ("#ffffdd", "#86a666"),
-            "red": ("#e9eab8", "#f17575"),
-            "gray": ("#dcdcdc", "#afafaf"),
-            "wood": ("#f0d9b5", "#b58863")
+            "blue": ("#dee3e6", "#8ca2ad", "#c3d887", "#92b166"),
+            "purple": ("#e7dcf1", "#967bb1", "#c7d38e", "#989a68"),
+            "green": ("#ffffdd", "#86a666", "#96d6d4", "#4fa28e"),
+            "red": ("#e9eab8", "#f17575", "#cbde6e", "#cd9543"),
+            "gray": ("#dcdcdc", "#afafaf", "#c1d381", "#a9bb69"),
+            "wood": ("#f0d9b5", "#b58863", "#cdd16a", "#aaa23b"),
         }
         default = colors["green"]
         return colors.get(color_schema, default)
