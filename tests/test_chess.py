@@ -176,7 +176,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         result, result_board = chess_bot.make_move(game.player2, 'g1f3')
 
-        self.assertIn("Não é o seu turno", result)
+        self.assertIn("não é mais seu turno", result)
         self.assertIsNone(result_board)
         self.assertEqual(len(game.board.move_stack), 2)
         self.assertEqual(game.current_player, game.player1)
@@ -234,7 +234,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game2)
         result, result_board = chess_bot.make_move(game1.player1, 'g1f3')
 
-        self.assertIn("playing 2 games", result)
+        self.assertIn("jogando 2 partidas", result)
         self.assertIsNone(result_board)
         self.assertEqual(len(game1.board.move_stack), 2)
         self.assertEqual(game1.current_player, game1.player1)
@@ -303,7 +303,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         result, result_board = chess_bot.resign(game.player2)
 
-        self.assertIn("Não é o seu turno", result)
+        self.assertIn("não é mais seu turno", result)
         self.assertIsNone(result_board)
         self.assertEqual(len(chess_bot.games), 1)
 

@@ -113,7 +113,7 @@ class Chess():
         board_png_bytes = self._build_png_board(game)
         pgn = self.generate_pgn(user, other_user)
         self.games.remove(game)
-        return f'{player.name} abandonou o jogo!\n{pgn}', board_png_bytes
+        return f'{player.name} abandonou a partida!\n{pgn}', board_png_bytes
 
     def _build_png_board(self, game):
         try:
