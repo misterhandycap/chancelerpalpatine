@@ -103,8 +103,8 @@ async def rps(ctx, player_choice_str=''):
     await ctx.send(resp_message)
 
 @client.command(aliases=['xn'])
-async def xadrez_novo(ctx, user2: discord.User):
-    result = chess_bot.new_game(ctx.author, user2)
+async def xadrez_novo(ctx, user2: discord.User, color_schema=None):
+    result = chess_bot.new_game(ctx.author, user2, color_schema=color_schema)
     await ctx.send(result)
 
 @client.command(aliases=['xj'])

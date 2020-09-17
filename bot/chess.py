@@ -15,6 +15,7 @@ class Game():
         self.player1 = None
         self.player2 = None
         self.current_player = None
+        self.color_schema = None
 
     def __eq__(self, value):
         try:
@@ -50,7 +51,7 @@ class Chess():
         finally:
             return self.games
 
-    def new_game(self, user1, user2):
+    def new_game(self, user1, user2, color_schema=None):
         player1, player2 = self._convert_users_to_players(user1, user2)
         current_players_pairs = map(lambda x: [x.player1, x.player2], self.games)
         given_players_pairs = [player1, player2]
@@ -63,6 +64,7 @@ class Chess():
         game.player1 = player1
         game.player2 = player2
         game.current_player = player1
+        game.color_schema = color_schema
 
         self.games.append(game)
         return f'Game started! {player1.name}, make your move'
@@ -109,15 +111,26 @@ class Chess():
             return str(e), None
         
         board_png_bytes = self._build_png_board(game)
+        pgn = self.generate_pgn(user, other_user)
         self.games.remove(game)
-        return f'{player.name} resign the game!', board_png_bytes
+        return f'{player.name} resign the game!\n{pgn}', board_png_bytes
     
     def _build_png_board(self, game):
         try:
             last_move = game.board.peek()
         except IndexError:
             last_move = None
-        png_bytes = svg2png(bytestring=chess.svg.board(board=game.board, lastmove=last_move))
+        light, dark = self._board_colors(game.color_schema)
+        css = """
+        .square.light {
+            fill: %s;
+        }
+
+        .square.dark {
+            fill: %s;
+        }
+        """ % (light, dark)
+        png_bytes = svg2png(bytestring=chess.svg.board(board=game.board, lastmove=last_move, style=css))
         return BytesIO(png_bytes)
 
     def save_games(self):
@@ -143,3 +156,15 @@ class Chess():
 
     def _convert_users_to_players(self, *args):
         return tuple(map(lambda user: Player(user) if user else None, args))
+
+    def _board_colors(self, color_schema):
+        colors = {
+            "blue": ("#dee3e6", "#8ca2ad"),
+            "purple": ("#e7dcf1", "#967bb1"),
+            "green": ("#ffffdd", "#86a666"),
+            "red": ("#e9eab8", "#f17575"),
+            "gray": ("#dcdcdc", "#afafaf"),
+            "wood": ("#f0d9b5", "#b58863")
+        }
+        default = colors["green"]
+        return colors.get(color_schema, default)

@@ -55,6 +55,23 @@ class TestChess(TestCase):
         self.assertEqual(games[0].player1, player1)
         self.assertEqual(games[0].player2, player2)
         self.assertEqual(games[0].board.move_stack, [])
+        self.assertIsNone(games[0].color_schema)
+
+    def test_new_game_with_color_schema(self):
+        player1 = FakeDiscordUser(id=1)
+        player2 = FakeDiscordUser(id=2)
+        color_schema = "blue"
+
+        chess_bot = Chess()
+        result = chess_bot.new_game(player1, player2, color_schema=color_schema)
+        games = chess_bot.games
+
+        self.assertIn('Game started', result)
+        self.assertEqual(len(games), 1)
+        self.assertEqual(games[0].player1, player1)
+        self.assertEqual(games[0].player2, player2)
+        self.assertEqual(games[0].board.move_stack, [])
+        self.assertEqual(games[0].color_schema, color_schema)
 
     def test_new_game_game_already_started(self):
         game = Game()
