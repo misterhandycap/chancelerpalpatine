@@ -1,3 +1,4 @@
+import os
 import pickle
 from io import BytesIO
 from math import floor, pow, sqrt
@@ -6,6 +7,7 @@ from cairosvg import svg2png
 from PIL import Image
 
 import chess
+import chess.engine
 import chess.svg
 from bot import client
 from chess.pgn import Game as ChessGame
@@ -18,6 +20,7 @@ class Game():
         self.player2 = None
         self.current_player = None
         self.color_schema = None
+        self.last_eval = 0
 
     def __eq__(self, value):
         try:
@@ -43,6 +46,7 @@ class Chess():
     def __init__(self, pickle_filename='games.pickle'):
         self.games = []
         self.pickle_filename = pickle_filename
+        self.stockfish_path = os.environ.get("STOCKFISH_PATH_EXE", '')
 
     def load_games(self):
         try:
@@ -184,6 +188,25 @@ class Chess():
         final_image.save(bytesio, format="png")
         bytesio.seek(0)
         return bytesio
+
+    def is_stockfish_enabled(self):
+        return os.path.exists(self.stockfish_path)
+    
+    async def is_last_move_blunder(self, user, other_user=None):
+        if not self.is_stockfish_enabled():
+            return False
+
+        player, other_player = self._convert_users_to_players(user, other_user)
+        game = self._find_current_game(user, other_player)
+        last_eval = game.last_eval
+        current_eval = await self._eval_game(game)
+        return abs(current_eval - last_eval) > 200
+    
+    async def _eval_game(self, game: Game):
+        with chess.engine.SimpleEngine.popen_uci(self.stockfish_path) as engine:
+            analysis = engine.analyse(game.board, chess.engine.Limit(depth=20))
+        game.last_eval = analysis["score"].white().score(mate_score=100000)
+        return game.last_eval
 
     def _convert_users_to_players(self, *args):
         return tuple(map(lambda user: Player(user) if user else None, args))
