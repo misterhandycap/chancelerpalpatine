@@ -348,6 +348,32 @@ class TestChess(TestCase):
         self.assertIn('[Black "Player2"]', result)
         self.assertIn('1. g4 e5 2. f4 *', result)
 
+    def test_get_all_boards_png(self):
+        chess_bot = Chess()
+
+        board1 = chess.Board()
+        board1.push_san("e4")
+        board1.push_san("e5")
+        game1 = Game()
+        game1.board = board1
+        chess_bot.games.append(game1)
+
+        board2 = chess.Board()
+        board2.push_san("Nf3")
+        board2.push_san("d6")
+        game2 = Game()
+        game2.board = board2
+        chess_bot.games.append(game2)
+
+        board3 = chess.Board()
+        board3.push_san("Nf3")
+        game3 = Game()
+        game3.board = board3
+        chess_bot.games.append(game3)
+        
+        image_bytesio = chess_bot.get_all_boards_png()
+        self.assertGreater(len(image_bytesio.read()), 0)
+
 
 class FakeDiscordUser():
 

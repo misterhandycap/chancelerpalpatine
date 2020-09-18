@@ -1,12 +1,14 @@
 import pickle
 from io import BytesIO
+from math import floor, pow, sqrt
 
 from cairosvg import svg2png
+from PIL import Image
+
 import chess
 import chess.svg
-from chess.pgn import Game as ChessGame
-
 from bot import client
+from chess.pgn import Game as ChessGame
 
 
 class Game():
@@ -158,6 +160,30 @@ class Chess():
             last_node = last_node.add_variation(move)
 
         return f"```\n{str(chess_game)}\n```"
+
+    def get_all_boards_png(self, page: int=0):
+        full_width = 1200
+        max_number_of_board_per_page = 9
+
+        final_image = Image.new('RGB', (full_width, full_width))
+        next_perfect_sqr = lambda n: int(pow(floor(sqrt(n)) + 1, 2)) if n%n**0.5 != 0 else n
+        number_of_boards_sqrt = sqrt(min(next_perfect_sqr(len(self.games)), max_number_of_board_per_page))
+        board_width = int(full_width / number_of_boards_sqrt)
+        start_page_position = max_number_of_board_per_page * page
+        
+        for index, game in enumerate(self.games):
+            if not index in range(start_page_position, start_page_position + max_number_of_board_per_page):
+                continue
+            index -= start_page_position
+            board_png = self._build_png_board(game)
+            board_image = Image.open(board_png)
+            board_position = (board_width * int(index % number_of_boards_sqrt), board_width * int(floor(index / number_of_boards_sqrt)))
+            final_image.paste(board_image.resize((board_width, board_width)), board_position)
+
+        bytesio = BytesIO()
+        final_image.save(bytesio, format="png")
+        bytesio.seek(0)
+        return bytesio
 
     def _convert_users_to_players(self, *args):
         return tuple(map(lambda user: Player(user) if user else None, args))

@@ -43,6 +43,7 @@ async def help(ctx):
     ajuda.add_field(name='cp!xadrez_jogar', value='Faça uma jogada em sua partida atual. \n aka:xj')
     ajuda.add_field(name='cp!xadrez_abandonar', value='Abandone a partida atual.\n aka:xa')
     ajuda.add_field(name='cp!xadrez_pgn', value='Gera o PGN da partida atual.\n aka:xpgn')
+    ajuda.add_field(name='cp!xadrez_todos', value='Veja todas as partidas que estão sendo jogadas agora.\n aka:xt')
     ajuda.add_field(name='cp!plagueis', value='Conta a tregédia de Darth Plagueis.')
     await ctx.send(embed=ajuda)
 
@@ -130,9 +131,12 @@ async def xadrez_pgn(ctx, user2: discord.User=None):
     result = chess_bot.generate_pgn(ctx.author, user2)
     await ctx.send(result)
 
+@client.command(aliases=['xt', 'xadrez_jogos'])
+async def xadrez_todos(ctx, page=0):
+    png_bytes = chess_bot.get_all_boards_png(page)
+    await ctx.send(file=discord.File(png_bytes, 'boards.png'))
+
 @client.command()
 async def plagueis(ctx):
     plagueis = discord.Embed(title='Já ouviu a tragédia de Darth Plagueis, o sábio?...', description='Eu achei que não. \nNão é uma história que um Jedi lhe contaria.\nÉ uma lenda Sith. \nDarth Plagueis era um Lorde Sombrio de Sith, tão poderoso e tão sábio que conseguia utilizar a Força para influenciar os midiclorians para criar vida. \nEle tinha tantos conhecimento do lado sombrio que podia até impedir que aqueles que lhe eram próximos morressem. \nAcontece que o lado sombrio é o caminho para muitas habilidades que muitos consideram serem... não naturais. \nEle se tornou tão poderoso; que a única coisa que ele tinha medo era, perder seu poder, o que acabou, é claro, ele perdeu. \nInfelizmente, ele ensinou a seu aprendiz tudo o que sabia; então, seu o seu aprendiz o matou enquanto dormia. \nÉ irônico. \nEle poderia salvar outros da morte, mas não podia a salvar a si mesmo.', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
     await ctx.send(embed=plagueis)
-
-#os.system('python level.py')
