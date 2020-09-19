@@ -151,7 +151,7 @@ async def busca(ctx, entrada=''):
         buscador = 'google'
         buscado = entrada
     dicioServiços={
-        'sww'::'https://starwars.fandom.com/pt/wiki/',
+        'sww':'https://starwars.fandom.com/pt/wiki/',
         'starwarswiki':'https://starwars.fandom.com/pt/wiki/',
         'wookie':'https://starwars.fandom.com/wiki/',
         'google':'https://www.google.com/search?q=',
