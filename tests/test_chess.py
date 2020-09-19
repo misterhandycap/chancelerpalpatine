@@ -1,8 +1,10 @@
+import asyncio
 import os
 import pickle
 from unittest import TestCase
 
 import chess
+from dotenv import load_dotenv
 
 from bot.chess import Chess, Game, Player
 
@@ -11,6 +13,10 @@ PICKLE_FILENAME = 'games_test.pickle'
 
 class TestChess(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        load_dotenv()
+    
     def tearDown(self):
         try:
             os.remove(PICKLE_FILENAME)
@@ -373,6 +379,42 @@ class TestChess(TestCase):
         
         image_bytesio = chess_bot.get_all_boards_png()
         self.assertGreater(len(image_bytesio.read()), 0)
+
+    def test_is_last_move_blunder_true(self):
+        board = chess.Board()
+        board.push_san("g4")
+        board.push_san("e5")
+        board.push_san("f4")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player1
+        game.last_eval = 0
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+        result = asyncio.run(chess_bot.is_last_move_blunder(game.player1))
+
+        self.assertTrue(result)
+    
+    def test_is_last_move_blunder_false(self):
+        board = chess.Board()
+        board.push_san("g4")
+        board.push_san("e5")
+        board.push_san("f4")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player1
+        game.last_eval = -100000
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+        result = asyncio.run(chess_bot.is_last_move_blunder(game.player1))
+
+        self.assertFalse(result)
 
 
 class FakeDiscordUser():

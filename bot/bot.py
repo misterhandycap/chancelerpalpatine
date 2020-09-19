@@ -17,14 +17,11 @@ async def on_ready():
 
 @client.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.MissingRequiredPermissions):
-        await ('Parece que você não tem poder aqui, Jedi, cheque com os mestres do Conselho e volte mais tarde.')
-
-@client.event
-async def on_command_error(ctx, error):
+    if isinstance(error, commands.BadArgument) and 'User' in str(error) and 'not found' in str(error):
+        await ctx.send('Mestre quem?')
     if isinstance(error, commands.CommandNotFound):
         await ctx.send('Esta ordem não existe, agora se me der licença...')
-    print(error)
+    print(f'{error.__class__}: {error}')
 
 @client.remove_command('help')
 
@@ -117,6 +114,10 @@ async def xadrez_jogar(ctx, move, user2: discord.User=None):
     if board_png_bytes:
         await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
         chess_bot.save_games()
+
+        was_last_move_blunder = await chess_bot.is_last_move_blunder(ctx.author, user2)
+        if was_last_move_blunder:
+            await ctx.send("👀")
 
 @client.command(aliases=['xa'])
 async def xadrez_abandonar(ctx, user2: discord.User=None):
