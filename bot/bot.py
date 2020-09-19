@@ -26,22 +26,30 @@ async def on_command_error(ctx, error):
 @client.remove_command('help')
 
 @client.command(aliases=['ajuda'])
-async def help(ctx):
-    ajuda = discord.Embed(title='Ajuda', description='Comandos:', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
+async def help(ctx, page='1'):
+    try:
+        page_number = int(page)
+    except:
+        page_number = 1
+
+    ajuda = discord.Embed(title='Ajuda', description=f'Comandos ({page_number}/2):', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
     ajuda.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
-    ajuda.add_field(name='cp!ping', value='Confere se o bot está online e sua velocidade de resposta')
-    ajuda.add_field(name='cp!clear', value='Limpa o chat, com o padrão sendo 5 mensagens. \n aka:limpar, clean')
-    ajuda.add_field(name='cp!vision', value='Faça uma pergunta ao Chanceler e ele irá lhe responder. \n aka:8ball')
-    ajuda.add_field(name='cp!sorte', value='Cara ou coroa. \n aka:caracoroa')
-    ajuda.add_field(name='cp!level', value='Mostra o nível de usuário ao uúario que pediu \n aka:nivel')
-    ajuda.add_field(name='cp!rank', value='Mostra a tabela de niveis de usuários em ordem de maior pra menor \n aka:board')
-    ajuda.add_field(name='cp!rps', value='Pedra, papel e tesoura com dinossauros \n aka pedrapapeltesoura, ppt, dino')
-    ajuda.add_field(name='cp!xadrez_novo', value='Inicie uma nova partida de xadrez com alguém.\n Passe o ID de usuário para começar uma partida.\n aka:xn')
-    ajuda.add_field(name='cp!xadrez_jogar', value='Faça uma jogada em sua partida atual. \n aka:xj')
-    ajuda.add_field(name='cp!xadrez_abandonar', value='Abandone a partida atual.\n aka:xa')
-    ajuda.add_field(name='cp!xadrez_pgn', value='Gera o PGN da partida atual.\n aka:xpgn')
-    ajuda.add_field(name='cp!xadrez_todos', value='Veja todas as partidas que estão sendo jogadas agora.\n aka:xt')
-    ajuda.add_field(name='cp!plagueis', value='Conta a tregédia de Darth Plagueis.')
+    if page_number == 1:
+        ajuda.add_field(name='cp!ping', value='Confere se o bot está online e sua velocidade de resposta')
+        ajuda.add_field(name='cp!clear', value='Limpa o chat, com o padrão sendo 5 mensagens. \n aka:limpar, clean')
+        ajuda.add_field(name='cp!vision', value='Faça uma pergunta ao Chanceler e ele irá lhe responder. \n aka:8ball')
+        ajuda.add_field(name='cp!sorte', value='Cara ou coroa. \n aka:caracoroa')
+        ajuda.add_field(name='cp!level', value='Mostra o nível de usuário ao uúario que pediu \n aka:nivel')
+        ajuda.add_field(name='cp!rank', value='Mostra a tabela de niveis de usuários em ordem de maior pra menor \n aka:board')
+        ajuda.add_field(name='cp!rps', value='Pedra, papel e tesoura com dinossauros \n aka pedrapapeltesoura, ppt, dino')
+    else:
+        ajuda.add_field(name='cp!busca', value='Faz uma busca pelo buscador definido (padrão: Google) \n aka google, search, buscar')
+        ajuda.add_field(name='cp!xadrez_novo', value='Inicie uma nova partida de xadrez com alguém.\n Passe o ID de usuário para começar uma partida.\n aka:xn')
+        ajuda.add_field(name='cp!xadrez_jogar', value='Faça uma jogada em sua partida atual. \n aka:xj')
+        ajuda.add_field(name='cp!xadrez_abandonar', value='Abandone a partida atual.\n aka:xa')
+        ajuda.add_field(name='cp!xadrez_pgn', value='Gera o PGN da partida atual.\n aka:xpgn')
+        ajuda.add_field(name='cp!xadrez_todos', value='Veja todas as partidas que estão sendo jogadas agora.\n aka:xt')
+        ajuda.add_field(name='cp!plagueis', value='Conta a tregédia de Darth Plagueis.')
     await ctx.send(embed=ajuda)
 
 @client.command()
@@ -157,8 +165,8 @@ async def busca(ctx, *args):
         'avatar':'https://avatar.fandom.com/pt-br/wiki/',
     }
     
-    if args[0] in dicio_serviços:
-        buscador = dicio_serviços[args[0]]
+    if args[0].lower() in dicio_serviços:
+        buscador = dicio_serviços[args[0].lower()]
         entrada = " ".join(args[1:])
     else:
         buscador = dicio_serviços["google"]
