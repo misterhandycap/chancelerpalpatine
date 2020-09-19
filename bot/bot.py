@@ -142,8 +142,12 @@ async def plagueis(ctx):
     await ctx.send(embed=plagueis)
 
 @client.command(aliases=['google', 'buscar', 'search'])
-async def busca(ctx):
-    dicioServiços={
+async def busca(ctx, *args):
+    if not args:
+        await ctx.send("O que você quer buscar?")
+        return
+        
+    dicio_serviços = {
         'sww':'https://starwars.fandom.com/pt/wiki/',
         'starwarswiki':'https://starwars.fandom.com/pt/wiki/',
         'wookie':'https://starwars.fandom.com/wiki/',
@@ -151,16 +155,11 @@ async def busca(ctx):
         'aw':'https://avatar.fandom.com/pt-br/wiki/',
         'avatar':'https://avatar.fandom.com/pt-br/wiki/',
     }
-    entrada=ctx.message.content.replace(' ', '_')
-    if ':' in entrada:
-        n=entrada.find(':')
-        buscador, buscado = entrada[:n], entrada[n+1:]
-        buscador=buscador.split(' ')[1]
-        if buscador not in dicioServiços:
-            buscado=buscador+buscado
-            buscador='google'
+    
+    if args[0] in dicio_serviços:
+        buscador = dicio_serviços[args[0]]
+        entrada = " ".join(args[1:])
     else:
-        buscador = 'google'
-        buscado = entrada
-    buscador=dicioServiços[buscador]
-    await ctx.send(buscador+buscado)
+        buscador = dicio_serviços["google"]
+        entrada = " ".join(args)
+    await ctx.send(f'{buscador}{entrada.replace(" ", "_")}')
