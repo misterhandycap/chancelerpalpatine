@@ -3,6 +3,7 @@ import pickle
 from io import BytesIO
 from math import floor, pow, sqrt
 
+import asyncssh
 from cairosvg import svg2png
 from PIL import Image
 
@@ -47,6 +48,17 @@ class Chess():
         self.games = []
         self.pickle_filename = pickle_filename
         self.stockfish_path = os.environ.get("STOCKFISH_PATH_EXE", '')
+        self.stockfish_limit = {
+            "time": int(os.environ.get("STOCKFISH_TIME_LIMIT", '5')),
+            "depth": int(os.environ.get("STOCKFISH_DEPTH_LIMIT", '20'))
+        }
+        self.stockfish_ssh = {
+            "host": os.environ.get("STOCKFISH_SSH_HOST"),
+            "username": os.environ.get("STOCKFISH_SSH_USER"),
+            "password": os.environ.get("STOCKFISH_SSH_PASSWORD"),
+            "port": int(os.environ.get("STOCKFISH_SSH_PORT", '22')),
+            "known_hosts": None
+        }
 
     def load_games(self):
         try:
@@ -190,7 +202,7 @@ class Chess():
         return bytesio
 
     def is_stockfish_enabled(self):
-        return os.path.exists(self.stockfish_path)
+        return self.stockfish_path
     
     async def is_last_move_blunder(self, user, other_user=None):
         if not self.is_stockfish_enabled():
@@ -203,8 +215,15 @@ class Chess():
         return abs(current_eval - last_eval) > 200
     
     async def _eval_game(self, game: Game):
-        with chess.engine.SimpleEngine.popen_uci(self.stockfish_path) as engine:
-            analysis = engine.analyse(game.board, chess.engine.Limit(depth=20))
+        limit = chess.engine.Limit(**self.stockfish_limit)
+        if self.stockfish_ssh["host"]:
+            async with asyncssh.connect(**self.stockfish_ssh) as conn:
+                _channel, engine = await conn.create_subprocess(chess.engine.UciProtocol, self.stockfish_path)
+                await engine.initialize()
+                analysis = await engine.analyse(game.board, limit)
+        else:
+            with chess.engine.SimpleEngine.popen_uci(self.stockfish_path) as engine:
+                analysis = engine.analyse(game.board, limit)
         game.last_eval = analysis["score"].white().score(mate_score=100000)
         return game.last_eval
 

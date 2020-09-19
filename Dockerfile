@@ -17,6 +17,9 @@ RUN apk add freetype-dev \
     tk-dev \
     zlib-dev
 
+# AsyncSSH deps
+RUN apk add openssl openssl-dev
+
 # We copy just the requirements.txt first to leverage Docker cache
 COPY ./requirements.txt /app/requirements.txt
 
