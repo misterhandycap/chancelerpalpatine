@@ -141,23 +141,26 @@ async def plagueis(ctx):
     plagueis = discord.Embed(title='Já ouviu a tragédia de Darth Plagueis, o sábio?...', description='Eu achei que não. \nNão é uma história que um Jedi lhe contaria.\nÉ uma lenda Sith. \nDarth Plagueis era um Lorde Sombrio de Sith, tão poderoso e tão sábio que conseguia utilizar a Força para influenciar os midiclorians para criar vida. \nEle tinha tantos conhecimento do lado sombrio que podia até impedir que aqueles que lhe eram próximos morressem. \nAcontece que o lado sombrio é o caminho para muitas habilidades que muitos consideram serem... não naturais. \nEle se tornou tão poderoso; que a única coisa que ele tinha medo era, perder seu poder, o que acabou, é claro, ele perdeu. \nInfelizmente, ele ensinou a seu aprendiz tudo o que sabia; então, seu o seu aprendiz o matou enquanto dormia. \nÉ irônico. \nEle poderia salvar outros da morte, mas não podia a salvar a si mesmo.', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
     await ctx.send(embed=plagueis)
 
-@client.command(aliases=['google'])
+@client.command(aliases=['google', 'buscar', 'search'])
 async def busca(ctx, entrada=''):
+    entrada=entrada.replace(' ', '_')
     if ':' in entrada:
         n=entrada.find(':')
-        buscador, buscado = entrada[:n], entrada[n:]
+        buscador, buscado = entrada[:n], entrada[n+1:]
     else:
         buscador = 'google'
         buscado = entrada
     dicioServiços={
+        'sww'::'https://starwars.fandom.com/pt/wiki/',
         'starwarswiki':'https://starwars.fandom.com/pt/wiki/',
         'wookie':'https://starwars.fandom.com/wiki/',
-        'google':'google',
+        'google':'https://www.google.com/search?q=',
+        'aw':'https://avatar.fandom.com/pt-br/wiki/',
         'avatar':'https://avatar.fandom.com/pt-br/wiki/',
     }
     if buscador not in dicioServiços:
         buscado=buscador+buscado
         buscador='google'
-    buscado=buscado.replace(' ', '_')
+    buscado=buscado
     buscador=dicioServiços[buscador]
     await ctx.send(buscador+buscado)
