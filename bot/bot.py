@@ -33,11 +33,11 @@ async def help(ctx, page='1'):
         page_number = 1
 
     ajuda = discord.Embed(title='Ajuda', description=f'Comandos ({page_number}/2):', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
-    ajuda.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
+    ajuda.set_thumbnail(url='https://cdn.discordapp.com/attachments/756209020431237136/757647518644437072/220-2204313_autobot-logo-vector-format-ai-eps-png-png.png')
     if page_number == 1:
         ajuda.add_field(name='tt!ping', value='Confere se o bot está online e sua velocidade de resposta')
         ajuda.add_field(name='tt!clear', value='Limpa o chat, com o padrão sendo 5 mensagens. \n aka:limpar, clean')
-        ajuda.add_field(name='tt!vision', value='Faça uma pergunta ao Chanceler e ele irá lhe responder. \n aka:8ball')
+        ajuda.add_field(name='tt!vision', value='Faça uma pergunta ao Teletraan e ele irá lhe responder. \n aka:8ball')
         ajuda.add_field(name='tt!sorte', value='Cara ou coroa. \n aka:caracoroa')
         ajuda.add_field(name='tt!level', value='Mostra o nível de usuário ao uúario que pediu \n aka:nivel')
         ajuda.add_field(name='tt!rank', value='Mostra a tabela de niveis de usuários em ordem de maior pra menor \n aka:board')
@@ -64,7 +64,7 @@ async def clear(ctx, amount=5+1):
 
 @client.command(aliases=['8ball'])
 async def vision(ctx, *, question):
-    responses = ['Assim é.', 'Está me ameaçando?', 'É certo.', 'Acho que devemos buscar mais informações.', 'Isso não está correto.', 'Você está errado(a).', 'Não, não, NÃO!!', 'Acredito que esteja errado(a), Mestre', 'Isso necessita de mais análises']
+    responses = ['Afirmativo.', 'Informações insuficientes', 'Correto.', 'Mais dados necessários.', 'Incorreto.', 'Negativo.', 'Isso necessita de mais análises']
     await ctx.send(f'{random.choice(responses)}')
 
 @vision.error
@@ -150,7 +150,7 @@ async def busca(ctx, *args):
     if not args:
         await ctx.send("O que você quer buscar?")
         return
-        
+
     dicio_serviços = {
         'sww':'https://starwars.fandom.com/pt/wiki/',
         'starwarswiki':'https://starwars.fandom.com/pt/wiki/',
@@ -160,7 +160,7 @@ async def busca(ctx, *args):
         'avatar':'https://avatar.fandom.com/pt-br/wiki/',
         'tf':'https://transformers.fandom.com/pt/wiki/',
     }
-    
+
     if args[0].lower() in dicio_serviços:
         buscador = dicio_serviços[args[0].lower()]
         entrada = " ".join(args[1:])

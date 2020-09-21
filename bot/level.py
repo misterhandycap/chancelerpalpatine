@@ -18,42 +18,6 @@ async def on_member_join(member):
 
 @client.event
 async def on_message(message):
-    if message.content.lower().startswith('odeio'):
-        await message.channel.send('Sim, deixe o ódio fluir por você... <:sheev:735473486046298173>')
-
-    if message.content.lower().startswith('ban'):
-        await message.channel.send('Mate-o, mate-o agora...')
-
-    if message.content.lower().startswith('i shouldnt'):
-        await message.channel.send('DEW IT!')
-
-    if message.content.lower().startswith('i shouldn\'t'):
-        await message.channel.send('DEW IT!')
-
-    if message.content.lower().startswith('-poll'):
-        await message.channel.send('Eu amo democracia!')
-
-    if message.content.lower().startswith('votação'):
-        await message.channel.send('Eu amo democracia!')
-
-    if message.content.lower().startswith('voto'):
-        await message.channel.send('Eu amo democracia!')
-
-    if message.content.lower().startswith('democracia'):
-        await message.channel.send('Eu amo democracia!')
-
-    if message.content.lower().startswith('estou muito fraco'):
-        await message.channel.send('PODER ILIMITADOOOOOO!')
-
-    if message.content.lower().startswith('você é muito sábio'):
-        await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
-
-    if message.content.lower().startswith('tão sábio'):
-        await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
-
-    if message.content.lower().startswith('sábio'):
-        await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
-
     with open('users.json', 'r') as f:
         users = json.load(f)
 
@@ -105,7 +69,7 @@ async def level(ctx):
         users = json.load(f)
 
         levelbed = discord.Embed(title='Nível', description=f'{ctx.author.mention} se encontra atualmente no nível {users[str(ctx.author.id)]["level"]} com {users[str(ctx.author.id)]["experiencia"]}', colour=discord.Color.red(), timestamp=ctx.message.created_at)
-        levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
+        levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/756209020431237136/757647518644437072/220-2204313_autobot-logo-vector-format-ai-eps-png-png.png')
         await ctx.send(embed=levelbed)
 
 @client.command(aliases=['board'])
