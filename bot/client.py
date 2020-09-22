@@ -8,7 +8,7 @@ load_dotenv()
 
 client = discord.Client()
 
-client = commands.Bot(command_prefix = 'tt!')
+client = commands.Bot(command_prefix = 'cp!')
 
 chess_bot = Chess()
 chess_bot.load_games()
