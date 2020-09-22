@@ -13,43 +13,48 @@ async def globally_block_dms(ctx):
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.online, activity=discord.Game(f'Planejando uma ordem surpresa'))
-    print('É bom te ver, mestre Jedi.')
+    print('Olá, Prime.')
 
 @client.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.MissingRequiredPermissions):
-        await ('Parece que você não tem poder aqui, Jedi, cheque com os mestres do Conselho e volte mais tarde.')
-
-@client.event
-async def on_command_error(ctx, error):
+    if isinstance(error, commands.BadArgument) and 'User' in str(error) and 'not found' in str(error):
+        await ctx.send('Meus scanners não detectaram este usuário.')
     if isinstance(error, commands.CommandNotFound):
-        await ctx.send('Esta ordem não existe, agora se me der licença...')
-    print(error)
+        await ctx.send('Comando desconhecido.')
+    print(f'{error.__class__}: {error}')
 
 @client.remove_command('help')
 
 @client.command(aliases=['ajuda'])
-async def help(ctx):
-    ajuda = discord.Embed(title='Ajuda', description='Comandos:', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
+async def help(ctx, page='1'):
+    try:
+        page_number = int(page)
+    except:
+        page_number = 1
+
+    ajuda = discord.Embed(title='Ajuda', description=f'Comandos ({page_number}/2):', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
     ajuda.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
-    ajuda.add_field(name='cp!ping', value='Confere se o bot está online e sua velocidade de resposta')
-    ajuda.add_field(name='cp!clear', value='Limpa o chat, com o padrão sendo 5 mensagens. \n aka:limpar, clean')
-    ajuda.add_field(name='cp!vision', value='Faça uma pergunta ao Chanceler e ele irá lhe responder. \n aka:8ball')
-    ajuda.add_field(name='cp!sorte', value='Cara ou coroa. \n aka:caracoroa')
-    ajuda.add_field(name='cp!level', value='Mostra o nível de usuário ao uúario que pediu \n aka:nivel')
-    ajuda.add_field(name='cp!rank', value='Mostra a tabela de niveis de usuários em ordem de maior pra menor \n aka:board')
-    ajuda.add_field(name='cp!rps', value='Pedra, papel e tesoura com dinossauros \n aka pedrapapeltesoura, ppt, dino')
-    ajuda.add_field(name='cp!xadrez_novo', value='Inicie uma nova partida de xadrez com alguém.\n Passe o ID de usuário para começar uma partida.\n aka:xn')
-    ajuda.add_field(name='cp!xadrez_jogar', value='Faça uma jogada em sua partida atual. \n aka:xj')
-    ajuda.add_field(name='cp!xadrez_abandonar', value='Abandone a partida atual.\n aka:xa')
-    ajuda.add_field(name='cp!xadrez_pgn', value='Gera o PGN da partida atual.\n aka:xpgn')
-    ajuda.add_field(name='cp!xadrez_todos', value='Veja todas as partidas que estão sendo jogadas agora.\n aka:xt')
-    ajuda.add_field(name='cp!plagueis', value='Conta a tregédia de Darth Plagueis.')
+    if page_number == 1:
+        ajuda.add_field(name='tt!ping', value='Confere se o bot está online e sua velocidade de resposta')
+        ajuda.add_field(name='tt!clear', value='Limpa o chat, com o padrão sendo 5 mensagens. \n aka:limpar, clean')
+        ajuda.add_field(name='tt!vision', value='Faça uma pergunta ao Chanceler e ele irá lhe responder. \n aka:8ball')
+        ajuda.add_field(name='tt!sorte', value='Cara ou coroa. \n aka:caracoroa')
+        ajuda.add_field(name='tt!level', value='Mostra o nível de usuário ao uúario que pediu \n aka:nivel')
+        ajuda.add_field(name='tt!rank', value='Mostra a tabela de niveis de usuários em ordem de maior pra menor \n aka:board')
+        ajuda.add_field(name='tt!rps', value='Pedra, papel e tesoura com dinossauros \n aka pedrapapeltesoura, ppt, dino')
+    else:
+        ajuda.add_field(name='tt!busca', value='Faz uma busca pelo buscador definido (padrão: Google) \n aka google, search, buscar')
+        ajuda.add_field(name='tt!xadrez_novo', value='Inicie uma nova partida de xadrez com alguém.\n Passe o ID de usuário para começar uma partida.\n aka:xn')
+        ajuda.add_field(name='tt!xadrez_jogar', value='Faça uma jogada em sua partida atual. \n aka:xj')
+        ajuda.add_field(name='tt!xadrez_abandonar', value='Abandone a partida atual.\n aka:xa')
+        ajuda.add_field(name='tt!xadrez_pgn', value='Gera o PGN da partida atual.\n aka:xpgn')
+        ajuda.add_field(name='tt!xadrez_todos', value='Veja todas as partidas que estão sendo jogadas agora.\n aka:xt')
+        ajuda.add_field(name='tt!plagueis', value='Conta a tregédia de Darth Plagueis.')
     await ctx.send(embed=ajuda)
 
 @client.command()
 async def ping(ctx):
-    ping = discord.Embed(title='Pong...', description=f'{round(client.latency * 1000)}ms', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
+    ping = discord.Embed(title='Pong!', description=f'{round(client.latency * 1000)}ms', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
     await ctx.send(embed=ping)
 
 @client.command(aliases=['limpar', 'clean'])
@@ -65,7 +70,7 @@ async def vision(ctx, *, question):
 @vision.error
 async def clear_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send('Queria me perguntar algo, Jedi?')
+        await ctx.send('Pergunta não detectada.')
 
 @client.command(aliases=['caracoroa'])
 async def sorte(ctx):
@@ -139,18 +144,13 @@ async def xadrez_pgn(ctx, user2: discord.User=None):
 async def xadrez_todos(ctx, page=0):
     png_bytes = chess_bot.get_all_boards_png(page)
     await ctx.send(file=discord.File(png_bytes, 'boards.png'))
-    
-@client.command()
-async def plagueis(ctx):
-    plagueis = discord.Embed(title='Já ouviu a tragédia de Darth Plagueis, o sábio?...', description='Eu achei que não. \nNão é uma história que um Jedi lhe contaria.\nÉ uma lenda Sith. \nDarth Plagueis era um Lorde Sombrio de Sith, tão poderoso e tão sábio que conseguia utilizar a Força para influenciar os midiclorians para criar vida. \nEle tinha tantos conhecimento do lado sombrio que podia até impedir que aqueles que lhe eram próximos morressem. \nAcontece que o lado sombrio é o caminho para muitas habilidades que muitos consideram serem... não naturais. \nEle se tornou tão poderoso; que a única coisa que ele tinha medo era, perder seu poder, o que acabou, é claro, ele perdeu. \nInfelizmente, ele ensinou a seu aprendiz tudo o que sabia; então, seu o seu aprendiz o matou enquanto dormia. \nÉ irônico. \nEle poderia salvar outros da morte, mas não podia a salvar a si mesmo.', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
-    await ctx.send(embed=plagueis)
 
 @client.command(aliases=['google', 'buscar', 'search'])
 async def busca(ctx, *args):
     if not args:
         await ctx.send("O que você quer buscar?")
         return
-
+        
     dicio_serviços = {
         'sww':'https://starwars.fandom.com/pt/wiki/',
         'starwarswiki':'https://starwars.fandom.com/pt/wiki/',
@@ -160,7 +160,7 @@ async def busca(ctx, *args):
         'avatar':'https://avatar.fandom.com/pt-br/wiki/',
         'tf':'https://transformers.fandom.com/pt/wiki/',
     }
-
+    
     if args[0].lower() in dicio_serviços:
         buscador = dicio_serviços[args[0].lower()]
         entrada = " ".join(args[1:])
