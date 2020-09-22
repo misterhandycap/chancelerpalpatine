@@ -61,6 +61,12 @@ class Chess():
         }
 
     def load_games(self):
+        """
+        Load all ongoing games from pickle file
+
+        :return: List of ongoing games
+        :rtype: List[Games]
+        """
         try:
             with open(self.pickle_filename, 'rb') as f:
                 self.games = pickle.load(f)
@@ -87,22 +93,43 @@ class Chess():
         self.games.append(game)
         return f'Partida iniciada! {player1.name}, faça seu movimento'
 
-    def _find_current_game(self, player: Player, other_player: Player):
+    def find_current_game(self, user, other_user=None):
+        """
+        Get users' current game. Second user may be necessary if player1 is playing
+        more than one game at a time.
+
+        :param user: Next player to move
+        :type user: discord.User
+        :param other_user: Next player's opponent
+        :type other_user: discord.User
+        :return: Current game
+        :rtype: Game
+        :raises Exception: Game not found or invalid parameters
+        """
+        player, other_player = self._convert_users_to_players(user, other_user)
         game = [g for g in self.games if g.current_player == player]
         if game == []:
             raise Exception('Você ou não está na partida atual ou não é mais seu turno.')
         if len(game) > 1:
             if not other_player:
                 raise Exception(f'Atualmente está jogando {len(game)} partidas. Informe contra qual jogador é este movimento.')
-            game = [g for g in game if other_player in [g.player1, g.player2]]
+            game = [g for g in game if set([player.id, other_player.id]) == set([g.player1.id, g.player2.id])]
             if game == []:
                 raise Exception('Partida não encontrada.')
         return game[0]
 
-    def make_move(self, user, move, other_user=None):
-        player, other_player = self._convert_users_to_players(user, other_user)
+    def make_move(self, game: Game, move: str):
+        """
+        Makes a move in given game, if valid
+
+        :param game: Game to be played
+        :type game: Game
+        :param move: Chess move in SAN or UCI notation
+        :type move: str
+        :return: Bot message and PNG board
+        :rtype: Tuple[str, BytesIO]
+        """
         try:
-            game = self._find_current_game(player, other_player)
             game.board.push_uci(move)
         except ValueError:
             try:
@@ -114,59 +141,43 @@ class Chess():
 
         board_png_bytes = self._build_png_board(game)
         if game.board.is_game_over(claim_draw=True):
-            pgn = self.generate_pgn(user, other_user)
+            pgn = self.generate_pgn(game)
             self.games.remove(game)
             return f'Fim de jogo!\n\n{pgn}', board_png_bytes
 
-        game.current_player = game.player1 if player == game.player2 else game.player2
+        game.current_player = game.player1 if game.current_player == game.player2 else game.player2
         return f'Seu turno é agora, {game.current_player.name}', board_png_bytes
 
-    def resign(self, user, other_user=None):
-        player, other_player = self._convert_users_to_players(user, other_user)
-        try:
-            game = self._find_current_game(player, other_player)
-        except Exception as e:
-            return str(e), None
+    def resign(self, game: Game):
+        """
+        Resigns the given game. Only the next player to move can resign their game.
 
+        :param game: Game to be resigned
+        :type game: Game
+        :return: Bot message
+        :rtype: str
+        """
         board_png_bytes = self._build_png_board(game)
-        pgn = self.generate_pgn(user, other_user)
+        pgn = self.generate_pgn(game)
         self.games.remove(game)
-        return f'{player.name} abandonou a partida!\n{pgn}', board_png_bytes
-
-    def _build_png_board(self, game):
-        try:
-            last_move = game.board.peek()
-        except IndexError:
-            last_move = None
-        colors = self._board_colors(game.color_schema)
-        css = """
-        .square.light {
-            fill: %s;
-        }
-        .square.dark {
-            fill: %s;
-        }
-        .square.light.lastmove {
-            fill: %s;
-        }
-        .square.dark.lastmove {
-            fill: %s;
-        }
-        """ % colors
-        png_bytes = svg2png(bytestring=chess.svg.board(board=game.board, lastmove=last_move, style=css))
-        return BytesIO(png_bytes)
+        return f'{game.current_player.name} abandonou a partida!\n{pgn}', board_png_bytes
 
     def save_games(self):
+        """
+        Save all ongoing games into pickle file
+        """
         with open(self.pickle_filename, 'wb') as f:
             pickle.dump(self.games, f)
 
-    def generate_pgn(self, user, other_user=None):
-        try:
-            player, other_player = self._convert_users_to_players(user, other_user)
-            game = self._find_current_game(player, other_player)
-        except Exception as e:
-            return str(e)
+    def generate_pgn(self, game: Game):
+        """
+        Gets PGN for given game
 
+        :param game: Current game
+        :type game: Game
+        :return: Bot message formatted with PGN
+        :rtype: str
+        """
         chess_game = ChessGame()
         chess_game.headers["White"] = str(game.player1.name)
         chess_game.headers["Black"] = str(game.player2.name)
@@ -178,6 +189,16 @@ class Chess():
         return f"```\n{str(chess_game)}\n```"
 
     def get_all_boards_png(self, page: int=0):
+        """
+        Gets an image showing all ongoing games' current position.
+        If there are more than 9 games being played at once, this
+        command is paginated.
+
+        :param page: Page index (defaults to 0)
+        :type page: int
+        :return: Image's bytesIO
+        :rtype: BytesIO
+        """
         full_width = 1200
         max_number_of_board_per_page = 9
 
@@ -202,17 +223,53 @@ class Chess():
         return bytesio
 
     def is_stockfish_enabled(self):
+        """
+        Returns whether Stockfish is enabled on this environment
+
+        :rtype: bool
+        """
         return self.stockfish_path
     
-    async def is_last_move_blunder(self, user, other_user=None):
+    async def is_last_move_blunder(self, game: Game):
+        """
+        Returns whether last played move is considered by Stocksfish a blunder.
+        We are considering a blunder any move that drops engine's evaluation
+        more than 2 points.
+
+        :param game: Game to be analized
+        :type game: Game
+        :return: True if last move was a blunder and False otherwise
+        :rtype: bool
+        """
         if not self.is_stockfish_enabled():
             return False
 
-        player, other_player = self._convert_users_to_players(user, other_user)
-        game = self._find_current_game(user, other_player)
         last_eval = game.last_eval
         current_eval = await self._eval_game(game)
         return abs(current_eval - last_eval) > 200
+    
+    def _build_png_board(self, game):
+        try:
+            last_move = game.board.peek()
+        except IndexError:
+            last_move = None
+        colors = self._board_colors(game.color_schema)
+        css = """
+        .square.light {
+            fill: %s;
+        }
+        .square.dark {
+            fill: %s;
+        }
+        .square.light.lastmove {
+            fill: %s;
+        }
+        .square.dark.lastmove {
+            fill: %s;
+        }
+        """ % colors
+        png_bytes = svg2png(bytestring=chess.svg.board(board=game.board, lastmove=last_move, style=css))
+        return BytesIO(png_bytes)
     
     async def _eval_game(self, game: Game):
         limit = chess.engine.Limit(**self.stockfish_limit)
