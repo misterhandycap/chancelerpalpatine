@@ -6,7 +6,10 @@ from unittest import TestCase
 import chess
 from dotenv import load_dotenv
 
-from bot.chess import Chess, Game, Player
+from bot.chess.chess import Chess
+from bot.chess.game import Game
+from bot.chess.player import Player
+from tests.support.fake_discord_user import FakeDiscordUser
 
 PICKLE_FILENAME = 'games_test.pickle'
 
@@ -229,9 +232,11 @@ class TestChess(TestCase):
         result, result_board = chess_bot.make_move(game, 'g1f3')
 
         self.assertIn("Seu turno é agora", result)
-        self.assertIsNotNone(result_board)
         self.assertEqual(len(game.board.move_stack), 3)
         self.assertEqual(game.current_player, game.player2)
+        
+        with open('tests/support/make_move_legal_move.png', 'rb') as f:
+            self.assertEqual(result_board.getvalue(), f.read())
 
     def test_make_move_legal_san_move_in_players_turn(self):
         board = chess.Board()
@@ -248,9 +253,11 @@ class TestChess(TestCase):
         result, result_board = chess_bot.make_move(game, 'Nf3')
 
         self.assertIn("Seu turno é agora", result)
-        self.assertIsNotNone(result_board)
         self.assertEqual(len(game.board.move_stack), 3)
         self.assertEqual(game.current_player, game.player2)
+
+        with open('tests/support/make_move_legal_move.png', 'rb') as f:
+            self.assertEqual(result_board.getvalue(), f.read())
 
     def test_make_move_finish_game(self):
         board = chess.Board()
@@ -269,8 +276,10 @@ class TestChess(TestCase):
 
         self.assertIn("Fim de jogo", result)
         self.assertIn("1. g4 e5 2. f4 Qh4# 0-1", result)
-        self.assertIsNotNone(result_board)
         self.assertEqual(len(chess_bot.games), 0)
+
+        with open('tests/support/make_move_finish_game.png', 'rb') as f:
+            self.assertEqual(result_board.getvalue(), f.read())
 
     def test_make_move_illegal_move_in_players_turn(self):
         board = chess.Board()
@@ -295,6 +304,7 @@ class TestChess(TestCase):
         board = chess.Board()
         board.push_san("e4")
         board.push_san("e5")
+        board.push_san("Nf3")
         game = Game()
         game.board = board
         game.player1 = FakeDiscordUser(id=1)
@@ -306,8 +316,10 @@ class TestChess(TestCase):
         result, result_board = chess_bot.resign(game)
 
         self.assertIn("abandonou a partida!", result)
-        self.assertIsNotNone(result_board)
         self.assertEqual(len(chess_bot.games), 0)
+
+        with open('tests/support/make_move_legal_move.png', 'rb') as f:
+            self.assertEqual(result_board.getvalue(), f.read())
 
     def test_save_games(self):
         chess_bot = Chess(pickle_filename=PICKLE_FILENAME)
@@ -350,13 +362,31 @@ class TestChess(TestCase):
         self.assertIn('[Black "Player2"]', result)
         self.assertIn('1. g4 e5 2. f4 *', result)
 
-    def test_get_all_boards_png(self):
+    def test_get_all_boards_png_one_game(self):
+        chess_bot = Chess()
+
+        board1 = chess.Board()
+        board1.push_san("e4")
+        board1.push_san("e5")
+        board1.push_san("Bc4")
+        game1 = Game()
+        game1.color_schema = "green"
+        game1.board = board1
+        chess_bot.games.append(game1)
+
+        image_bytesio = chess_bot.get_all_boards_png()
+
+        with open("tests/support/get_all_boards_png_one_game.png", 'rb') as f:
+            self.assertEqual(image_bytesio.read(), f.read())
+
+    def test_get_all_boards_png_three_games(self):
         chess_bot = Chess()
 
         board1 = chess.Board()
         board1.push_san("e4")
         board1.push_san("e5")
         game1 = Game()
+        game1.color_schema = "blue"
         game1.board = board1
         chess_bot.games.append(game1)
 
@@ -364,18 +394,94 @@ class TestChess(TestCase):
         board2.push_san("Nf3")
         board2.push_san("d6")
         game2 = Game()
+        game2.color_schema = "wood"
         game2.board = board2
         chess_bot.games.append(game2)
 
         board3 = chess.Board()
         board3.push_san("Nf3")
         game3 = Game()
+        game3.color_schema = "green"
         game3.board = board3
         chess_bot.games.append(game3)
         
         image_bytesio = chess_bot.get_all_boards_png()
-        self.assertGreater(len(image_bytesio.read()), 0)
 
+        with open("tests/support/get_all_boards_png_three_games.png", 'rb') as f:
+            self.assertEqual(image_bytesio.read(), f.read())
+
+    def test_get_all_boards_png_no_twelve_games(self):
+        chess_bot = Chess()
+
+        board1 = chess.Board()
+        board1.push_san("e4")
+        board1.push_san("e5")
+        game1 = Game()
+        game1.color_schema = "blue"
+        game1.board = board1
+        chess_bot.games.append(game1)
+
+        board2 = chess.Board()
+        board2.push_san("Nf3")
+        board2.push_san("d6")
+        game2 = Game()
+        game2.color_schema = "wood"
+        game2.board = board2
+        chess_bot.games.append(game2)
+
+        board3 = chess.Board()
+        board3.push_san("Nf3")
+        game3 = Game()
+        game3.color_schema = "green"
+        game3.board = board3
+        chess_bot.games.append(game3)
+
+        for i in range(3):
+            chess_bot.games.append(game1)
+            chess_bot.games.append(game2)
+            chess_bot.games.append(game3)
+
+        image_bytesio = chess_bot.get_all_boards_png()
+
+        with open("tests/support/get_all_boards_png_twelve_games.png", 'rb') as f:
+            self.assertEqual(image_bytesio.read(), f.read())
+
+    def test_get_all_boards_png_no_twelve_games_second_page(self):
+        chess_bot = Chess()
+
+        board1 = chess.Board()
+        board1.push_san("e4")
+        board1.push_san("e5")
+        game1 = Game()
+        game1.color_schema = "blue"
+        game1.board = board1
+        chess_bot.games.append(game1)
+
+        board2 = chess.Board()
+        board2.push_san("Nf3")
+        board2.push_san("d6")
+        game2 = Game()
+        game2.color_schema = "wood"
+        game2.board = board2
+        chess_bot.games.append(game2)
+
+        board3 = chess.Board()
+        board3.push_san("Nf3")
+        game3 = Game()
+        game3.color_schema = "green"
+        game3.board = board3
+        chess_bot.games.append(game3)
+
+        for i in range(3):
+            chess_bot.games.append(game1)
+            chess_bot.games.append(game2)
+            chess_bot.games.append(game3)
+
+        image_bytesio = chess_bot.get_all_boards_png(page=1)
+
+        with open("tests/support/get_all_boards_png_twelve_games_second_page.png", 'rb') as f:
+            self.assertEqual(image_bytesio.read(), f.read())
+    
     def test_get_all_boards_png_no_games_being_played(self):
         chess_bot = Chess()
 
@@ -418,16 +524,3 @@ class TestChess(TestCase):
         result = asyncio.run(chess_bot.is_last_move_blunder(game))
 
         self.assertFalse(result)
-
-
-class FakeDiscordUser():
-
-    def __init__(self, id=None, name=None):
-        self.id = id
-        self.name = name
-
-    def __eq__(self, value):
-        try:
-            return self.id == value.id
-        except:
-            return False

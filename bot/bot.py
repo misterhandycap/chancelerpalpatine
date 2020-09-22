@@ -126,50 +126,6 @@ async def rps(ctx, player_choice_str=''):
     #result+='\n\nTodo sábado sessão de Jurassic Park na SWW'
     await ctx.send(resp_message)
 
-@client.command(aliases=['xn'])
-async def xadrez_novo(ctx, user2: discord.User, color_schema=None):
-    result = chess_bot.new_game(ctx.author, user2, color_schema=color_schema)
-    await ctx.send(result)
-
-@client.command(aliases=['xj'])
-@get_current_game
-async def xadrez_jogar(ctx, move, *, user2: discord.User=None, **kwargs):
-    game = kwargs['game']
-    result, board_png_bytes = chess_bot.make_move(game, move)
-    await ctx.send(result)
-    if board_png_bytes:
-        await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
-        chess_bot.save_games()
-
-        was_last_move_blunder = await chess_bot.is_last_move_blunder(game)
-        if was_last_move_blunder:
-            await ctx.send("👀")
-
-@client.command(aliases=['xa'])
-@get_current_game
-async def xadrez_abandonar(ctx, *, user2: discord.User=None, **kwargs):
-    game = kwargs['game']
-    result, board_png_bytes = chess_bot.resign(game)
-    await ctx.send(result)
-    if board_png_bytes:
-        await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
-        chess_bot.save_games()
-
-@client.command(aliases=['xpgn'])
-@get_current_game
-async def xadrez_pgn(ctx, *, user2: discord.User=None, **kwargs):
-    game = kwargs['game']
-    result = chess_bot.generate_pgn(ctx.author, user2)
-    await ctx.send(result)
-
-@client.command(aliases=['xt', 'xadrez_jogos'])
-async def xadrez_todos(ctx, page=0):
-    png_bytes = chess_bot.get_all_boards_png(page)
-    if not png_bytes:
-        await ctx.send("Nenhuma partida está sendo jogada... ☹️ Inicie uma com `cp!xadrez_novo`.")
-    else:
-        await ctx.send(file=discord.File(png_bytes, 'boards.png'))
-
 @client.command()
 async def plagueis(ctx):
     plagueis = discord.Embed(title='Já ouviu a tragédia de Darth Plagueis, o sábio?...', description='Eu achei que não. \nNão é uma história que um Jedi lhe contaria.\nÉ uma lenda Sith. \nDarth Plagueis era um Lorde Sombrio de Sith, tão poderoso e tão sábio que conseguia utilizar a Força para influenciar os midiclorians para criar vida. \nEle tinha tantos conhecimento do lado sombrio que podia até impedir que aqueles que lhe eram próximos morressem. \nAcontece que o lado sombrio é o caminho para muitas habilidades que muitos consideram serem... não naturais. \nEle se tornou tão poderoso; que a única coisa que ele tinha medo era, perder seu poder, o que acabou, é claro, ele perdeu. \nInfelizmente, ele ensinou a seu aprendiz tudo o que sabia; então, seu o seu aprendiz o matou enquanto dormia. \nÉ irônico. \nEle poderia salvar outros da morte, mas não podia a salvar a si mesmo.', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)

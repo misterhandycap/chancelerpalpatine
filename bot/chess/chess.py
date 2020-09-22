@@ -10,36 +10,11 @@ from PIL import Image
 import chess
 import chess.engine
 import chess.svg
-from bot import client
 from chess.pgn import Game as ChessGame
 
-
-class Game():
-    def __init__(self):
-        self.board = None
-        self.player1 = None
-        self.player2 = None
-        self.current_player = None
-        self.color_schema = None
-        self.last_eval = 0
-
-    def __eq__(self, value):
-        try:
-            return self.board == value.board and self.player1 == value.player1 and self.player2 == value.player2
-        except:
-            return False
-
-
-class Player():
-    def __init__(self, user):
-        self.id = user.id
-        self.name = user.name
-
-    def __eq__(self, value):
-        try:
-            return self.id == value.id
-        except:
-            return False
+from bot import client
+from bot.chess.game import Game
+from bot.chess.player import Player
 
 
 class Chess():
