@@ -208,23 +208,35 @@ class Chess():
         """
         return self.stockfish_path
     
-    async def is_last_move_blunder(self, game: Game):
+    async def eval_last_move(self, game: Game):
         """
-        Returns whether last played move is considered by Stocksfish a blunder.
-        We are considering a blunder any move that drops engine's evaluation
-        more than 2 points.
+        Evaluates last played move in given game.
+        Returns a dictonary containing information such as whether
+        last move was a blunder and if there are any forcing mate
+        sequences.
 
         :param game: Game to be analized
         :type game: Game
-        :return: True if last move was a blunder and False otherwise
-        :rtype: bool
+        :return: Last move evaluation
+        :rtype: Dict
         """
+        eval_dict = {
+            "blunder": False,
+            "mate_in": None,
+        }
+        
         if not self.is_stockfish_enabled():
-            return False
-
+            return eval_dict
+        
+        analysis = await self._eval_game(game)
+        eval_dict["blunder"] = self._is_last_move_blunder(game, analysis)
+        eval_dict["mate_in"] = analysis["score"].relative.mate()
+        return eval_dict
+    
+    def _is_last_move_blunder(self, game: Game, analysis: dict):
         last_eval = game.last_eval
-        current_eval = await self._eval_game(game)
-        return abs(current_eval - last_eval) > 200
+        game.last_eval = analysis["score"].white().score(mate_score=1500)
+        return abs(game.last_eval - last_eval) > 200
     
     def _build_png_board(self, game):
         try:
@@ -255,12 +267,10 @@ class Chess():
             async with asyncssh.connect(**self.stockfish_ssh) as conn:
                 _channel, engine = await conn.create_subprocess(chess.engine.UciProtocol, self.stockfish_path)
                 await engine.initialize()
-                analysis = await engine.analyse(game.board, limit)
+                return await engine.analyse(game.board, limit)
         else:
             with chess.engine.SimpleEngine.popen_uci(self.stockfish_path) as engine:
-                analysis = engine.analyse(game.board, limit)
-        game.last_eval = analysis["score"].white().score(mate_score=100000)
-        return game.last_eval
+                return engine.analyse(game.board, limit)
 
     def _convert_users_to_players(self, *args):
         return tuple(map(lambda user: Player(user) if user else None, args))

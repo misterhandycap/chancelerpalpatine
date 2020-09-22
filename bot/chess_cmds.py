@@ -35,9 +35,12 @@ async def xadrez_jogar(ctx, move, *, user2: discord.User=None, **kwargs):
         await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
         chess_bot.save_games()
 
-        was_last_move_blunder = await chess_bot.is_last_move_blunder(game)
-        if was_last_move_blunder:
+        evaluation = await chess_bot.eval_last_move(game)
+        if evaluation["blunder"]:
             await ctx.send("👀")
+        elif evaluation["mate_in"] and evaluation["mate_in"] in range(1, 4):
+            sheev_msgs = ["DEW IT!", "Mate-o! Mate-o agora!", "Muito bom, Anakin, muito bom!"]
+            await ctx.send(sheev_msgs[evaluation["mate_in"] - 1])
 
 @client.command(aliases=['xa'])
 @get_current_game

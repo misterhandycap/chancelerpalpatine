@@ -489,7 +489,7 @@ class TestChess(TestCase):
         
         self.assertIsNone(image_bytesio)
 
-    def test_is_last_move_blunder_true(self):
+    def test_eval_last_move_last_move_blunder_mate_in_one(self):
         board = chess.Board()
         board.push_san("g4")
         board.push_san("e5")
@@ -503,24 +503,82 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result = asyncio.run(chess_bot.is_last_move_blunder(game))
+        result = asyncio.run(chess_bot.eval_last_move(game))
 
-        self.assertTrue(result)
+        self.assertTrue(result["blunder"])
+        self.assertEqual(result["mate_in"], 1)
     
-    def test_is_last_move_blunder_false(self):
+    def test_eval_last_move_no_blunder_no_mate(self):
         board = chess.Board()
         board.push_san("g4")
         board.push_san("e5")
-        board.push_san("f4")
         game = Game()
         game.board = board
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
-        game.last_eval = -100000
+        game.last_eval = 0
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result = asyncio.run(chess_bot.is_last_move_blunder(game))
+        chess_bot.stockfish_limit["time"] = 2
 
-        self.assertFalse(result)
+        result = asyncio.run(chess_bot.eval_last_move(game))
+
+        self.assertFalse(result["blunder"])
+        self.assertIsNone(result["mate_in"])
+
+    def test_eval_last_move_blunder_no_mate(self):
+        board = chess.Board()
+        board.push_san("e4")
+        board.push_san("Nf6")
+        board.push_san("Qh5")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player1
+        game.last_eval = 0
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+        chess_bot.stockfish_limit["time"] = 2
+
+        result = asyncio.run(chess_bot.eval_last_move(game))
+
+        self.assertTrue(result["blunder"])
+        self.assertIsNone(result["mate_in"])
+
+    def test_eval_last_move_no_blunder_mate_in_two(self):
+        board = chess.Board("Q2r4/1p1k4/1P3ppp/1Kp1r3/4p2b/1B3P2/2P2q2/8 w - - 6 44")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player1
+        game.last_eval = 1500
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+
+        result = asyncio.run(chess_bot.eval_last_move(game))
+
+        self.assertFalse(result["blunder"])
+        self.assertEqual(result["mate_in"], 2)
+
+    def test_eval_last_move_no_blunder_mate_in_two_against_current_player(self):
+        board = chess.Board("Q1kr4/1p6/1P3ppp/1Kp1r3/4p2b/1B3P2/2P2q2/8 b - - 5 43")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player1
+        game.last_eval = 1500
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+
+        result = asyncio.run(chess_bot.eval_last_move(game))
+
+        self.assertFalse(result["blunder"])
+        self.assertEqual(result["mate_in"], -2)
