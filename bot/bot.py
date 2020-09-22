@@ -165,7 +165,10 @@ async def xadrez_pgn(ctx, *, user2: discord.User=None, **kwargs):
 @client.command(aliases=['xt', 'xadrez_jogos'])
 async def xadrez_todos(ctx, page=0):
     png_bytes = chess_bot.get_all_boards_png(page)
-    await ctx.send(file=discord.File(png_bytes, 'boards.png'))
+    if not png_bytes:
+        await ctx.send("Nenhuma partida está sendo jogada... ☹️ Inicie uma com `cp!xadrez_novo`.")
+    else:
+        await ctx.send(file=discord.File(png_bytes, 'boards.png'))
 
 @client.command()
 async def plagueis(ctx):

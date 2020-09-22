@@ -202,6 +202,9 @@ class Chess():
         full_width = 1200
         max_number_of_board_per_page = 9
 
+        if not self.games:
+            return None
+
         final_image = Image.new('RGB', (full_width, full_width))
         next_perfect_sqr = lambda n: int(pow(floor(sqrt(n)) + 1, 2)) if n%n**0.5 != 0 else n
         number_of_boards_sqrt = sqrt(min(next_perfect_sqr(len(self.games)), max_number_of_board_per_page))

@@ -376,6 +376,13 @@ class TestChess(TestCase):
         image_bytesio = chess_bot.get_all_boards_png()
         self.assertGreater(len(image_bytesio.read()), 0)
 
+    def test_get_all_boards_png_no_games_being_played(self):
+        chess_bot = Chess()
+
+        image_bytesio = chess_bot.get_all_boards_png()
+        
+        self.assertIsNone(image_bytesio)
+
     def test_is_last_move_blunder_true(self):
         board = chess.Board()
         board.push_san("g4")
