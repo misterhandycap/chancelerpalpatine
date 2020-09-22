@@ -39,7 +39,7 @@ async def xadrez_jogar(ctx, move, *, user2: discord.User=None, **kwargs):
         if evaluation["blunder"]:
             await ctx.send("👀")
         elif evaluation["mate_in"] and evaluation["mate_in"] in range(1, 4):
-            sheev_msgs = ["DEW IT!", "Mate-o! Mate-o agora!", "Muito bom, Anakin, muito bom!"]
+            sheev_msgs = ["DEW IT!", "Mate-o! Mate-o agora!", f"Muito bom, {ctx.author.name}, muito bom!"]
             await ctx.send(sheev_msgs[evaluation["mate_in"] - 1])
 
 @client.command(aliases=['xa'])
