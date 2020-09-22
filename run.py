@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 from bot import client
 from bot.bot import *
+from bot.chess_cmds import *
 from bot.level import *
 
 load_dotenv()

@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from bot.chess import Chess
+from bot.chess.chess import Chess
 
 load_dotenv()
 
