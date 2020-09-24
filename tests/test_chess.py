@@ -505,8 +505,12 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         result = asyncio.run(chess_bot.eval_last_move(game))
 
-        self.assertTrue(result["blunder"])
-        self.assertEqual(result["mate_in"], 1)
+        if chess_bot.is_stockfish_enabled():
+            self.assertTrue(result["blunder"])
+            self.assertEqual(result["mate_in"], 1)
+        else:
+            self.assertFalse(result["blunder"])
+            self.assertIsNone(result["mate_in"])
     
     def test_eval_last_move_no_blunder_no_mate(self):
         board = chess.Board()
@@ -546,7 +550,10 @@ class TestChess(TestCase):
 
         result = asyncio.run(chess_bot.eval_last_move(game))
 
-        self.assertTrue(result["blunder"])
+        if chess_bot.is_stockfish_enabled():
+            self.assertTrue(result["blunder"])
+        else:
+            self.assertFalse(result['blunder'])
         self.assertIsNone(result["mate_in"])
 
     def test_eval_last_move_no_blunder_mate_in_two(self):
@@ -564,7 +571,10 @@ class TestChess(TestCase):
         result = asyncio.run(chess_bot.eval_last_move(game))
 
         self.assertFalse(result["blunder"])
-        self.assertEqual(result["mate_in"], 2)
+        if chess_bot.is_stockfish_enabled():
+            self.assertEqual(result["mate_in"], 2)
+        else:
+            self.assertIsNone(result["mate_in"])
 
     def test_eval_last_move_no_blunder_mate_in_two_against_current_player(self):
         board = chess.Board("Q1kr4/1p6/1P3ppp/1Kp1r3/4p2b/1B3P2/2P2q2/8 b - - 5 43")
@@ -581,4 +591,7 @@ class TestChess(TestCase):
         result = asyncio.run(chess_bot.eval_last_move(game))
 
         self.assertFalse(result["blunder"])
-        self.assertEqual(result["mate_in"], -2)
+        if chess_bot.is_stockfish_enabled():
+            self.assertEqual(result["mate_in"], -2)
+        else:
+            self.assertIsNone(result["mate_in"])

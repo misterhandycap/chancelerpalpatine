@@ -206,7 +206,7 @@ class Chess():
 
         :rtype: bool
         """
-        return self.stockfish_path
+        return bool(self.stockfish_path)
     
     async def eval_last_move(self, game: Game):
         """
