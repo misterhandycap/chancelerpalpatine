@@ -1,19 +1,24 @@
 import discord
 
-from bot import client
-from bot.astrology.astrology_chart import calc_chart, get_asc_sign, get_moon_sign, get_sun_sign
+from bot import astrology_bot, client
 
 @client.command()
 async def mapa_astral(ctx, date=None, time=None, city_name=None):
     if not isinstance(ctx.channel, discord.channel.DMChannel):
-        return await ctx.send('Mande esse comando via DM 😁')
+        user_chart = astrology_bot.get_user_chart(ctx.author.id)
+        if not user_chart:
+            return await ctx.send('Você ainda não criou seu mapa astral. Para fazê-lo, mande esse comando via DM 😁')
+        return await send_astrology_triad(ctx, user_chart.chart)
     try:
-        chart = calc_chart(date, time, city_name)
+        chart = astrology_bot.calc_chart(ctx.author.id, date, time, city_name)
     except:
         return await ctx.send('Formato inválido! Formato esperado: `cp!mapa astral YYYY/MM/DD HH:MM NomeCidade`')
-    sign = get_sun_sign(chart)
-    asc = get_asc_sign(chart)
-    moon = get_moon_sign(chart)
+    await send_astrology_triad(ctx, chart)
+
+async def send_astrology_triad(ctx, chart):
+    sign = astrology_bot.get_sun_sign(chart)
+    asc = astrology_bot.get_asc_sign(chart)
+    moon = astrology_bot.get_moon_sign(chart)
 
     embed = discord.Embed(
         title='Seu mapa astral',
