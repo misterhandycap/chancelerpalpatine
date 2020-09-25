@@ -23,10 +23,6 @@ def get_current_game(func):
     function_wrapper.__signature__ = inspect.signature(func)
     return function_wrapper
 
-@client.check
-async def globally_block_dms(ctx):
-    return ctx.guild is not None
-
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.online, activity=discord.Game(f'Planejando uma ordem surpresa'))
