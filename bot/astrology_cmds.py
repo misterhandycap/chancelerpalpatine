@@ -1,6 +1,7 @@
 import discord
 
 from bot import astrology_bot, client
+from bot.astrology.expection import AstrologyInvalidInput
 
 @client.command()
 async def mapa_astral(ctx, date=None, time=None, city_name=None):
@@ -11,8 +12,11 @@ async def mapa_astral(ctx, date=None, time=None, city_name=None):
         return await send_astrology_triad(ctx, user_chart.chart)
     try:
         chart = astrology_bot.calc_chart(ctx.author.id, date, time, city_name)
+    except AstrologyInvalidInput as e:
+        return await ctx.send(e.message)
     except:
-        return await ctx.send('Formato inválido! Formato esperado: `cp!mapa astral YYYY/MM/DD HH:MM NomeCidade`')
+        return await ctx.send(
+            'Houve um erro momentâneo. Tente novamente em alguns segundos. Se o erro persistir, então pode ser algum bug. 😬')
     await send_astrology_triad(ctx, chart)
 
 async def send_astrology_triad(ctx, chart):

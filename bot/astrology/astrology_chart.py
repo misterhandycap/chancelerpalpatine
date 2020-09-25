@@ -9,6 +9,7 @@ from flatlib.geopos import GeoPos
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 
+from bot.astrology.expection import AstrologyInvalidInput
 from bot.astrology.user_chart import UserChart
 
 
@@ -32,8 +33,11 @@ class AstrologyChart():
     
     def calc_chart(self, user_id: str, date: str, time: str, city_name: str) -> Chart:
         geopos = self._get_lat_lng_from_city_name(city_name)
-        timezone = self._get_timezone_from_lat_lng(*geopos, date)
+        timezone = self._get_timezone_from_lat_lng(*geopos, f'{date} {time}')
+        
         chart = self.calc_chart_raw((date, time, timezone), geopos)
+        
+        self._remove_user_s_charts(user_id)
         user_chart = UserChart(user_id, chart)
         self.charts.append(user_chart)
         self.save_charts()
@@ -60,11 +64,20 @@ class AstrologyChart():
     def _get_lat_lng_from_city_name(self, city_name: str):
         geolocator = Nominatim(user_agent='chancelerpalpatine')
         location = geolocator.geocode(city_name)
+        if not location:
+            raise AstrologyInvalidInput('Cidade não existe')
 
         return location.latitude, location.longitude
 
-    def _get_timezone_from_lat_lng(self, lat: float, lng: float, date: str):
+    def _get_timezone_from_lat_lng(self, lat: float, lng: float, dt: str):
         timezonefinder = TimezoneFinder()
         timezone_name = timezonefinder.timezone_at(lat=lat, lng=lng)
-        return pytz.timezone(timezone_name).localize(datetime.strptime(date, '%Y/%m/%d')).strftime('%Z')
+        try:
+            return pytz.timezone(timezone_name).localize(
+                datetime.strptime(dt, '%Y/%m/%d %H:%M')).strftime('%Z')
+        except ValueError:
+            raise AstrologyInvalidInput('Data e/ou hora inválida(s). Formato esperado: `%Y/%m/%d %H:%M`')
+
+    def _remove_user_s_charts(self, user_id):
+        self.charts = [uc for uc in self.charts if uc.user_id != str(user_id)]
 

@@ -3,6 +3,7 @@ import os
 from unittest import TestCase
 
 from bot.astrology.astrology_chart import AstrologyChart
+from bot.astrology.expection import AstrologyInvalidInput
 from bot.astrology.user_chart import UserChart
 
 PICKLE_FILENAME = 'astrology_charts_test.pickle'
@@ -16,7 +17,7 @@ class TestAstrologyChart(TestCase):
         except FileNotFoundError:
             pass
     
-    def test_calc_chart(self):
+    def test_calc_chart_valid_params(self):
         astrology_chart = AstrologyChart()
         user_id = 14
         date = '1997/08/10'
@@ -31,6 +32,42 @@ class TestAstrologyChart(TestCase):
         self.assertEqual(sun, 'Leo')
         self.assertEqual(asc, 'Leo')
         self.assertEqual(moon, 'Scorpio')
+
+    def test_calc_chart_invalid_city(self):
+        astrology_chart = AstrologyChart()
+        user_id = 14
+        date = '1997/08/10'
+        time = '07:17'
+        city_name = "InvalidCityForSure"
+
+        with self.assertRaises(AstrologyInvalidInput) as e:
+            astrology_chart.calc_chart(user_id, date, time, city_name)
+        
+        self.assertEqual(e.exception.message, 'Cidade não existe')
+
+    def test_calc_chart_invalid_date(self):
+        astrology_chart = AstrologyChart()
+        user_id = 14
+        date = 'invalid'
+        time = '07:17'
+        city_name = "São Paulo"
+
+        with self.assertRaises(AstrologyInvalidInput) as e:
+            astrology_chart.calc_chart(user_id, date, time, city_name)
+        
+        self.assertIn('Data e/ou hora inválida', e.exception.message)
+
+    def test_calc_chart_invalid_time(self):
+        astrology_chart = AstrologyChart()
+        user_id = 14
+        date = '1997/08/10'
+        time = 'invalid'
+        city_name = "São Paulo"
+
+        with self.assertRaises(AstrologyInvalidInput) as e:
+            astrology_chart.calc_chart(user_id, date, time, city_name)
+        
+        self.assertIn('Data e/ou hora inválida', e.exception.message)
 
     def test_get_user_chart_user_chart_exists(self):
         user_id = 14
