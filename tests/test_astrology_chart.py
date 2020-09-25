@@ -6,10 +6,11 @@ from bot.astrology.astrology_chart import calc_chart, get_asc_sign, get_moon_sig
 class TestAstrologyChart(TestCase):
 
     def test_calc_chart(self):
-        datetime = ('1997/08/10', '07:17', '-03:00')
-        geopos = (-23.5489, -46.6388)
+        date = '1997/08/10'
+        time = '07:17'
+        city_name = "São Paulo"
 
-        chart = calc_chart(datetime, geopos)
+        chart = calc_chart(date, time, city_name)
         sun = get_sun_sign(chart)
         asc = get_asc_sign(chart)
         moon = get_moon_sign(chart)
