@@ -20,6 +20,9 @@ RUN apk add freetype-dev \
 # AsyncSSH deps
 RUN apk add openssl openssl-dev
 
+# Numpy deps
+RUN apk --no-cache add musl-dev linux-headers g++ gfortran libpng-dev openblas-dev wget
+
 # We copy just the requirements.txt first to leverage Docker cache
 COPY ./requirements.txt /app/requirements.txt
 
