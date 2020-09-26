@@ -63,6 +63,7 @@ async def help(ctx, page='1'):
         ajuda.add_field(name='cp!xadrez_pgn', value='Gera o PGN da partida atual.\n aka:xpgn')
         ajuda.add_field(name='cp!xadrez_todos', value='Veja todas as partidas que estão sendo jogadas agora.\n aka:xt')
         ajuda.add_field(name='cp!plagueis', value='Conta a tregédia de Darth Plagueis.')
+        ajuda.add_field(name='cp!mapa_astral', value='Visualize ou crie via DM seu mapa astral.')
     await ctx.send(embed=ajuda)
 
 @client.command()
