@@ -2,7 +2,7 @@ import inspect
 
 import discord
 
-from bot import client, chess_bot
+from bot import client, chess_bot, puzzle_bot
 
 def get_current_game(func):
     async def function_wrapper(*args, **kwargs):
@@ -66,3 +66,26 @@ async def xadrez_todos(ctx, page=0):
         await ctx.send("Nenhuma partida está sendo jogada... ☹️ Inicie uma com `cp!xadrez_novo`.")
     else:
         await ctx.send(file=discord.File(png_bytes, 'boards.png'))
+
+@client.command(aliases=['xp'])
+async def xadrez_puzzle(ctx, puzzle_id=None, move=''):
+    if not puzzle_id:
+        puzzle_dict = puzzle_bot.get_random_puzzle()
+        if 'error' in puzzle_dict:
+            return await ctx.send(f'Houve um erro ao obter um novo puzzle: {puzzle_dict["error"]}')
+        puzzle = puzzle_bot.build_puzzle(puzzle_dict)
+        if 'error' in puzzle:
+            return await ctx.send(f'Houve um erro ao construir um novo puzzle: {puzzle["error"]}')
+        return await ctx.send(puzzle["id"], file=discord.File(chess_bot.build_png_board(puzzle["game"]), 'puzzle.png'))
+    
+    puzzle = puzzle_bot.validate_puzzle_move(puzzle_id, move)
+    if isinstance(puzzle, str):
+        return await ctx.send(puzzle)
+    
+    if puzzle:
+        if puzzle_bot.is_puzzle_over(puzzle_id):
+            return await ctx.send("Muito bem, puzzle resolvido 👍")
+        return await ctx.send(file=discord.File(
+            chess_bot.build_png_board(puzzle_bot.puzzles[puzzle_id]["game"]), 'puzzle.png'))
+    
+    return await ctx.send("Resposta incorreta")

@@ -55,13 +55,14 @@ async def help(ctx, page='1'):
         ajuda.add_field(name='cp!level', value='Mostra o nível de usuário ao uúario que pediu \n aka:nivel')
         ajuda.add_field(name='cp!rank', value='Mostra a tabela de niveis de usuários em ordem de maior pra menor \n aka:board')
         ajuda.add_field(name='cp!rps', value='Pedra, papel e tesoura com dinossauros \n aka pedrapapeltesoura, ppt, dino')
-    else:
         ajuda.add_field(name='cp!busca', value='Faz uma busca pelo buscador definido (padrão: Google) \n aka google, search, buscar')
+    else:
         ajuda.add_field(name='cp!xadrez_novo', value='Inicie uma nova partida de xadrez com alguém.\n Passe o ID de usuário para começar uma partida.\n aka:xn')
         ajuda.add_field(name='cp!xadrez_jogar', value='Faça uma jogada em sua partida atual. \n aka:xj')
         ajuda.add_field(name='cp!xadrez_abandonar', value='Abandone a partida atual.\n aka:xa')
         ajuda.add_field(name='cp!xadrez_pgn', value='Gera o PGN da partida atual.\n aka:xpgn')
         ajuda.add_field(name='cp!xadrez_todos', value='Veja todas as partidas que estão sendo jogadas agora.\n aka:xt')
+        ajuda.add_field(name='cp!xadrez_puzzle', value='Pratique um puzzle de xadrez.\n aka:xp')
         ajuda.add_field(name='cp!plagueis', value='Conta a tregédia de Darth Plagueis.')
         ajuda.add_field(name='cp!mapa_astral', value='Visualize ou crie via DM seu mapa astral.')
     await ctx.send(embed=ajuda)

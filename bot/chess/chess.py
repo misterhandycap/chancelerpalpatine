@@ -114,7 +114,7 @@ class Chess():
         except Exception as e:
             return str(e), None
 
-        board_png_bytes = self._build_png_board(game)
+        board_png_bytes = self.build_png_board(game)
         if game.board.is_game_over(claim_draw=True):
             pgn = self.generate_pgn(game)
             self.games.remove(game)
@@ -132,7 +132,7 @@ class Chess():
         :return: Bot message
         :rtype: str
         """
-        board_png_bytes = self._build_png_board(game)
+        board_png_bytes = self.build_png_board(game)
         pgn = self.generate_pgn(game)
         self.games.remove(game)
         return f'{game.current_player.name} abandonou a partida!\n{pgn}', board_png_bytes
@@ -190,7 +190,7 @@ class Chess():
             if not index in range(start_page_position, start_page_position + max_number_of_board_per_page):
                 continue
             index -= start_page_position
-            board_png = self._build_png_board(game)
+            board_png = self.build_png_board(game)
             board_image = Image.open(board_png)
             board_position = (board_width * int(index % number_of_boards_sqrt), board_width * int(floor(index / number_of_boards_sqrt)))
             final_image.paste(board_image.resize((board_width, board_width)), board_position)
@@ -233,12 +233,15 @@ class Chess():
         eval_dict["mate_in"] = analysis["score"].relative.mate()
         return eval_dict
     
-    def _is_last_move_blunder(self, game: Game, analysis: dict):
-        last_eval = game.last_eval
-        game.last_eval = analysis["score"].white().score(mate_score=1500)
-        return abs(game.last_eval - last_eval) > 200
-    
-    def _build_png_board(self, game):
+    def build_png_board(self, game: Game) -> BytesIO:
+        """
+        Builds a PNG for current given game's board position
+
+        :param game: Game with position to be displayed
+        :type game: Game
+        :return: PNG image's bytes
+        :rtype: BytesIO
+        """
         try:
             last_move = game.board.peek()
         except IndexError:
@@ -260,6 +263,11 @@ class Chess():
         """ % colors
         png_bytes = svg2png(bytestring=chess.svg.board(board=game.board, lastmove=last_move, style=css))
         return BytesIO(png_bytes)
+    
+    def _is_last_move_blunder(self, game: Game, analysis: dict):
+        last_eval = game.last_eval
+        game.last_eval = analysis["score"].white().score(mate_score=1500)
+        return abs(game.last_eval - last_eval) > 200
     
     async def _eval_game(self, game: Game):
         limit = chess.engine.Limit(**self.stockfish_limit)
