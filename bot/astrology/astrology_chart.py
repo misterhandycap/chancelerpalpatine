@@ -6,10 +6,11 @@ from flatlib.chart import Chart
 from flatlib.const import HOUSE1, MOON, SUN
 from flatlib.datetime import Datetime
 from flatlib.geopos import GeoPos
+from geopy.adapters import AioHTTPAdapter
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 
-from bot.astrology.expection import AstrologyInvalidInput
+from bot.astrology.exception import AstrologyInvalidInput
 from bot.astrology.user_chart import UserChart
 
 
@@ -31,8 +32,8 @@ class AstrologyChart():
     def get_user_chart(self, user_id: str):
         return next((uc for uc in self.charts if uc.user_id == str(user_id)), None)
     
-    def calc_chart(self, user_id: str, date: str, time: str, city_name: str) -> Chart:
-        geopos = self._get_lat_lng_from_city_name(city_name)
+    async def calc_chart(self, user_id: str, date: str, time: str, city_name: str) -> Chart:
+        geopos = await self._get_lat_lng_from_city_name(city_name)
         timezone = self._get_timezone_from_lat_lng(*geopos, f'{date} {time}')
         
         chart = self.calc_chart_raw((date, time, timezone), geopos)
@@ -61,13 +62,14 @@ class AstrologyChart():
         with open(self.pickle_filename, 'wb') as f:
             pickle.dump(self.charts, f)
 
-    def _get_lat_lng_from_city_name(self, city_name: str):
-        geolocator = Nominatim(user_agent='chancelerpalpatine')
-        location = geolocator.geocode(city_name)
-        if not location:
-            raise AstrologyInvalidInput('Cidade não existe')
+    async def _get_lat_lng_from_city_name(self, city_name: str):
+        async with Nominatim(
+                user_agent='chancelerpalpatine', adapter_factory=AioHTTPAdapter) as geolocator:
+            location = await geolocator.geocode(city_name)
+            if not location:
+                raise AstrologyInvalidInput('Cidade não existe')
 
-        return location.latitude, location.longitude
+            return location.latitude, location.longitude
 
     def _get_timezone_from_lat_lng(self, lat: float, lng: float, dt: str):
         timezonefinder = TimezoneFinder()

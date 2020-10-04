@@ -1,7 +1,7 @@
 import discord
 
 from bot import astrology_bot, client
-from bot.astrology.expection import AstrologyInvalidInput
+from bot.astrology.exception import AstrologyInvalidInput
 
 @client.command()
 async def mapa_astral(ctx, date=None, time=None, city_name=None):
@@ -11,7 +11,7 @@ async def mapa_astral(ctx, date=None, time=None, city_name=None):
             return await ctx.send('Você ainda não criou seu mapa astral. Para fazê-lo, mande esse comando via DM 😁')
         return await send_astrology_triad(ctx, user_chart.chart)
     try:
-        chart = astrology_bot.calc_chart(ctx.author.id, date, time, city_name)
+        chart = await astrology_bot.calc_chart(ctx.author.id, date, time, city_name)
     except AstrologyInvalidInput as e:
         return await ctx.send(e.message)
     except:

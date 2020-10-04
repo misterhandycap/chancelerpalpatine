@@ -7,6 +7,7 @@ from urllib.request import Request
 from urllib.error import HTTPError
 
 from bot.chess.game import Game
+from bot.utils import run_cpu_bound_task
 
 
 class Puzzle():
@@ -14,7 +15,10 @@ class Puzzle():
     def __init__(self):
         self.puzzles = {}
     
+    @run_cpu_bound_task
     def get_random_puzzle(self):
+        # aiohttp doesn't support HTTP2, which ChessBlunders' API uses 😓
+        # https://github.com/aio-libs/aiohttp/issues/4426#issuecomment-564236480
         params = json.dumps({"type": "explore"}).encode('utf-8')
         request = Request("https://chessblunders.org/api/blunder/get", data=params)
         request.add_header("Content-Type", "application/json")

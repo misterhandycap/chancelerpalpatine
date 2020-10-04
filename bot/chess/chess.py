@@ -15,6 +15,7 @@ from chess.pgn import Game as ChessGame
 from bot import client
 from bot.chess.game import Game
 from bot.chess.player import Player
+from bot.utils import run_cpu_bound_task
 
 
 class Chess():
@@ -163,6 +164,7 @@ class Chess():
 
         return f"```\n{str(chess_game)}\n```"
 
+    @run_cpu_bound_task
     def get_all_boards_png(self, page: int=0):
         """
         Gets an image showing all ongoing games' current position.
@@ -277,8 +279,12 @@ class Chess():
                 await engine.initialize()
                 return await engine.analyse(game.board, limit)
         else:
-            with chess.engine.SimpleEngine.popen_uci(self.stockfish_path) as engine:
-                return engine.analyse(game.board, limit)
+            try:
+                transport, engine = await chess.engine.popen_uci(self.stockfish_path)
+                return await engine.analyse(game.board, limit)
+            finally:
+                await engine.quit()
+                transport.close()
 
     def _convert_users_to_players(self, *args):
         return tuple(map(lambda user: Player(user) if user else None, args))
