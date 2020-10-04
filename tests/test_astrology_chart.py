@@ -1,9 +1,11 @@
+import asyncio
 import pickle
 import os
+import warnings
 from unittest import TestCase
 
 from bot.astrology.astrology_chart import AstrologyChart
-from bot.astrology.expection import AstrologyInvalidInput
+from bot.astrology.exception import AstrologyInvalidInput
 from bot.astrology.user_chart import UserChart
 
 PICKLE_FILENAME = 'astrology_charts_test.pickle'
@@ -11,6 +13,10 @@ PICKLE_FILENAME = 'astrology_charts_test.pickle'
 
 class TestAstrologyChart(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        warnings.simplefilter("ignore")
+    
     def tearDown(self):
         try:
             os.remove(PICKLE_FILENAME)
@@ -24,7 +30,7 @@ class TestAstrologyChart(TestCase):
         time = '07:17'
         city_name = "São Paulo"
 
-        chart = astrology_chart.calc_chart(user_id, date, time, city_name)
+        chart = asyncio.run(astrology_chart.calc_chart(user_id, date, time, city_name))
         sun = astrology_chart.get_sun_sign(chart)
         asc = astrology_chart.get_asc_sign(chart)
         moon = astrology_chart.get_moon_sign(chart)
@@ -41,7 +47,7 @@ class TestAstrologyChart(TestCase):
         city_name = "InvalidCityForSure"
 
         with self.assertRaises(AstrologyInvalidInput) as e:
-            astrology_chart.calc_chart(user_id, date, time, city_name)
+            asyncio.run(astrology_chart.calc_chart(user_id, date, time, city_name))
         
         self.assertEqual(e.exception.message, 'Cidade não existe')
 
@@ -53,7 +59,7 @@ class TestAstrologyChart(TestCase):
         city_name = "São Paulo"
 
         with self.assertRaises(AstrologyInvalidInput) as e:
-            astrology_chart.calc_chart(user_id, date, time, city_name)
+            asyncio.run(astrology_chart.calc_chart(user_id, date, time, city_name))
         
         self.assertIn('Data e/ou hora inválida', e.exception.message)
 
@@ -65,7 +71,7 @@ class TestAstrologyChart(TestCase):
         city_name = "São Paulo"
 
         with self.assertRaises(AstrologyInvalidInput) as e:
-            astrology_chart.calc_chart(user_id, date, time, city_name)
+            asyncio.run(astrology_chart.calc_chart(user_id, date, time, city_name))
         
         self.assertIn('Data e/ou hora inválida', e.exception.message)
 

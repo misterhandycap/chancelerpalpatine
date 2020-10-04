@@ -1,3 +1,5 @@
+import os
+
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -10,7 +12,7 @@ load_dotenv()
 
 client = discord.Client()
 
-client = commands.Bot(command_prefix = 'cp!')
+client = commands.Bot(command_prefix=os.environ.get("BOT_PREFIX", 'cp!'))
 
 chess_bot = Chess()
 chess_bot.load_games()

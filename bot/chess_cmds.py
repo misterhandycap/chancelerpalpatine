@@ -56,12 +56,12 @@ async def xadrez_abandonar(ctx, *, user2: discord.User=None, **kwargs):
 @get_current_game
 async def xadrez_pgn(ctx, *, user2: discord.User=None, **kwargs):
     game = kwargs['game']
-    result = chess_bot.generate_pgn(ctx.author, user2)
+    result = chess_bot.generate_pgn(game)
     await ctx.send(result)
 
 @client.command(aliases=['xt', 'xadrez_jogos'])
 async def xadrez_todos(ctx, page=0):
-    png_bytes = chess_bot.get_all_boards_png(page)
+    png_bytes = await chess_bot.get_all_boards_png(page)
     if not png_bytes:
         await ctx.send("Nenhuma partida está sendo jogada... ☹️ Inicie uma com `cp!xadrez_novo`.")
     else:
@@ -70,7 +70,7 @@ async def xadrez_todos(ctx, page=0):
 @client.command(aliases=['xp'])
 async def xadrez_puzzle(ctx, puzzle_id=None, move=''):
     if not puzzle_id:
-        puzzle_dict = puzzle_bot.get_random_puzzle()
+        puzzle_dict = await puzzle_bot.get_random_puzzle()
         if 'error' in puzzle_dict:
             return await ctx.send(f'Houve um erro ao obter um novo puzzle: {puzzle_dict["error"]}')
         puzzle = puzzle_bot.build_puzzle(puzzle_dict)

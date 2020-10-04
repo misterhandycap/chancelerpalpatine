@@ -1,3 +1,4 @@
+import asyncio
 from unittest import TestCase
 
 from chess import Board
@@ -11,7 +12,7 @@ class TestPuzzle(TestCase):
     def test_get_puzzle(self):
         puzzle_bot = Puzzle()
 
-        actual = puzzle_bot.get_random_puzzle()
+        actual = asyncio.run(puzzle_bot.get_random_puzzle())
 
         self.assertIn("data", actual)
         self.assertIn("blunderMove", actual["data"])

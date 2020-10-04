@@ -374,7 +374,7 @@ class TestChess(TestCase):
         game1.board = board1
         chess_bot.games.append(game1)
 
-        image_bytesio = chess_bot.get_all_boards_png()
+        image_bytesio = asyncio.run(chess_bot.get_all_boards_png())
 
         with open("tests/support/get_all_boards_png_one_game.png", 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
@@ -405,7 +405,7 @@ class TestChess(TestCase):
         game3.board = board3
         chess_bot.games.append(game3)
         
-        image_bytesio = chess_bot.get_all_boards_png()
+        image_bytesio = asyncio.run(chess_bot.get_all_boards_png())
 
         with open("tests/support/get_all_boards_png_three_games.png", 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
@@ -441,7 +441,7 @@ class TestChess(TestCase):
             chess_bot.games.append(game2)
             chess_bot.games.append(game3)
 
-        image_bytesio = chess_bot.get_all_boards_png()
+        image_bytesio = asyncio.run(chess_bot.get_all_boards_png())
 
         with open("tests/support/get_all_boards_png_twelve_games.png", 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
@@ -477,7 +477,7 @@ class TestChess(TestCase):
             chess_bot.games.append(game2)
             chess_bot.games.append(game3)
 
-        image_bytesio = chess_bot.get_all_boards_png(page=1)
+        image_bytesio = asyncio.run(chess_bot.get_all_boards_png(page=1), debug=True)
 
         with open("tests/support/get_all_boards_png_twelve_games_second_page.png", 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
@@ -485,7 +485,7 @@ class TestChess(TestCase):
     def test_get_all_boards_png_no_games_being_played(self):
         chess_bot = Chess()
 
-        image_bytesio = chess_bot.get_all_boards_png()
+        image_bytesio = asyncio.run(chess_bot.get_all_boards_png())
         
         self.assertIsNone(image_bytesio)
 
