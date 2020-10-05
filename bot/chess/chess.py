@@ -15,7 +15,7 @@ from chess.pgn import Game as ChessGame
 from bot import client
 from bot.chess.game import Game
 from bot.chess.player import Player
-from bot.utils import run_cpu_bound_task
+from bot.utils import convert_users_to_players, run_cpu_bound_task
 
 
 class Chess():
@@ -52,7 +52,7 @@ class Chess():
             return self.games
 
     def new_game(self, user1, user2, color_schema=None):
-        player1, player2 = self._convert_users_to_players(user1, user2)
+        player1, player2 = convert_users_to_players(user1, user2)
         current_players_pairs = map(lambda x: [x.player1, x.player2], self.games)
         given_players_pairs = [player1, player2]
 
@@ -82,7 +82,7 @@ class Chess():
         :rtype: Game
         :raises Exception: Game not found or invalid parameters
         """
-        player, other_player = self._convert_users_to_players(user, other_user)
+        player, other_player = convert_users_to_players(user, other_user)
         game = [g for g in self.games if g.current_player == player]
         if game == []:
             raise Exception('Você ou não está na partida atual ou não é mais seu turno.')
@@ -285,9 +285,6 @@ class Chess():
             finally:
                 await engine.quit()
                 transport.close()
-
-    def _convert_users_to_players(self, *args):
-        return tuple(map(lambda user: Player(user) if user else None, args))
 
     def _board_colors(self, color_schema):
         colors = {
