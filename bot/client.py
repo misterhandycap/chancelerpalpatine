@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
+from bot.akinator.akinator_game import AkinatorGame
 from bot.astrology.astrology_chart import AstrologyChart
 from bot.chess.chess import Chess
 from bot.chess.puzzle import Puzzle
@@ -21,3 +22,5 @@ astrology_bot = AstrologyChart()
 astrology_bot.load_charts()
 
 puzzle_bot = Puzzle()
+
+akinator_bot = AkinatorGame()
