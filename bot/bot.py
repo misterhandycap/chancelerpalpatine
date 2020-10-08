@@ -65,7 +65,6 @@ async def help(ctx, page='1'):
         ajuda.add_field(name='cp!xadrez_todos', value='Veja todas as partidas que estão sendo jogadas agora.\n aka:xt')
         ajuda.add_field(name='cp!xadrez_puzzle', value='Pratique um puzzle de xadrez.\n aka:xp')
         ajuda.add_field(name='cp!akinator_novo', value='Novo jogo com Akinator.\n aka:an')
-        ajuda.add_field(name='cp!akinator_responder', value='Responda à pergunta do Akinator.\n aka:ar')
         ajuda.add_field(name='cp!mapa_astral', value='Visualize ou crie via DM seu mapa astral.')
     await ctx.send(embed=ajuda)
 
