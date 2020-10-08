@@ -15,7 +15,7 @@ emoji_answers = {
 async def akinator_novo(ctx):
     await ctx.trigger_typing()
     game, question = await akinator_bot.new_game(ctx.author)
-    await ctx.send("Jogo iniciado. Responda com `cp!akinator_responder RESPOSTA`")
+    await ctx.send("Jogo iniciado. Responda com reagindo às perguntas do bot.")
     await send_embed(question, ctx)
 
 @client.event
