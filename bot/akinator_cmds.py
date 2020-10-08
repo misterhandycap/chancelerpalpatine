@@ -7,16 +7,15 @@ emoji_answers = {
     'p': '🇵',
     'idk': '🤷',
     'pn': '🇺',
-    'n': '🚫',
-    'b': '🔙'
+    'n': '🚫'
 }
 
 @client.command(aliases=['an'])
 async def akinator_novo(ctx):
     await ctx.trigger_typing()
     game, question = await akinator_bot.new_game(ctx.author)
-    await ctx.send("Jogo iniciado. Responda com reagindo às perguntas do bot.")
-    await send_embed(question, ctx)
+    await ctx.send("Jogo iniciado. Responda reagindo às perguntas do bot.")
+    await send_embed(question, ctx.author, ctx)
 
 @client.event
 async def on_reaction_add(reaction, user):
@@ -24,7 +23,7 @@ async def on_reaction_add(reaction, user):
     if not game or not reaction.message.embeds:
         return
     embed = reaction.message.embeds[0]
-    if embed.title != 'Akinator':
+    if 'Akinator' not in embed.title:
         return
 
     emoji = str(reaction)
@@ -35,19 +34,19 @@ async def on_reaction_add(reaction, user):
     answer = [k for k, v in emoji_answers.items() if v == emoji][0]
     result = await akinator_bot.answer_question(game, answer)
     if isinstance(result, str):
-        await send_embed(result, reaction.message.channel)
+        await send_embed(result, user, reaction.message.channel)
     else:
         embed = discord.Embed(
-            title=f'Você pensou em {result.get("name")}',
+            title=f'{user.name} pensou em {result.get("name")}',
             description=result.get('description'),
             colour=discord.Color.blurple()
         )
         embed.set_thumbnail(url=result.get('absolute_picture_path'))
         await reaction.message.channel.send(embed=embed)
 
-async def send_embed(result, channel):
+async def send_embed(result, user, channel):
     embed = discord.Embed(
-        title='Akinator',
+        title=f'Akinator: {user.name}',
         description=result,
         colour=discord.Color.blurple()
     )
