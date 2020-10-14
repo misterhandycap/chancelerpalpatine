@@ -28,6 +28,7 @@ async def xadrez_novo(ctx, user2: discord.User, color_schema=None):
 @client.command(aliases=['xj'])
 @get_current_game
 async def xadrez_jogar(ctx, move, *, user2: discord.User=None, **kwargs):
+    await ctx.trigger_typing()
     game = kwargs['game']
     result, board_png_bytes = chess_bot.make_move(game, move)
     await ctx.send(result)
@@ -45,6 +46,7 @@ async def xadrez_jogar(ctx, move, *, user2: discord.User=None, **kwargs):
 @client.command(aliases=['xa'])
 @get_current_game
 async def xadrez_abandonar(ctx, *, user2: discord.User=None, **kwargs):
+    await ctx.trigger_typing()
     game = kwargs['game']
     result, board_png_bytes = chess_bot.resign(game)
     await ctx.send(result)
@@ -61,6 +63,7 @@ async def xadrez_pgn(ctx, *, user2: discord.User=None, **kwargs):
 
 @client.command(aliases=['xt', 'xadrez_jogos'])
 async def xadrez_todos(ctx, page=0):
+    await ctx.trigger_typing()
     png_bytes = await chess_bot.get_all_boards_png(page)
     if not png_bytes:
         await ctx.send("Nenhuma partida está sendo jogada... ☹️ Inicie uma com `cp!xadrez_novo`.")
@@ -69,6 +72,7 @@ async def xadrez_todos(ctx, page=0):
 
 @client.command(aliases=['xp'])
 async def xadrez_puzzle(ctx, puzzle_id=None, move=''):
+    await ctx.trigger_typing()
     if not puzzle_id:
         puzzle_dict = await puzzle_bot.get_random_puzzle()
         if 'error' in puzzle_dict:
