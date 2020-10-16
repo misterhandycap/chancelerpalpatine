@@ -61,13 +61,19 @@ class Puzzle():
             puzzle = self.puzzles[puzzle_id]
             expected_move_san_str = puzzle["correct_sequence"][0]
             expected_move = puzzle["game"].board.parse_san(expected_move_san_str)
+            try:
+                given_move = puzzle["game"].board.parse_san(move)
+            except ValueError:
+                given_move = puzzle["game"].board.parse_uci(move)
 
-            result = move == expected_move_san_str or move == expected_move.uci()
+            result = expected_move == given_move
             if result and len(puzzle["correct_sequence"]) > 1:
                 puzzle["game"].board.push_san(puzzle["correct_sequence"].pop(0))
                 puzzle["game"].board.push_san(puzzle["correct_sequence"].pop(0))
             
             return result
+        except ValueError:
+            return False
         except KeyError:
             return "Puzzle not found"
 

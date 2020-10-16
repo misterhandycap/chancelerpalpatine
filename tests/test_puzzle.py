@@ -27,6 +27,14 @@ class TestPuzzle(TestCase):
 
         self.assertTrue(result)
 
+    def test_validate_move_correct_san_move_wo_check_notarion(self):
+        puzzle_bot, puzzle_id = self._build_puzzle_bot_with_one_puzzle()
+        puzzle_bot.validate_puzzle_move(puzzle_id, "Kg5")
+
+        result = puzzle_bot.validate_puzzle_move(puzzle_id, "Qxf1")
+
+        self.assertTrue(result)
+
     def test_validate_move_correct_uci_move(self):
         puzzle_bot, puzzle_id = self._build_puzzle_bot_with_one_puzzle()
 

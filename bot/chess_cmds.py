@@ -82,13 +82,14 @@ async def xadrez_puzzle(ctx, puzzle_id=None, move=''):
             return await ctx.send(f'Houve um erro ao construir um novo puzzle: {puzzle["error"]}')
         return await ctx.send(puzzle["id"], file=discord.File(chess_bot.build_png_board(puzzle["game"]), 'puzzle.png'))
     
-    puzzle = puzzle_bot.validate_puzzle_move(puzzle_id, move)
-    if isinstance(puzzle, str):
-        return await ctx.send(puzzle)
+    puzzle_result = puzzle_bot.validate_puzzle_move(puzzle_id, move)
+    if isinstance(puzzle_result, str):
+        return await ctx.send(puzzle_result)
     
-    if puzzle:
+    if puzzle_result:
         if puzzle_bot.is_puzzle_over(puzzle_id):
             return await ctx.send("Muito bem, puzzle resolvido 👍")
+    if puzzle_result or move == '':
         return await ctx.send(file=discord.File(
             chess_bot.build_png_board(puzzle_bot.puzzles[puzzle_id]["game"]), 'puzzle.png'))
     
