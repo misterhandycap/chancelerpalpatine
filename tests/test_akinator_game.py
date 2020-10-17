@@ -1,16 +1,20 @@
 import asyncio
 import warnings
-from unittest import TestCase
+
+from vcr_unittest import VCRTestCase
 
 from bot.akinator.akinator_game import Akinator, AkinatorGame
 from tests.support.fake_discord_user import FakeDiscordUser
 
 
-class TestAkinatorGame(TestCase):
+class TestAkinatorGame(VCRTestCase):
 
     @classmethod
     def setUpClass(cls):
         warnings.simplefilter('ignore')
+
+    def _get_vcr(self, **kwargs):
+        return super()._get_vcr(match_on=('method', 'scheme', 'host', 'port', 'path'), **kwargs)
     
     def test_new_game(self):
         akinator_bot = AkinatorGame()
