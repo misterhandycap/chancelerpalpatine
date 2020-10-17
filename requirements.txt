@@ -3,6 +3,7 @@ akinator.py==4.0.1
 async-timeout==3.0.1
 asyncssh==2.4.2
 attrs==20.1.0
+beautifulsoup4==4.9.3
 cairocffi==1.1.0
 CairoSVG==2.4.2
 certifi==2020.6.20
@@ -16,6 +17,7 @@ flatlib==0.2.1
 geographiclib==1.50
 geopy==2.0.0
 idna==2.10
+mal-api==0.3.1
 multidict==4.7.6
 numpy==1.19.2
 Pillow==7.2.0
@@ -26,6 +28,7 @@ python-dotenv==0.14.0
 pytz==2020.1
 requests==2.24.0
 six==1.15.0
+soupsieve==2.0.1
 timezonefinder==4.4.1
 tinycss2==1.0.2
 urllib3==1.25.10

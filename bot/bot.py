@@ -66,6 +66,8 @@ async def help(ctx, page='1'):
         ajuda.add_field(name='cp!xadrez_puzzle', value='Pratique um puzzle de xadrez.\n aka:xp')
         ajuda.add_field(name='cp!akinator_novo', value='Novo jogo com Akinator.\n aka:an')
         ajuda.add_field(name='cp!mapa_astral', value='Visualize ou crie via DM seu mapa astral.')
+        ajuda.add_field(name='cp!anime', value='Veja informações do anime buscado com MyAnimeList.')
+        ajuda.add_field(name='cp!anime_busca', value='Faça uma pesquisa por um nome de anime.\nbuscar_anime')
     await ctx.send(embed=ajuda)
 
 @client.command()
