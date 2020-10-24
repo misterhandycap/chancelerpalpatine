@@ -73,6 +73,7 @@ class TestPuzzle(VCRTestCase):
     def test_is_puzzle_over_ongoing_puzzle(self):
         puzzle_bot, puzzle_id = self._build_puzzle_bot_with_one_puzzle()
         puzzle_bot.validate_puzzle_move(puzzle_id, "Kg5")
+        puzzle_bot.validate_puzzle_move(puzzle_id, "Qxf1+")
 
         result = puzzle_bot.is_puzzle_over(puzzle_id)
 
