@@ -152,3 +152,6 @@ tests/cassettes/*
 
 # Storage files
 users.json
+
+#Store
+*.DS_Store
