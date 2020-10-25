@@ -146,3 +146,6 @@ cython_debug/
 
 # Bot pickles
 *.pickle
+
+#Store
+*.DS_Store
