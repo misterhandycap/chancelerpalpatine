@@ -2,16 +2,16 @@ import asyncio
 import pickle
 import os
 import warnings
-from unittest import TestCase
 
 from bot.astrology.astrology_chart import AstrologyChart
 from bot.astrology.exception import AstrologyInvalidInput
 from bot.astrology.user_chart import UserChart
+from vcr_unittest import VCRTestCase
 
 PICKLE_FILENAME = 'astrology_charts_test.pickle'
 
 
-class TestAstrologyChart(TestCase):
+class TestAstrologyChart(VCRTestCase):
 
     @classmethod
     def setUpClass(cls):

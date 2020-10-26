@@ -1,9 +1,9 @@
-from unittest import TestCase
+from vcr_unittest import VCRTestCase
 
 from bot.anime.anime import Anime
 
 
-class TestAnime(TestCase):
+class TestAnime(VCRTestCase):
     
     def test_get_anime(self):
         anime_bot = Anime()

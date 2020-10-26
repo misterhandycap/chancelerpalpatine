@@ -1,13 +1,13 @@
 import asyncio
-from unittest import TestCase
 
 from chess import Board
+from vcr_unittest import VCRTestCase
 
 from bot.chess.game import Game
 from bot.chess.puzzle import Puzzle
 
 
-class TestPuzzle(TestCase):
+class TestPuzzle(VCRTestCase):
 
     def test_get_puzzle(self):
         puzzle_bot = Puzzle()
