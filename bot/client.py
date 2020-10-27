@@ -8,6 +8,7 @@ from bot.akinator.akinator_game import AkinatorGame
 from bot.astrology.astrology_chart import AstrologyChart
 from bot.chess.chess import Chess
 from bot.chess.puzzle import Puzzle
+from bot.sww_leaderboard.leaderboard import Leaderboard
 
 load_dotenv()
 
@@ -24,3 +25,5 @@ astrology_bot.load_charts()
 puzzle_bot = Puzzle()
 
 akinator_bot = AkinatorGame()
+
+leaderboard_bot = Leaderboard()

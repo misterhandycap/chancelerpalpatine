@@ -57,6 +57,7 @@ async def help(ctx, page='1'):
         ajuda.add_field(name='cp!rps', value='Pedra, papel e tesoura com dinossauros \n aka pedrapapeltesoura, ppt, dino')
         ajuda.add_field(name='cp!busca', value='Faz uma busca pelo buscador definido (padrão: Google) \n aka google, search, buscar')
         ajuda.add_field(name='cp!plagueis', value='Conta a tregédia de Darth Plagueis.')
+        ajuda.add_field(name='cp!leaderboard', value='Exibe o leaderboard de medalhas da Star Wars Wiki.\n aka:lb')
     else:
         ajuda.add_field(name='cp!xadrez_novo', value='Inicie uma nova partida de xadrez com alguém.\n Passe o ID de usuário para começar uma partida.\n aka:xn')
         ajuda.add_field(name='cp!xadrez_jogar', value='Faça uma jogada em sua partida atual. \n aka:xj')
