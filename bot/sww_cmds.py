@@ -1,13 +1,10 @@
 import discord
 
-from bot import client
-from bot.sww_leaderboard.leaderboard import Leaderboard
+from bot import client, leaderboard_bot
 
 @client.command(aliases=['lb'])
 async def leaderboard(ctx):
     await ctx.trigger_typing()
-    leaderboard_bot = Leaderboard()
-
     try:
         leaderboard_data = await leaderboard_bot.get()
         leaderboard_result = leaderboard_bot.build_leaderboard(*leaderboard_data)
