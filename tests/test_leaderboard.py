@@ -28,17 +28,29 @@ class TestLeaderboard(VCRTestCase):
             "dataUser": {
                 "User1": ["Medal1:1", "Medal2:3"],
                 "User2": ["Medal4:1"],
+                "User3": ["Medal1:2", "Medal3:4"],
+                "User4": ["Medal1:2", "Medal3:1", "Medal2:1"]
             }
         }
         medals_points = {
             "Medal1": 50,
             "Medal2": 100,
             "Medal3": 25,
-            "Medal4": 500
+            "Medal4": 500,
+            "DescontoInativo": {
+                "usuários": ["User3"],
+                "desconto": 0.8
+            },
+            "DescontoAdmin": {
+                "usuários": ["User4"],
+                "desconto": 0.8
+            },
         }
         expected = [
             ("User2", 500),
-            ("User1", 350)
+            ("User1", 350),
+            ("User4", 180),
+            ("User3", 160)
         ]
         
         actual = leaderboard_bot.build_leaderboard(medals, medals_points)

@@ -47,7 +47,9 @@ class Leaderboard():
                 users_points[user_name] = 0
                 for user_medal in user_medals:
                     medal_name, medal_qntity = user_medal.split(":")
-                    users_points[user_name] += medals_points[medal_name] * int(medal_qntity)
+                    nerf = medals_points['DescontoInativo']['desconto'] if user_name in medals_points['DescontoInativo']['usuários'] else 1
+                    nerf = medals_points['DescontoAdmin']['desconto'] if user_name in medals_points['DescontoAdmin']['usuários'] else nerf
+                    users_points[user_name] += int(medals_points[medal_name] * int(medal_qntity) * nerf)
             return sorted(users_points.items(), key=lambda x: x[1], reverse=True)
         except:
             raise Exception('Invalid medals info')
