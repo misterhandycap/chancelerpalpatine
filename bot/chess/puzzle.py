@@ -75,7 +75,7 @@ class Puzzle():
             return result
         except ValueError:
             return False
-        except KeyError:
+        except (KeyError, IndexError):
             return "Puzzle not found"
 
     def is_puzzle_over(self, puzzle_id):
