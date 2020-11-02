@@ -67,20 +67,21 @@ class Puzzle():
                 given_move = puzzle["game"].board.parse_uci(move)
 
             result = expected_move == given_move
-            if result and len(puzzle["correct_sequence"]) > 1:
+            if result:
                 puzzle["game"].board.push_san(puzzle["correct_sequence"].pop(0))
+            if result and len(puzzle["correct_sequence"]) > 1:
                 puzzle["game"].board.push_san(puzzle["correct_sequence"].pop(0))
             
             return result
         except ValueError:
             return False
-        except KeyError:
+        except (KeyError, IndexError):
             return "Puzzle not found"
 
     def is_puzzle_over(self, puzzle_id):
         try:
             puzzle = self.puzzles[puzzle_id]
-            return len(puzzle["correct_sequence"]) <= 1
+            return len(puzzle["correct_sequence"]) < 1
         except KeyError:
             return "Puzzle not found"
 
