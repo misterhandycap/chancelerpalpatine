@@ -84,7 +84,7 @@ class TestLeaderboard(VCRTestCase):
         with self.assertRaises(Exception):
             actual = leaderboard_bot.build_leaderboard("invalid", {})
 
-    def test_draw_leaderboard(self):
+    def test_draw_leaderboard_one_page(self):
         leaderboard_bot = Leaderboard(auto_close_session=True)
         leaderboard = [
             ("User2", {'points': 500, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
@@ -95,9 +95,42 @@ class TestLeaderboard(VCRTestCase):
             ("User3", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}, 'Medal2': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png'}}})
         ]
 
-        actual = run(leaderboard_bot.draw_leaderboard(leaderboard))
+        actual = run(leaderboard_bot.draw_leaderboard(leaderboard, 1))
 
         with open('tests/support/draw_leaderboard.png', 'rb') as f:
+            self.assertEqual(actual.getvalue(), f.read())
+
+    def test_draw_leaderboard_second_page(self):
+        leaderboard_bot = Leaderboard(auto_close_session=True)
+        leaderboard = [
+            ("User2", {'points': 500, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("User1LongoNameUser1LongoNameUser1LongoName", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'},
+                'Medal2': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png'},
+                'Medal5': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png'},
+                'Medal3': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png'}}}),
+            ("User3", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}, 'Medal2': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png'}}}),
+            ("User5", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("User6", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("User7", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("User8", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("User9", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserA", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserB", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserC", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserD", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserE", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserF", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserG", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserH", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserI", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserJ", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserK", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+            ("UserL", {'points': 350, 'medals': {'Medal1': {'quantity': 1, 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/b/b7/Medalha_destaque.png'}}}),
+        ]
+
+        actual = run(leaderboard_bot.draw_leaderboard(leaderboard, 2))
+
+        with open('tests/support/draw_leaderboard_second_page.png', 'rb') as f:
             self.assertEqual(actual.getvalue(), f.read())
 
     def test_complete_leaderboard_flow(self):
@@ -105,7 +138,7 @@ class TestLeaderboard(VCRTestCase):
             try:
                 leaderboard_data = await leaderboard_bot.get()
                 leaderboard_result = leaderboard_bot.build_leaderboard(*leaderboard_data)
-                return await leaderboard_bot.draw_leaderboard(leaderboard_result)
+                return await leaderboard_bot.draw_leaderboard(leaderboard_result, 1)
             finally:
                 await leaderboard_bot.main_session.close()
 

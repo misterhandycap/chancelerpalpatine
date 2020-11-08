@@ -63,21 +63,24 @@ class Leaderboard():
 
     @run_cpu_bound_task
     @run_cpu_bound_task_with_event_loop
-    async def draw_leaderboard(self, leaderboard: list):
+    async def draw_leaderboard(self, leaderboard: list, page: int):
         rectangle_height = 50
         image_width = 500
         text_spacing = 10
         font_size = 18
         medal_size = 30
+        max_users_per_page = 10
+        page_start_position = max_users_per_page * (page - 1)
+        page_end_position = page_start_position + max_users_per_page
         medal_positions = [5, int(medal_size * 0.5), int(medal_size * 0.833)]
 
         await self._prepare_medals_images(leaderboard)
         
-        final_image = Image.new('RGB', (image_width, rectangle_height * len(leaderboard)))
+        final_image = Image.new('RGB', (image_width, rectangle_height * min(len(leaderboard), max_users_per_page)))
         draw_image = ImageDraw.Draw(final_image)
         last_rectangle_pos = 0
         alternate_row_control = True
-        for user_name, user_info in leaderboard:
+        for user_name, user_info in leaderboard[page_start_position:page_end_position]:
             draw_image.rectangle(
                 ((0, last_rectangle_pos), (image_width, last_rectangle_pos + rectangle_height)),
                 fill="#D3D3D3" if alternate_row_control else "#CCC"
