@@ -1,3 +1,4 @@
+import logging
 import warnings
 
 from asyncio import run
@@ -12,6 +13,7 @@ class TestLeaderboard(VCRTestCase):
     @classmethod
     def setUpClass(cls):
         warnings.simplefilter("ignore")
+        logging.disable(logging.WARNING)
 
     def test_get(self):
         leaderboard_bot = Leaderboard(auto_close_session=True)
