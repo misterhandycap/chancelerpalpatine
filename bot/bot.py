@@ -1,11 +1,15 @@
 import inspect
-import discord
-import random
 import json
+import logging
 import os
+import random
 import time
+
+import discord
 from discord.ext import commands
-from bot import client, chess_bot
+
+from bot import chess_bot, client
+
 
 def get_current_game(func):
     async def function_wrapper(*args, **kwargs):
@@ -26,15 +30,16 @@ def get_current_game(func):
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.online, activity=discord.Game(f'Planejando uma ordem surpresa'))
-    print('É bom te ver, mestre Jedi.')
+    logging.info('É bom te ver, mestre Jedi.')
 
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.BadArgument) and 'User' in str(error) and 'not found' in str(error):
         await ctx.send('Mestre quem?')
-    if isinstance(error, commands.CommandNotFound):
+    elif isinstance(error, commands.CommandNotFound):
         await ctx.send('Esta ordem não existe, agora se me der licença...')
-    print(f'{error.__class__}: {error}')
+    else:
+        logging.warning(f'{error.__class__}: {error}')
 
 @client.remove_command('help')
 

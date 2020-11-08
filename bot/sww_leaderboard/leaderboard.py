@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from asyncio import as_completed
 from io import BytesIO
@@ -32,7 +33,7 @@ class Leaderboard():
                 medals_points = pages_content[self.MEDALS_POINTS_JSON_ID]['revisions'][0]['*']
                 return json.loads(medals), json.loads(medals_points)
         except (json.JSONDecodeError, KeyError) as e:
-            print(e)
+            logging.warning(e, exc_info=True)
             raise Exception("Error parsing content")
         finally:
             if self.auto_close_session:
@@ -56,7 +57,8 @@ class Leaderboard():
                         'image_url': medal_info['image_url']
                     }
             return sorted(leaderboard_users.items(), key=lambda x: x[1]['points'], reverse=True)
-        except Exception:
+        except Exception as e:
+            logging.warning(e, exc_info=True)
             raise Exception('Invalid medals info')
 
     @run_cpu_bound_task

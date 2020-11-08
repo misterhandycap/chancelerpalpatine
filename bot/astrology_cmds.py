@@ -1,3 +1,5 @@
+import logging
+
 import discord
 
 from bot import astrology_bot, client
@@ -17,7 +19,7 @@ async def mapa_astral(ctx, date=None, time=None, *args):
     except AstrologyInvalidInput as e:
         return await ctx.send(e.message)
     except Exception as e:
-        print(e)
+        logging.warning(e, exc_info=True)
         return await ctx.send(
             'Houve um erro momentâneo. Tente novamente em alguns segundos. Se o erro persistir, então pode ser algum bug. 😬')
     await send_astrology_triad(ctx, chart)
