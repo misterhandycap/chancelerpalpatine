@@ -1,3 +1,5 @@
+import logging
+
 import discord
 
 from bot import client, leaderboard_bot
@@ -12,5 +14,5 @@ async def leaderboard(ctx):
 
         await ctx.send(file=discord.File(leaderboard_img, 'leaderboard.png'))
     except Exception as e:
-        print(e)
+        logging.warning(e, exc_info=True)
         return await ctx.send("Houve um erro ao obter o quadro de lideranças da Star Wars Wiki.")

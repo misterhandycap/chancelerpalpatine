@@ -1,3 +1,5 @@
+import logging
+
 from mal import Anime as MalAnime
 from mal import AnimeSearch
 
@@ -11,7 +13,7 @@ class Anime():
         try:
             return MalAnime(mal_id, timeout=self.timeout)
         except Exception as e:
-            print(e)
+            logging.warning(e, exc_info=True)
             return None
     
     def search_anime(self, query):
@@ -20,5 +22,5 @@ class Anime():
 
             return [x.__dict__ for x in search.results]
         except Exception as e:
-            print(e)
+            logging.warning(e, exc_info=True)
             return None

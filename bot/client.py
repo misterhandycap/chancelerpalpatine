@@ -1,3 +1,4 @@
+import logging
 import os
 
 import discord
@@ -10,6 +11,8 @@ from bot.chess.puzzle import Puzzle
 from bot.sww_leaderboard.leaderboard import Leaderboard
 
 load_dotenv()
+
+logging.basicConfig(level=logging.DEBUG if os.environ.get("DEBUG") else logging.WARNING)
 
 client = discord.Client()
 

@@ -1,3 +1,5 @@
+import logging
+
 import discord
 
 from bot import client
@@ -37,7 +39,8 @@ async def anime(ctx, *args):
         try:
             search_result = anime_bot.search_anime(query)[0]
             result = anime_bot.get_anime(int(search_result["mal_id"]))
-        except:
+        except Exception as e:
+            logging.warning(e, exc_info=True)
             return await ctx.send("Oops, houve um erro ao buscar pelo seu anime...")
 
     embed = discord.Embed(
