@@ -26,6 +26,9 @@ async def on_message(message):
 
     if message.content.lower().startswith('i shouldnt'):
         await message.channel.send('DEW IT!')
+        
+    if message.content.lower().startswith('não devia'):
+        await message.channel.send('DEW IT!')
 
     if message.content.lower().startswith('i shouldn\'t'):
         await message.channel.send('DEW IT!')
@@ -45,13 +48,13 @@ async def on_message(message):
     if message.content.lower().startswith('estou muito fraco'):
         await message.channel.send('PODER ILIMITADOOOOOO!')
 
-    if message.content.lower().startswith('você é muito sábio'):
+    if message.content.lower().startswith('você é muito sábi'):
         await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
 
-    if message.content.lower().startswith('tão sábio'):
+    if message.content.lower().startswith('tão sábi'):
         await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
 
-    if message.content.lower().startswith('sábio'):
+    if message.content.lower().startswith('sábi'):
         await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
 
     with open('users.json', 'r') as f:
