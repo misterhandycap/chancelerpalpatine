@@ -51,7 +51,7 @@ class Chess():
         finally:
             return self.games
 
-    def new_game(self, user1, user2, color_schema=None):
+    def new_game(self, user1, user2, color_schema=None, cpu_level=None):
         player1, player2 = convert_users_to_players(user1, user2)
         current_players_pairs = map(lambda x: [x.player1, x.player2], self.games)
         given_players_pairs = [player1, player2]
@@ -65,6 +65,7 @@ class Chess():
         game.player2 = player2
         game.current_player = player1
         game.color_schema = color_schema
+        game.cpu_level = cpu_level
 
         self.games.append(game)
         return f'Partida iniciada! {player1.name}, faça seu movimento'
@@ -94,7 +95,7 @@ class Chess():
                 raise Exception('Partida não encontrada.')
         return game[0]
 
-    def make_move(self, game: Game, move: str):
+    async def make_move(self, game: Game, move: str):
         """
         Makes a move in given game, if valid
 
@@ -115,13 +116,19 @@ class Chess():
         except Exception as e:
             return str(e), None
 
+        game.current_player = game.player1 if game.current_player == game.player2 else game.player2
+
+        if self.is_pve_game(game) and not game.board.is_game_over(claim_draw=True):
+            stockfish_result = await self._play_move(game)
+            game.board.push(stockfish_result.move)
+            game.current_player = game.player1
+        
         board_png_bytes = self.build_png_board(game)
         if game.board.is_game_over(claim_draw=True):
             pgn = self.generate_pgn(game)
             self.games.remove(game)
             return f'Fim de jogo!\n\n{pgn}', board_png_bytes
 
-        game.current_player = game.player1 if game.current_player == game.player2 else game.player2
         return f'Seu turno é agora, {game.current_player.name}', board_png_bytes
 
     def resign(self, game: Game):
@@ -202,6 +209,12 @@ class Chess():
         bytesio.seek(0)
         return bytesio
 
+    def is_pve_game(self, game: Game):
+        """
+        Returns whether given game is PvE or not
+        """
+        return game.cpu_level is not None and self.is_stockfish_enabled()
+    
     def is_stockfish_enabled(self):
         """
         Returns whether Stockfish is enabled on this environment
@@ -282,6 +295,21 @@ class Chess():
             try:
                 transport, engine = await chess.engine.popen_uci(self.stockfish_path)
                 return await engine.analyse(game.board, limit)
+            finally:
+                await engine.quit()
+                transport.close()
+
+    async def _play_move(self, game: Game):
+        limit = chess.engine.Limit(**self.stockfish_limit)
+        if self.stockfish_ssh["host"]:
+            async with asyncssh.connect(**self.stockfish_ssh) as conn:
+                _channel, engine = await conn.create_subprocess(chess.engine.UciProtocol, self.stockfish_path)
+                await engine.initialize()
+                return await engine.play(game.board, limit, options={'Skill level': game.cpu_level})
+        else:
+            try:
+                transport, engine = await chess.engine.popen_uci(self.stockfish_path)
+                return await engine.play(game.board, limit, options={'Skill level': game.cpu_level})
             finally:
                 await engine.quit()
                 transport.close()
