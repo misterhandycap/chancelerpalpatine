@@ -82,6 +82,21 @@ class TestChess(TestCase):
         self.assertEqual(games[0].board.move_stack, [])
         self.assertEqual(games[0].color_schema, color_schema)
 
+    def test_new_game_pve(self):
+        player1 = FakeDiscordUser(id=1)
+
+        chess_bot = Chess()
+        result = chess_bot.new_game(player1, None, cpu_level=5)
+        games = chess_bot.games
+
+        self.assertIn('Partida iniciada', result)
+        self.assertEqual(len(games), 1)
+        self.assertEqual(games[0].player1, player1)
+        self.assertEqual(games[0].player2, None)
+        self.assertEqual(games[0].board.move_stack, [])
+        self.assertEqual(games[0].cpu_level, 5)
+        self.assertIsNone(games[0].color_schema)
+
     def test_new_game_game_already_started(self):
         game = Game()
         game.player1 = FakeDiscordUser(id=1)
@@ -229,7 +244,7 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result, result_board = chess_bot.make_move(game, 'g1f3')
+        result, result_board = asyncio.run(chess_bot.make_move(game, 'g1f3'))
 
         self.assertIn("Seu turno é agora", result)
         self.assertEqual(len(game.board.move_stack), 3)
@@ -250,7 +265,7 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result, result_board = chess_bot.make_move(game, 'Nf3')
+        result, result_board = asyncio.run(chess_bot.make_move(game, 'Nf3'))
 
         self.assertIn("Seu turno é agora", result)
         self.assertEqual(len(game.board.move_stack), 3)
@@ -272,7 +287,7 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result, result_board = chess_bot.make_move(game, 'd8h4')
+        result, result_board = asyncio.run(chess_bot.make_move(game, 'd8h4'))
 
         self.assertIn("Fim de jogo", result)
         self.assertIn("1. g4 e5 2. f4 Qh4# 0-1", result)
@@ -280,6 +295,68 @@ class TestChess(TestCase):
 
         with open('tests/support/make_move_finish_game.png', 'rb') as f:
             self.assertEqual(result_board.getvalue(), f.read())
+
+    def test_make_move_legal_move_pve(self):
+        board = chess.Board('rn2kb1r/pp1qpppp/2ppbn2/1B6/3PP3/2N2N2/PPP2PPP/R1BQK2R w KQkq - 0 6')
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player1
+        game.cpu_level = 0
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+        chess_bot.stockfish_limit['time'] = 1
+        result, result_board = asyncio.run(chess_bot.make_move(game, 'b5d3'))
+
+        self.assertIn("Seu turno é agora", result)
+        self.assertEqual(len(game.board.move_stack), 2)
+        self.assertEqual(game.current_player, game.player1)
+
+    def test_make_move_finish_game_pve_player_loses(self):
+        board = chess.Board()
+        board.push_san("g4")
+        board.push_san("e5")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player1
+        game.cpu_level = 20
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+        result, result_board = asyncio.run(chess_bot.make_move(game, 'f4'))
+
+        if chess_bot.is_stockfish_enabled():
+            self.assertIn("Fim de jogo", result)
+            self.assertIn("1. g4 e5 2. f4 Qh4# 0-1", result)
+            self.assertEqual(len(chess_bot.games), 0)
+
+            with open('tests/support/make_move_finish_game.png', 'rb') as f:
+                self.assertEqual(result_board.getvalue(), f.read())
+
+    def test_make_move_finish_game_pve_player_wins(self):
+        board = chess.Board()
+        board.push_san("e4")
+        board.push_san("g5")
+        board.push_san("d4")
+        board.push_san("f5")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player1
+        game.cpu_level = 20
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+        result, result_board = asyncio.run(chess_bot.make_move(game, 'Qh5'))
+
+        self.assertIn("Fim de jogo", result)
+        self.assertIn("1. e4 g5 2. d4 f5 3. Qh5# 1-0", result)
+        self.assertEqual(len(chess_bot.games), 0)
 
     def test_make_move_illegal_move_in_players_turn(self):
         board = chess.Board()
@@ -293,7 +370,7 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result, result_board = chess_bot.make_move(game, 'invalid')
+        result, result_board = asyncio.run(chess_bot.make_move(game, 'invalid'))
 
         self.assertIn("Movimento inválido", result)
         self.assertIsNone(result_board)
@@ -488,6 +565,36 @@ class TestChess(TestCase):
         image_bytesio = asyncio.run(chess_bot.get_all_boards_png())
         
         self.assertIsNone(image_bytesio)
+
+    def test_is_pve_game_pve_game(self):
+        game = Game()
+        game.cpu_level = 0
+
+        chess_bot = Chess()
+        chess_bot.stockfish_path = "valid"
+        chess_bot.games.append(game)
+
+        self.assertTrue(chess_bot.is_pve_game(game))
+
+    def test_is_pve_game_pvp_game(self):
+        game = Game()
+        game.cpu_level = None
+
+        chess_bot = Chess()
+        chess_bot.stockfish_path = "valid"
+        chess_bot.games.append(game)
+
+        self.assertFalse(chess_bot.is_pve_game(game))
+
+    def test_is_pve_game_stockfish_disabled(self):
+        game = Game()
+        game.cpu_level = 0
+
+        chess_bot = Chess()
+        chess_bot.stockfish_path = ""
+        chess_bot.games.append(game)
+
+        self.assertFalse(chess_bot.is_pve_game(game))
 
     def test_eval_last_move_last_move_blunder_mate_in_one(self):
         board = chess.Board()

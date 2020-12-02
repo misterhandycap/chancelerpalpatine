@@ -25,12 +25,19 @@ async def xadrez_novo(ctx, user2: discord.User, color_schema=None):
     result = chess_bot.new_game(ctx.author, user2, color_schema=color_schema)
     await ctx.send(result)
 
+@client.command(aliases=['xpve', 'xcpu', 'xb'])
+async def xadrez_bot(ctx, cpu_level: int, color_schema=None):
+    bot_info = await client.application_info()
+    result = chess_bot.new_game(
+        ctx.author, bot_info, cpu_level=cpu_level, color_schema=color_schema)
+    await ctx.send(result)
+
 @client.command(aliases=['xj'])
 @get_current_game
 async def xadrez_jogar(ctx, move, *, user2: discord.User=None, **kwargs):
     await ctx.trigger_typing()
     game = kwargs['game']
-    result, board_png_bytes = chess_bot.make_move(game, move)
+    result, board_png_bytes = await chess_bot.make_move(game, move)
     await ctx.send(result)
     if board_png_bytes:
         await ctx.send(file=discord.File(board_png_bytes, 'board.png'))

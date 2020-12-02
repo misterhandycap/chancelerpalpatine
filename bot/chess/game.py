@@ -6,6 +6,7 @@ class Game():
         self.current_player = None
         self.color_schema = None
         self.last_eval = 0
+        self.cpu_level = None
 
     def __eq__(self, value):
         try:
