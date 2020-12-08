@@ -123,9 +123,6 @@ async def aniversario(ctx, usuario_do_discord=None):
   if bday is not None and bday.birthday is not None:    
     bday = "/".join(bday.birthday.split("-")[::-1])
     await ctx.send(bday)
-  
-  
-  
     
 
 Usuarios={}
