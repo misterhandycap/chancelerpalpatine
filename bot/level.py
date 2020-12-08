@@ -6,6 +6,18 @@ import time
 from discord.ext import commands
 from bot import client
 
+def sabio(msg):
+    if 'b' in msg:
+        start=msg.index('b')+2
+   
+        msg=msg[start:]
+        if len(msg)>4:
+            gender=msg[0]
+            name=msg[2:]
+            
+            return f"Já ouviu a história de Darth {name}, {gender} sábi{gender}?"
+        return "Já ouviu a história de Darth Plagueis, o Sábio?"
+
 @client.event
 async def on_member_join(member):
     with open('users.json', 'r') as f:
@@ -48,14 +60,9 @@ async def on_message(message):
     if message.content.lower().startswith('estou muito fraco'):
         await message.channel.send('PODER ILIMITADOOOOOO!')
 
-    if message.content.lower().startswith('você é muito sábi'):
-        await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
-
-    if message.content.lower().startswith('tão sábi'):
-        await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
-
-    if message.content.lower().startswith('sábi'):
-        await message.channel.send('Já ouviu a tragédia de Darth Plagueis, o sábio?')
+    if message.content.lower().startswith('você é muito sábi') or message.content.lower().startswith('tão sábi') or message.content.lower().startswith('sábi'):
+      
+        await message.channel.send(sabio(message.content))
 
     with open('users.json', 'r') as f:
         users = json.load(f)
