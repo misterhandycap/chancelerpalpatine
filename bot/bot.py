@@ -1,11 +1,15 @@
 import inspect
-import discord
-import random
 import json
+import logging
 import os
+import random
 import time
+
+import discord
 from discord.ext import commands
-from bot import client, chess_bot
+
+from bot import chess_bot, client
+
 
 def get_current_game(func):
     async def function_wrapper(*args, **kwargs):
@@ -26,15 +30,19 @@ def get_current_game(func):
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.online, activity=discord.Game(f'Planejando uma ordem surpresa'))
-    print('É bom te ver, mestre Jedi.')
+    logging.info('É bom te ver, mestre Jedi.')
 
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.BadArgument) and 'User' in str(error) and 'not found' in str(error):
         await ctx.send('Mestre quem?')
-    if isinstance(error, commands.CommandNotFound):
+    elif isinstance(error, commands.CommandNotFound):
         await ctx.send('Esta ordem não existe, agora se me der licença...')
-    print(f'{error.__class__}: {error}')
+    elif isinstance(error, commands.MissingRequiredArgument):
+        bot_prefix = os.environ.get("BOT_PREFIX", 'cp!')
+        await ctx.send(f'Esse comando requer um argumento que não foi passado. Veja `{bot_prefix}help` para mais informações.')
+    else:
+        logging.warning(f'{error.__class__}: {error}')
 
 @client.remove_command('help')
 
@@ -60,6 +68,7 @@ async def help(ctx, page='1'):
         ajuda.add_field(name='cp!leaderboard', value='Exibe o leaderboard de medalhas da Star Wars Wiki.\n aka:lb')
     else:
         ajuda.add_field(name='cp!xadrez_novo', value='Inicie uma nova partida de xadrez com alguém.\n Passe o ID de usuário para começar uma partida.\n aka:xn')
+        ajuda.add_field(name='cp!xadrez_bot', value='Inicie uma nova partida de xadrez contra o bot.\n Passe o nível de dificuldade (de 0 a 20).\n aka:xb, xpve, xcpu')
         ajuda.add_field(name='cp!xadrez_jogar', value='Faça uma jogada em sua partida atual. \n aka:xj')
         ajuda.add_field(name='cp!xadrez_abandonar', value='Abandone a partida atual.\n aka:xa')
         ajuda.add_field(name='cp!xadrez_pgn', value='Gera o PGN da partida atual.\n aka:xpgn')
