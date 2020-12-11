@@ -84,6 +84,59 @@ class TestLeaderboard(VCRTestCase):
         with self.assertRaises(Exception):
             actual = leaderboard_bot.build_leaderboard("invalid", {})
 
+    def test_build_medals_info(self):
+        leaderboard_bot = Leaderboard()
+        medals = {
+            "dataUser": {
+                "User1": ["Medal1:1", "Medal2:3"],
+                "User2": ["Medal4:1"],
+                "User3": ["Medal1:2", "Medal3:4"],
+                "User4": ["Medal1:2", "Medal3:1", "Medal2:1"]
+            },
+            "dataMedal": {
+                "Medal1": {
+                    "title": "Medal description",
+                    "image_url": "https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png"
+                },
+                "Medal2": {
+                    "title": "Medal description",
+                    "image_url": "https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png"
+                },
+                "Medal3": {
+                    "title": "Medal description",
+                    "image_url": "https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png"
+                },
+                "Medal4": {
+                    "title": "Medal description",
+                    "image_url": "https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png"
+                },
+            }
+        }
+        medals_points = {
+            "Medal1": 50,
+            "Medal2": 100,
+            "Medal3": 25,
+            "Medal4": 500,
+            "DescontoInativo": {
+                "usuários": ["User3"],
+                "desconto": 0.8
+            },
+            "DescontoAdmin": {
+                "usuários": ["User4"],
+                "desconto": 0.8
+            },
+        }
+
+        actual = run(leaderboard_bot.build_medals_info(medals, medals_points))
+        image_bytes = run(leaderboard_bot._get_image('Medal1', 'https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png'))
+
+        self.assertEqual(actual, [
+            {'name': 'Medal1', 'text': 'Medal description', 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png', 'image': image_bytes, 'points': 50},
+            {'name': 'Medal2', 'text': 'Medal description', 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png', 'image': image_bytes, 'points': 100},
+            {'name': 'Medal3', 'text': 'Medal description', 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png', 'image': image_bytes, 'points': 25},
+            {'name': 'Medal4', 'text': 'Medal description', 'image_url': 'https://vignette.wikia.nocookie.net/pt.starwars/images/2/2e/Medalha_bom.png', 'image': image_bytes, 'points': 500},
+        ])
+    
     def test_draw_leaderboard_one_page(self):
         leaderboard_bot = Leaderboard(auto_close_session=True)
         leaderboard = [
