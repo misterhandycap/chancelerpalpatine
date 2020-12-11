@@ -59,6 +59,10 @@ async def on_message(message):
 
     if message.content.lower().startswith('estou muito fraco'):
         await message.channel.send('PODER ILIMITADOOOOOO!')
+    
+    if message.content.lower().startswith('sequels'):
+        await message.channel.send(file=discord.File(
+            os.path.join('bot', 'images', 'sequels-meme.png')))
 
     if (message.content.lower().startswith('você é muito sábi') or 
             message.content.lower().startswith('tão sábi') or 
