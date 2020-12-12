@@ -12,6 +12,9 @@ emoji_answers = {
 
 @client.command(aliases=['an'])
 async def akinator_novo(ctx):
+    """
+    Novo jogo com Akinator
+    """
     await ctx.trigger_typing()
     game, question = await akinator_bot.new_game(ctx.author)
     await ctx.send("Jogo iniciado. Responda reagindo às perguntas do bot.")

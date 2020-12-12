@@ -7,6 +7,9 @@ from bot.anime.anime import Anime
 
 @client.command(aliases=['busca_anime', 'buscar_anime', 'anime_buscar'])
 async def anime_busca(ctx, *args):
+    """
+    Faça uma pesquisa por um nome de anime
+    """
     query = ' '.join(args)
     if not query:
         return await ctx.send("Uso: `cp!anime_busca BUSCA`")
@@ -28,6 +31,9 @@ async def anime_busca(ctx, *args):
 
 @client.command()
 async def anime(ctx, *args):
+    """
+    Veja informações do anime buscado com MyAnimeList
+    """
     query = ' '.join(args)
     if not query:
         return await ctx.send("Uso: `cp!anime BUSCA`")

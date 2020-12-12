@@ -7,6 +7,9 @@ from bot.astrology.exception import AstrologyInvalidInput
 
 @client.command()
 async def mapa_astral(ctx, date=None, time=None, *args):
+    """
+    Visualize ou crie via DM seu mapa astral
+    """
     city_name = ' '.join(args)
     if not isinstance(ctx.channel, discord.channel.DMChannel):
         user_chart = astrology_bot.get_user_chart(ctx.author.id)

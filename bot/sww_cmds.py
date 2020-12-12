@@ -6,6 +6,9 @@ from bot import client, leaderboard_bot
 
 @client.command(aliases=['lb'])
 async def leaderboard(ctx, page=1):
+    """
+    Exibe o leaderboard de medalhas da Star Wars Wiki
+    """
     await ctx.trigger_typing()
     try:
         leaderboard_data = await leaderboard_bot.get()
@@ -19,6 +22,9 @@ async def leaderboard(ctx, page=1):
 
 @client.command(aliases=['medalha'])
 async def medal(ctx, *args):
+    """
+    Exibe detalhes de uma medalha da Star Wars Wiki
+    """
     medal_name = ' '.join(args)
     await ctx.trigger_typing()
     try:
@@ -46,6 +52,9 @@ async def medal(ctx, *args):
 
 @client.command(aliases=['medalhas'])
 async def medals(ctx, page: int=1):
+    """
+    Exibe as medalhas disponíveis da Star Wars Wiki
+    """
     max_medals_per_page = 6
     await ctx.trigger_typing()
     if page < 0:

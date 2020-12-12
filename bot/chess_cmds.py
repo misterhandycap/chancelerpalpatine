@@ -18,15 +18,24 @@ def get_current_game(func):
         await func(*args, **kwargs)
     function_wrapper.__name__ = func.__name__
     function_wrapper.__signature__ = inspect.signature(func)
+    function_wrapper.__doc__ = func.__doc__
     return function_wrapper
 
 @client.command(aliases=['xn'])
 async def xadrez_novo(ctx, user2: discord.User, color_schema=None):
+    """
+    Inicie uma nova partida de xadrez com alguém.
+    Passe o ID de usuário para começar uma partida
+    """
     result = chess_bot.new_game(ctx.author, user2, color_schema=color_schema)
     await ctx.send(result)
 
 @client.command(aliases=['xpve', 'xcpu', 'xb'])
 async def xadrez_bot(ctx, cpu_level: int, color_schema=None):
+    """
+    Inicie uma nova partida de xadrez contra o bot.
+    Passe o nível de dificuldade (de 0 a 20)
+    """
     bot_info = await client.application_info()
     result = chess_bot.new_game(
         ctx.author, bot_info, cpu_level=cpu_level, color_schema=color_schema)
@@ -35,6 +44,9 @@ async def xadrez_bot(ctx, cpu_level: int, color_schema=None):
 @client.command(aliases=['xj'])
 @get_current_game
 async def xadrez_jogar(ctx, move, *, user2: discord.User=None, **kwargs):
+    """
+    Faça uma jogada em sua partida atual
+    """
     await ctx.trigger_typing()
     game = kwargs['game']
     result, board_png_bytes = await chess_bot.make_move(game, move)
@@ -53,6 +65,9 @@ async def xadrez_jogar(ctx, move, *, user2: discord.User=None, **kwargs):
 @client.command(aliases=['xa'])
 @get_current_game
 async def xadrez_abandonar(ctx, *, user2: discord.User=None, **kwargs):
+    """
+    Abandone a partida atual
+    """
     await ctx.trigger_typing()
     game = kwargs['game']
     result, board_png_bytes = chess_bot.resign(game)
@@ -64,12 +79,18 @@ async def xadrez_abandonar(ctx, *, user2: discord.User=None, **kwargs):
 @client.command(aliases=['xpgn'])
 @get_current_game
 async def xadrez_pgn(ctx, *, user2: discord.User=None, **kwargs):
+    """
+    Gera o PGN da partida atual
+    """
     game = kwargs['game']
     result = chess_bot.generate_pgn(game)
     await ctx.send(result)
 
 @client.command(aliases=['xt', 'xadrez_jogos'])
 async def xadrez_todos(ctx, page=0):
+    """
+    Veja todas as partidas que estão sendo jogadas agora
+    """
     await ctx.trigger_typing()
     png_bytes = await chess_bot.get_all_boards_png(page)
     if not png_bytes:
@@ -79,6 +100,9 @@ async def xadrez_todos(ctx, page=0):
 
 @client.command(aliases=['xp'])
 async def xadrez_puzzle(ctx, puzzle_id=None, move=''):
+    """
+    Pratique um puzzle de xadrez
+    """
     await ctx.trigger_typing()
     if not puzzle_id:
         puzzle_dict = await puzzle_bot.get_random_puzzle()
