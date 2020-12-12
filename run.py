@@ -7,7 +7,6 @@ from bot.akinator_cmds import *
 from bot.anime_cmds import *
 from bot.astrology_cmds import *
 from bot.bot import *
-from bot.chess_cmds import *
 from bot.level import *
 from bot.sww_cmds import *
 

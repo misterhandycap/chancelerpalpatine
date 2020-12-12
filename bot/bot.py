@@ -8,7 +8,7 @@ import time
 import discord
 from discord.ext import commands
 
-from bot import chess_bot, client
+from bot import client
 
 @client.event
 async def on_ready():
