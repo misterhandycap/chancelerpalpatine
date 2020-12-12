@@ -106,15 +106,18 @@ async def level_up(users, user, channel):
     experiencia = users[str(user.id)]['experiencia']
     level_start = users[str(user.id)]['level']
     level_end = int(experiencia **(1/4))
+    bot_env = os.environ.get("ENV", 'dev')
 
     if level_start < level_end:
-
-
-        await channel.send('{} subiu ao nível {}! Assistiremos sua carreira com grande interesse.'.format(user.mention, level_end))
+        if bot_env == 'prod':
+            await channel.send('{} subiu ao nível {}! Assistiremos sua carreira com grande interesse.'.format(user.mention, level_end))
         users[str(user.id)]['level'] = level_end
 
 @client.command(aliases=['nivel'])
 async def level(ctx):
+    """
+    Mostra o nível de usuário ao usuário que pediu
+    """
     user_id = str(ctx.author.id)
     with open('users.json', 'r') as f:
         users = json.load(f)
@@ -125,6 +128,9 @@ async def level(ctx):
 
 @client.command(aliases=['board'])
 async def rank(ctx):
+    """
+    Mostra a tabela de niveis de usuários em ordem de maior pra menor
+    """
     user_id = str(ctx.author.id)
     with open('users.json', 'r') as f:
         users = json.load(f)
