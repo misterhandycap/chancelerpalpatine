@@ -55,14 +55,12 @@ async def help(ctx, page_or_cmd='1'):
             colour=discord.Color.blurple(),
             timestamp=ctx.message.created_at
         )
-        help_embed.set_thumbnail(
-            url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
         interval_start = (page_number - 1) * max_itens_per_page
         interval_end = page_number * max_itens_per_page
         for cmd in bot_commands[interval_start:interval_end]:
             help_embed.add_field(
                 name=f'{bot_prefix}{cmd.name}',
-                value=(cmd.help or 'Sem descrição disponível') + (('\naka: '+', '.join(cmd.aliases)) if cmd.aliases else '')
+                value=cmd.help or 'Sem descrição disponível'
             )
     else:
         try:

@@ -116,7 +116,7 @@ async def level_up(users, user, channel):
 @client.command(aliases=['nivel'])
 async def level(ctx):
     """
-    Mostra o nível de usuário ao uúario que pediu
+    Mostra o nível de usuário ao usuário que pediu
     """
     user_id = str(ctx.author.id)
     with open('users.json', 'r') as f:
