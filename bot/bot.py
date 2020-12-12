@@ -30,32 +30,54 @@ async def on_command_error(ctx, error):
 @client.remove_command('help')
 
 @client.command(aliases=['ajuda'])
-async def help(ctx, page_number: int=1):
+async def help(ctx, page_or_cmd='1'):
     """
     Exibe essa mensagem
     """
+    page_number = None
+    cmd_name = None
+    try:
+        page_number = int(page_or_cmd)
+    except:
+        cmd_name = page_or_cmd
+
     max_itens_per_page = 9
     bot_prefix = os.environ.get("BOT_PREFIX", 'cp!')
     bot_commands = sorted(client.commands, key=lambda x: x.name)
     last_page = len(bot_commands) // max_itens_per_page + (len(bot_commands) % max_itens_per_page > 0)
-    if page_number < 1 or page_number > last_page:
+    if page_number and (page_number < 1 or page_number > last_page):
         page_number = 1
-    ajuda = discord.Embed(
-        title='Ajuda',
-        description=f'Comandos ({page_number}/{last_page}):',
-        colour=discord.Color.blurple(),
-        timestamp=ctx.message.created_at
-    )
-    ajuda.set_thumbnail(
-        url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
-    interval_start = (page_number - 1) * max_itens_per_page
-    interval_end = page_number * max_itens_per_page
-    for cmd in bot_commands[interval_start:interval_end]:
-        ajuda.add_field(
-            name=f'{bot_prefix}{cmd.name}',
-            value=(cmd.help or 'Sem descrição disponível') + (('\naka: '+', '.join(cmd.aliases)) if cmd.aliases else '')
+    
+    if page_number:
+        help_embed = discord.Embed(
+            title='Ajuda',
+            description=f'Comandos ({page_number}/{last_page}):',
+            colour=discord.Color.blurple(),
+            timestamp=ctx.message.created_at
         )
-    await ctx.send(embed=ajuda)
+        help_embed.set_thumbnail(
+            url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
+        interval_start = (page_number - 1) * max_itens_per_page
+        interval_end = page_number * max_itens_per_page
+        for cmd in bot_commands[interval_start:interval_end]:
+            help_embed.add_field(
+                name=f'{bot_prefix}{cmd.name}',
+                value=(cmd.help or 'Sem descrição disponível') + (('\naka: '+', '.join(cmd.aliases)) if cmd.aliases else '')
+            )
+    else:
+        try:
+            cmd = [x for x in bot_commands if x.name == cmd_name][0]
+        except IndexError:
+            return await ctx.send(f"Comando não encontrado. Veja todos os comandos disponíveis com `{bot_prefix}ajuda`")
+        help_embed = discord.Embed(
+            title=f'Ajuda - {cmd.name}',
+            description=cmd.help or 'Sem descrição disponível',
+            colour=discord.Color.blurple(),
+            timestamp=ctx.message.created_at
+        )
+        help_embed.add_field(name='Nomes alternativos', value='\n'.join(cmd.aliases) or 'Nenhum')
+        help_embed.add_field(name='Parâmetros', value=cmd.signature or 'Nenhum')
+    await ctx.send(embed=help_embed)
 
 @client.command()
 async def ping(ctx):
