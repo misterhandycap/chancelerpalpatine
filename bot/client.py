@@ -6,6 +6,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from bot.akinator_cmds import AkinatorCog
+from bot.anime_cmds import AnimeCog
 from bot.chess_cmds import ChessCog
 from bot.sww_leaderboard.leaderboard import Leaderboard
 
@@ -19,6 +20,7 @@ client = commands.Bot(command_prefix=os.environ.get("BOT_PREFIX", 'cp!'))
 
 client.add_cog(ChessCog(client))
 client.add_cog(AkinatorCog(client))
+client.add_cog(AnimeCog(client))
 
 astrology_bot = None
 if os.environ.get("DISABLE_ASTROLOGY") not in ['True', 'true']:
