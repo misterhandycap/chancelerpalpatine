@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from bot.akinator_cmds import AkinatorCog
 from bot.anime_cmds import AnimeCog
 from bot.chess_cmds import ChessCog
+from bot.level import LevelCog
 from bot.sww_cmds import StarWarsWikiCog
 
 load_dotenv()
@@ -18,6 +19,7 @@ client = discord.Client()
 
 client = commands.Bot(command_prefix=os.environ.get("BOT_PREFIX", 'cp!'))
 
+client.add_cog(LevelCog(client))
 client.add_cog(ChessCog(client))
 client.add_cog(AkinatorCog(client))
 client.add_cog(AnimeCog(client))
