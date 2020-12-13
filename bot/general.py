@@ -81,6 +81,7 @@ class GeneralCog(commands.Cog):
             )
             help_embed.add_field(name='Nomes alternativos', value='\n'.join(cmd.aliases) or 'Nenhum')
             help_embed.add_field(name='Parâmetros', value=cmd.signature or 'Nenhum')
+            help_embed.add_field(name='Categoria', value=cmd.cog.description if cmd.cog else 'Nenhuma')
         await ctx.send(embed=help_embed)
 
     @commands.command()
