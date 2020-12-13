@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from bot.akinator_cmds import AkinatorCog
 from bot.anime_cmds import AnimeCog
 from bot.chess_cmds import ChessCog
+from bot.general import GeneralCog
 from bot.level import LevelCog
 from bot.sww_cmds import StarWarsWikiCog
 
@@ -17,8 +18,12 @@ logging.basicConfig(level=logging.DEBUG if os.environ.get("DEBUG") else logging.
 
 client = discord.Client()
 
-client = commands.Bot(command_prefix=os.environ.get("BOT_PREFIX", 'cp!'))
+client = commands.Bot(
+    command_prefix=os.environ.get("BOT_PREFIX", 'cp!'),
+    help_command=None
+)
 
+client.add_cog(GeneralCog(client))
 client.add_cog(LevelCog(client))
 client.add_cog(ChessCog(client))
 client.add_cog(AkinatorCog(client))
