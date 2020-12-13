@@ -6,7 +6,6 @@ from bot import client
 from bot.astrology_cmds import *
 from bot.bot import *
 from bot.level import *
-from bot.sww_cmds import *
 
 load_dotenv()
 
