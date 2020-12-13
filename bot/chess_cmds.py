@@ -27,6 +27,10 @@ def get_current_game(func):
 
 
 class ChessCog(commands.Cog):
+    """
+    Comandos para xadrez
+    """
+
     def __init__(self, client):
         self.client = client
         self.chess_bot = Chess()

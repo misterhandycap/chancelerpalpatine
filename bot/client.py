@@ -5,9 +5,12 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from bot.akinator.akinator_game import AkinatorGame
+from bot.akinator_cmds import AkinatorCog
+from bot.anime_cmds import AnimeCog
 from bot.chess_cmds import ChessCog
-from bot.sww_leaderboard.leaderboard import Leaderboard
+from bot.general import GeneralCog
+from bot.level import LevelCog
+from bot.sww_cmds import StarWarsWikiCog
 
 load_dotenv()
 
@@ -15,16 +18,19 @@ logging.basicConfig(level=logging.DEBUG if os.environ.get("DEBUG") else logging.
 
 client = discord.Client()
 
-client = commands.Bot(command_prefix=os.environ.get("BOT_PREFIX", 'cp!'))
+client = commands.Bot(
+    command_prefix=os.environ.get("BOT_PREFIX", 'cp!'),
+    help_command=None
+)
 
+client.add_cog(GeneralCog(client))
+client.add_cog(LevelCog(client))
 client.add_cog(ChessCog(client))
+client.add_cog(AkinatorCog(client))
+client.add_cog(AnimeCog(client))
+client.add_cog(StarWarsWikiCog(client))
 
 astrology_bot = None
 if os.environ.get("DISABLE_ASTROLOGY") not in ['True', 'true']:
-    from bot.astrology.astrology_chart import AstrologyChart
-    astrology_bot = AstrologyChart()
-    astrology_bot.load_charts()
-
-akinator_bot = AkinatorGame()
-
-leaderboard_bot = Leaderboard()
+    from bot.astrology_cmds import AstrologyCog
+    client.add_cog(AstrologyCog(client))
