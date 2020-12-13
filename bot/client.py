@@ -25,6 +25,5 @@ client.add_cog(StarWarsWikiCog(client))
 
 astrology_bot = None
 if os.environ.get("DISABLE_ASTROLOGY") not in ['True', 'true']:
-    from bot.astrology.astrology_chart import AstrologyChart
-    astrology_bot = AstrologyChart()
-    astrology_bot.load_charts()
+    from bot.astrology_cmds import AstrologyCog
+    client.add_cog(AstrologyCog(client))
