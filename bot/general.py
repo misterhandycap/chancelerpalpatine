@@ -8,6 +8,8 @@ import time
 import discord
 from discord.ext import commands
 
+from bot.utils import paginate
+
 
 class GeneralCog(commands.Cog):
     """
@@ -50,20 +52,16 @@ class GeneralCog(commands.Cog):
         max_itens_per_page = 9
         bot_prefix = os.environ.get("BOT_PREFIX", 'cp!')
         bot_commands = sorted(self.client.commands, key=lambda x: x.name)
-        last_page = len(bot_commands) // max_itens_per_page + (len(bot_commands) % max_itens_per_page > 0)
-        if page_number and (page_number < 1 or page_number > last_page):
-            page_number = 1
         
         if page_number:
+            paginated_commands, last_page = paginate(bot_commands, page_number, max_itens_per_page)
             help_embed = discord.Embed(
                 title='Ajuda',
-                description=f'Comandos ({page_number}/{last_page}):',
+                description=f'Comandos ({page_number if page_number in range(1, last_page) else 1}/{last_page}):',
                 colour=discord.Color.blurple(),
                 timestamp=ctx.message.created_at
             )
-            interval_start = (page_number - 1) * max_itens_per_page
-            interval_end = page_number * max_itens_per_page
-            for cmd in bot_commands[interval_start:interval_end]:
+            for cmd in paginated_commands:
                 help_embed.add_field(
                     name=f'{bot_prefix}{cmd.name}',
                     value=cmd.help or 'Sem descrição disponível'

@@ -23,3 +23,26 @@ def run_cpu_bound_task_with_event_loop(func, *args, **kwargs):
 
 def convert_users_to_players(*args):
         return tuple(map(lambda user: Player(user) if user else None, args))
+
+def paginate(elems: list, page: int, itens_per_page: int):
+    """
+    Paginates long list into pages and returns requested page
+
+    Pages indexes start at 1.
+
+    :param elems: Elements to be paginated
+    :type elems: list
+    :param page: Page number to be returned
+    :type page: int
+    :param itens_per_page: Max number of elements per page
+    :type itens_per_page: int
+    :return: Paginated list
+    :rtype: list
+    """
+    len_elems = len(elems)
+    last_page = len_elems // itens_per_page + (len_elems % itens_per_page > 0)
+    if page < 1 or page > last_page:
+        page = 1
+    interval_start = (page-1) * itens_per_page
+    interval_end = page * itens_per_page
+    return elems[interval_start:interval_end], last_page

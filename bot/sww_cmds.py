@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 
 from bot.sww_leaderboard.leaderboard import Leaderboard
+from bot.utils import paginate
 
 
 class StarWarsWikiCog(commands.Cog):
@@ -73,19 +74,17 @@ class StarWarsWikiCog(commands.Cog):
         try:
             leaderboard_data = await self.leaderboard_bot.get()
             medals = await self.leaderboard_bot.build_medals_info(*leaderboard_data)
-            interval_start = (page-1) * max_medals_per_page
-            interval_end = page * max_medals_per_page
-            last_page = len(medals) // max_medals_per_page + (len(medals) % max_medals_per_page > 0)
+            paginated_medals, last_page = paginate(medals, page, max_medals_per_page)
             if page > last_page:
                 return await ctx.send("Sem mais medalhas")
             
             embed = discord.Embed(
                 title='Medalhas da Star Wars Wiki',
-                description=f'Página {page}/{last_page}',
+                description=f'Página {max(page, 1)}/{last_page}',
                 colour=discord.Color.blurple(),
                 timestamp=ctx.message.created_at
             )
-            for medal_info in medals[interval_start:interval_end]:
+            for medal_info in paginated_medals:
                 embed.add_field(name=medal_info['name'], value=medal_info['text'])
             return await ctx.send(embed=embed)
         except Exception as e:

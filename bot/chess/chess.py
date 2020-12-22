@@ -15,7 +15,7 @@ from chess.pgn import Game as ChessGame
 from bot import client
 from bot.chess.game import Game
 from bot.chess.player import Player
-from bot.utils import convert_users_to_players, run_cpu_bound_task
+from bot.utils import convert_users_to_players, paginate, run_cpu_bound_task
 
 
 class Chess():
@@ -194,11 +194,9 @@ class Chess():
         number_of_boards_sqrt = sqrt(min(next_perfect_sqr(len(self.games)), max_number_of_board_per_page))
         board_width = int(full_width / number_of_boards_sqrt)
         start_page_position = max_number_of_board_per_page * page
+        paginated_games, _ = paginate(self.games, page, max_number_of_board_per_page)
         
-        for index, game in enumerate(self.games):
-            if not index in range(start_page_position, start_page_position + max_number_of_board_per_page):
-                continue
-            index -= start_page_position
+        for index, game in enumerate(paginated_games):
             board_png = self.build_png_board(game)
             board_image = Image.open(board_png)
             board_position = (board_width * int(index % number_of_boards_sqrt), board_width * int(floor(index / number_of_boards_sqrt)))

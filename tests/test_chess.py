@@ -554,7 +554,7 @@ class TestChess(TestCase):
             chess_bot.games.append(game2)
             chess_bot.games.append(game3)
 
-        image_bytesio = asyncio.run(chess_bot.get_all_boards_png(page=1), debug=True)
+        image_bytesio = asyncio.run(chess_bot.get_all_boards_png(page=2), debug=True)
 
         with open("tests/support/get_all_boards_png_twelve_games_second_page.png", 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
