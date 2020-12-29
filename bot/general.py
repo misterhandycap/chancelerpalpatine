@@ -10,6 +10,8 @@ from discord.ext import commands
 
 from bot.utils import paginate
 
+from bot.traducaosww import BuscaPalavra
+
 
 class GeneralCog(commands.Cog):
     """
@@ -106,6 +108,15 @@ class GeneralCog(commands.Cog):
         responses = ['Assim é.', 'Está me ameaçando?', 'É certo.', 'Acho que devemos buscar mais informações.', 'Isso não está correto.', 'Você está errado(a).', 'Não, não, NÃO!!', 'Acredito que esteja errado(a), Mestre', 'Isso necessita de mais análises']
         await ctx.send(f'{random.choice(responses)}')
 
+    @commands.command(aliases=['tr', 'traducaosww'])
+    async def traducao(self, ctx, *args):
+        """
+        Busca palavra no dicionário da SWW.
+        """
+
+        palavra = " ".join(args)
+        await ctx.send(BuscaPalavra(palavra))
+    
     @vision.error
     async def clear_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
