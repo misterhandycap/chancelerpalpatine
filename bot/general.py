@@ -10,7 +10,7 @@ from discord.ext import commands
 
 from bot.utils import paginate
 
-from bot.traducaosww import BuscaPalavra
+from bot.tradutor import Tradutor
 
 
 class GeneralCog(commands.Cog):
@@ -20,6 +20,7 @@ class GeneralCog(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.traducao_da_sww = Tradutor()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -115,7 +116,7 @@ class GeneralCog(commands.Cog):
         """
 
         palavra = " ".join(args)
-        await ctx.send(BuscaPalavra(palavra))
+        await ctx.send(self.traducao_da_sww.busca_palavra(palavra))
     
     @vision.error
     async def clear_error(self, ctx, error):
