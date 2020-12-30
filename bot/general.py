@@ -60,7 +60,7 @@ class GeneralCog(commands.Cog):
         bot_commands = sorted(self.client.commands, key=lambda x: x.name)
         
         if page_number:
-            help_embed = self._create_paginated_help_embed(page_number)
+            help_embed = await self._create_paginated_help_embed(page_number)
             await self.help_cmd_manager.send_embed(help_embed, page_number, ctx)
         else:
             try:
@@ -78,7 +78,7 @@ class GeneralCog(commands.Cog):
             help_embed.add_field(name='Categoria', value=cmd.cog.description if cmd.cog else 'Nenhuma')
             await ctx.send(embed=help_embed)
 
-    def _create_paginated_help_embed(self, page_number):
+    async def _create_paginated_help_embed(self, page_number):
         max_itens_per_page = 9
         bot_prefix = os.environ.get("BOT_PREFIX", 'cp!')
         bot_commands = sorted(self.client.commands, key=lambda x: x.name)

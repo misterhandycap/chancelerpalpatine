@@ -113,13 +113,16 @@ class PaginatedEmbedManager():
         else:
             page_number = int(match.group(1))
             last_page = int(match.group(2))
-        await reaction.message.remove_reaction(emoji, user)
         
         if emoji == self.BACKWARD_EMOJI and page_number > 1:
             page_number -= 1
         elif emoji == self.FORWARD_EMOJI and page_number < last_page:
             page_number += 1
 
-        embed = self._prepare_embed(
-            self.callback(page_number), str(user), page_number)
-        return await reaction.message.edit(embed=embed)
+        try:
+            embed = self._prepare_embed(
+                await self.callback(page_number), str(user), page_number)
+            await reaction.message.edit(embed=embed)
+        except:
+            return await reaction.message.add_reaction('⚠️')
+        await reaction.message.remove_reaction(emoji, user)
