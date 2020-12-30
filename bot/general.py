@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import random
+import re
 import time
 
 import discord
@@ -10,6 +11,9 @@ from discord.ext import commands
 
 from bot.aurebesh import text_to_aurebesh_img
 from bot.utils import paginate
+
+BACKWARD_EMOJI = '◀️'
+FORWARD_EMOJI = '▶️'
 
 
 class GeneralCog(commands.Cog):
@@ -58,7 +62,7 @@ class GeneralCog(commands.Cog):
             paginated_commands, last_page = paginate(bot_commands, page_number, max_itens_per_page)
             help_embed = discord.Embed(
                 title='Ajuda',
-                description=f'Comandos ({page_number if page_number in range(1, last_page) else 1}/{last_page}):',
+                description=f'Comandos ({min(max(page_number, 1), last_page)}/{last_page}):',
                 colour=discord.Color.blurple(),
                 timestamp=ctx.message.created_at
             )
@@ -81,7 +85,53 @@ class GeneralCog(commands.Cog):
             help_embed.add_field(name='Nomes alternativos', value='\n'.join(cmd.aliases) or 'Nenhum')
             help_embed.add_field(name='Parâmetros', value=cmd.signature or 'Nenhum')
             help_embed.add_field(name='Categoria', value=cmd.cog.description if cmd.cog else 'Nenhuma')
-        await ctx.send(embed=help_embed)
+        help_embed.set_author(name=ctx.author)
+        message = await ctx.send(embed=help_embed)
+        await message.add_reaction(BACKWARD_EMOJI)
+        await message.add_reaction(FORWARD_EMOJI)
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        valid_emojis = [BACKWARD_EMOJI, FORWARD_EMOJI]
+        if not reaction.message.embeds:
+            return
+        embed = reaction.message.embeds[0]
+        if not (embed.title == 'Ajuda' and str(user) == embed.author.name):
+            return
+
+        emoji = str(reaction)
+        if emoji not in valid_emojis:
+            return
+
+        match = re.match(r'Comandos \((\d+)', embed.description)
+        if not match:
+            page_number = 1
+        else:
+            page_number = int(match.group(1))
+        await reaction.message.remove_reaction(emoji, user)
+        embed.clear_fields()
+        embed.set_author(name=user)
+        
+        if emoji == BACKWARD_EMOJI and page_number > 1:
+            page_number -= 1
+        elif emoji == FORWARD_EMOJI:
+            page_number += 1
+
+        max_itens_per_page = 9
+        bot_prefix = os.environ.get("BOT_PREFIX", 'cp!')
+        bot_commands = sorted(self.client.commands, key=lambda x: x.name)
+
+        paginated_commands, last_page = paginate(bot_commands, page_number, max_itens_per_page)
+        if page_number > last_page:
+            return
+        
+        embed.description = f'Comandos ({page_number}/{last_page}):'
+        for cmd in paginated_commands:
+            embed.add_field(
+                name=f'{bot_prefix}{cmd.name}',
+                value=cmd.help or 'Sem descrição disponível'
+            )
+        return await reaction.message.edit(embed=embed)
 
     @commands.command()
     async def aurebesh(self, ctx, *, text):

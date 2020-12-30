@@ -41,8 +41,7 @@ def paginate(elems: list, page: int, itens_per_page: int):
     """
     len_elems = len(elems)
     last_page = len_elems // itens_per_page + (len_elems % itens_per_page > 0)
-    if page < 1 or page > last_page:
-        page = 1
+    page = min(max(page, 1), last_page)
     interval_start = (page-1) * itens_per_page
     interval_end = page * itens_per_page
     return elems[interval_start:interval_end], last_page
