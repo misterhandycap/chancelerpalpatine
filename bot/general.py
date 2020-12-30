@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import random
-import re
 import time
 
 import discord
@@ -11,9 +10,6 @@ from discord.ext import commands
 
 from bot.aurebesh import text_to_aurebesh_img
 from bot.utils import paginate, PaginatedEmbedManager
-
-BACKWARD_EMOJI = '◀️'
-FORWARD_EMOJI = '▶️'
 
 
 class GeneralCog(commands.Cog):
@@ -55,7 +51,6 @@ class GeneralCog(commands.Cog):
         except:
             cmd_name = page_or_cmd
 
-        max_itens_per_page = 9
         bot_prefix = os.environ.get("BOT_PREFIX", 'cp!')
         bot_commands = sorted(self.client.commands, key=lambda x: x.name)
         
