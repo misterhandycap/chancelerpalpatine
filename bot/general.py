@@ -8,6 +8,7 @@ import time
 import discord
 from discord.ext import commands
 
+from bot.aurebesh import text_to_aurebesh_img
 from bot.utils import paginate
 
 
@@ -82,6 +83,14 @@ class GeneralCog(commands.Cog):
             help_embed.add_field(name='Categoria', value=cmd.cog.description if cmd.cog else 'Nenhuma')
         await ctx.send(embed=help_embed)
 
+    @commands.command()
+    async def aurebesh(self, ctx, *, text):
+        """
+        Gera uma imagem com o texto fornecido em Aurebesh
+        """
+        image = text_to_aurebesh_img(text)
+        await ctx.send(file=discord.File(image, 'aurebesh.png'))
+    
     @commands.command()
     async def ping(self, ctx):
         """
