@@ -42,5 +42,5 @@ class TestUtils(TestCase):
 
         result = paginate(elems, page, max_itens)
 
-        self.assertEqual(result[0], elems[:5])
+        self.assertEqual(result[0], elems[5:])
         self.assertEqual(result[1], 2)

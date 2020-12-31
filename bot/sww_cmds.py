@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 from bot.sww_leaderboard.leaderboard import Leaderboard
-from bot.utils import paginate
+from bot.utils import paginate, PaginatedEmbedManager
 
 
 class StarWarsWikiCog(commands.Cog):
@@ -15,6 +15,8 @@ class StarWarsWikiCog(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.leaderboard_bot = Leaderboard()
+        self.medals_paginated_embed_manager = PaginatedEmbedManager(
+            client, self._build_medals_embed)
 
     @commands.command(aliases=['lb'])
     async def leaderboard(self, ctx, page=1):
@@ -67,26 +69,27 @@ class StarWarsWikiCog(commands.Cog):
         """
         Exibe as medalhas disponíveis da Star Wars Wiki
         """
-        max_medals_per_page = 6
         await ctx.trigger_typing()
-        if page < 0:
-            page = 0
         try:
-            leaderboard_data = await self.leaderboard_bot.get()
-            medals = await self.leaderboard_bot.build_medals_info(*leaderboard_data)
-            paginated_medals, last_page = paginate(medals, page, max_medals_per_page)
-            if page > last_page:
-                return await ctx.send("Sem mais medalhas")
-            
-            embed = discord.Embed(
-                title='Medalhas da Star Wars Wiki',
-                description=f'Página {max(page, 1)}/{last_page}',
-                colour=discord.Color.blurple(),
-                timestamp=ctx.message.created_at
-            )
-            for medal_info in paginated_medals:
-                embed.add_field(name=medal_info['name'], value=medal_info['text'])
-            return await ctx.send(embed=embed)
+            return await self.medals_paginated_embed_manager.send_embed(
+                await self._build_medals_embed(page), page, ctx)
         except Exception as e:
             logging.warning(e, exc_info=True)
             return await ctx.send("Houve um erro ao obter o quadro de lideranças da Star Wars Wiki.")
+
+    async def _build_medals_embed(self, page_number):
+        max_medals_per_page = 6
+        leaderboard_data = await self.leaderboard_bot.get()
+        medals = await self.leaderboard_bot.build_medals_info(*leaderboard_data)
+        paginated_medals, last_page = paginate(medals, page_number, max_medals_per_page)
+        
+        embed = discord.Embed(
+            title='Medalhas da Star Wars Wiki',
+            description=f'Página {max(page_number, 1)}/{last_page}',
+            colour=discord.Color.blurple()
+        )
+        for medal_info in paginated_medals:
+            embed.add_field(name=medal_info['name'], value=medal_info['text'])
+        self.medals_paginated_embed_manager.last_page = last_page
+
+        return embed
