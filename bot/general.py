@@ -110,12 +110,12 @@ class GeneralCog(commands.Cog):
         await ctx.send(f'{random.choice(responses)}')
 
     @commands.command(aliases=['tr', 'traducaosww'])
-    async def traducao(self, ctx, *args):
+    async def traducao(self, ctx, *, palavra):
         """
         Busca palavra no dicionário da SWW.
         """
 
-        palavra = " ".join(args)
+        #palavra = " ".join(args)
         await ctx.send(self.traducao_da_sww.busca_palavra(palavra))
     
     @vision.error

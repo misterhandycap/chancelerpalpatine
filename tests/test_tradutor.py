@@ -1,8 +1,8 @@
-from unittest import TestCase
+from vcr_unittest import VCRTestCase
 
 from bot.tradutor import Tradutor
 
-class TestTraducao(TestCase):
+class TestTraducao(VCRTestCase):
     
     def test_arakein_monks_item_presente(self):
         arakein = Tradutor().busca_palavra('arakein monks')
