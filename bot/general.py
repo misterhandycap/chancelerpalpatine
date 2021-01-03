@@ -8,7 +8,8 @@ import time
 import discord
 from discord.ext import commands
 
-from bot.utils import paginate
+from bot.aurebesh import text_to_aurebesh_img
+from bot.utils import paginate, PaginatedEmbedManager
 
 from bot.tradutor import Tradutor
 
@@ -21,6 +22,7 @@ class GeneralCog(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.traducao_da_sww = Tradutor()
+        self.help_cmd_manager = PaginatedEmbedManager(client, self._create_paginated_help_embed)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -52,23 +54,12 @@ class GeneralCog(commands.Cog):
         except:
             cmd_name = page_or_cmd
 
-        max_itens_per_page = 9
         bot_prefix = os.environ.get("BOT_PREFIX", 'cp!')
         bot_commands = sorted(self.client.commands, key=lambda x: x.name)
         
         if page_number:
-            paginated_commands, last_page = paginate(bot_commands, page_number, max_itens_per_page)
-            help_embed = discord.Embed(
-                title='Ajuda',
-                description=f'Comandos ({page_number if page_number in range(1, last_page) else 1}/{last_page}):',
-                colour=discord.Color.blurple(),
-                timestamp=ctx.message.created_at
-            )
-            for cmd in paginated_commands:
-                help_embed.add_field(
-                    name=f'{bot_prefix}{cmd.name}',
-                    value=cmd.help or 'Sem descrição disponível'
-                )
+            help_embed = await self._create_paginated_help_embed(page_number)
+            await self.help_cmd_manager.send_embed(help_embed, page_number, ctx)
         else:
             try:
                 cmd = [x for x in bot_commands if x.name == cmd_name][0]
@@ -83,8 +74,36 @@ class GeneralCog(commands.Cog):
             help_embed.add_field(name='Nomes alternativos', value='\n'.join(cmd.aliases) or 'Nenhum')
             help_embed.add_field(name='Parâmetros', value=cmd.signature or 'Nenhum')
             help_embed.add_field(name='Categoria', value=cmd.cog.description if cmd.cog else 'Nenhuma')
-        await ctx.send(embed=help_embed)
+            await ctx.send(embed=help_embed)
 
+    async def _create_paginated_help_embed(self, page_number):
+        max_itens_per_page = 9
+        bot_prefix = os.environ.get("BOT_PREFIX", 'cp!')
+        bot_commands = sorted(self.client.commands, key=lambda x: x.name)
+        
+        paginated_commands, last_page = paginate(bot_commands, page_number, max_itens_per_page)
+        help_embed = discord.Embed(
+            title='Ajuda',
+            description=f'Comandos ({min(max(page_number, 1), last_page)}/{last_page}):',
+            colour=discord.Color.blurple()
+        )
+        for cmd in paginated_commands:
+            help_embed.add_field(
+                name=f'{bot_prefix}{cmd.name}',
+                value=cmd.help or 'Sem descrição disponível'
+            )
+        self.help_cmd_manager.last_page = last_page
+
+        return help_embed
+
+    @commands.command()
+    async def aurebesh(self, ctx, *, text):
+        """
+        Gera uma imagem com o texto fornecido em Aurebesh
+        """
+        image = text_to_aurebesh_img(text)
+        await ctx.send(file=discord.File(image, 'aurebesh.png'))
+    
     @commands.command()
     async def ping(self, ctx):
         """
