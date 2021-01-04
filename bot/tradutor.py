@@ -3,6 +3,27 @@ import requests
 import re
 
 class Tradutor:
+  filmes = {'i':"Ameaça Fantasma",
+            '1':"Ameaça Fantasma",
+            'ii':"Ataque dos Clones",
+            '2':"Ataque dos Clones",
+            'iii':"Vingança dos Sith",
+            '3':"Vingança dos Sith",
+            'iv':"A Nova Esperança",
+            '4':"A Nova Esperança",
+            '5':"O Império Contra-Ataca",
+            'v':"O Império Contra-Ataca",
+            '6':"Retorno do Jedi",
+            'vi':"Retorno do Jedi",
+            'vii':"O Despertar da Força",
+            '7':"O Despertar da Força",
+            'viii':"Os Últimos Jedi",
+            '8':"Os Últimos Jedi",
+            'ix':"A Ascensão Skywalker",
+            '9':"A Ascensão Skywalker",
+            'ro':"Rogue One: Uma História Star Wars",
+            'solo':"Solo: Uma História Star Wars"
+            }
   def __init__(self):
     #self.importa_local()
     #self.importa_template()
@@ -62,17 +83,27 @@ class Tradutor:
     #dividindo chave e valor
     chave, padrao = entrada.split(' = ', 1)
     chave = chave.lower()[1:]
+    #encontrando {{Filme|n}}
+    predef_de_filme = r'\{\{Filme\|[^\}]*\}\}'
+    filme = re.search(predef_de_filme, padrao)
+    if filme:
+      _, episodio = filme.group()[:-2].split('|')
+      padrao = padrao.replace(filme.group(), self.filmes[episodio.lower()])
     #tirando as <ref>
     refs=r'<[^>]*.'          #<...>
     padrao = re.sub(refs, "::", padrao)
     #tirando o [[link|
-    link = r'\[\[[^\|]*\|'  #[[...|
+    link = r'\[\[[^\|\]\{]*\|'  #[[...|
     padrao = re.sub(link, "", padrao)
+    #tirando predef ( {{TCW|
+    link = r'{\{[^\|]*[\|]'  #{{...| 
+    padrao = re.sub(link, "", padrao)
+    
     #tirando o [[]]
-    colchetes = r'[\[\]]'
+    colchetes = r'[\[\]{}]'
     padrao = re.sub(colchetes, "", padrao)
     tupla = padrao.split("::", 1)+['']
-    tupla[1] = tupla[1].replace("::", ": ").replace(": :", ": ")
+    tupla[1] = tupla[1].replace("::", "")
     self.processed[chave]=tuple(tupla[:2])
     return tuple(tupla[:2])
 

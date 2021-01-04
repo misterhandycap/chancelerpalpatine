@@ -137,7 +137,7 @@ class GeneralCog(commands.Cog):
         url = find_best_url(traduzido)
 
         msg = discord.Embed(title=f'{traduzido.title()}', description=f'Palavra original = {palavra}\n{ref}', url = url, colour=discord.Color.blurple(), timestamp=ctx.message.created_at)    
-        await ctx.send(traduzido)
+        #await ctx.send(self.traducao_da_sww.raw.get(palavra.lower(), "Não encontrada"))
         await ctx.send(embed=msg)
 
     
@@ -205,13 +205,16 @@ class GeneralCog(commands.Cog):
         if not msg:
             await ctx.send("O que você quer buscar?")
             return
+        if msg.startswith('en:'):
 
-        url = find_best_url(msg)
-        if url:
-            await ctx.send(url)
-            return
+            msg = msg[3:]
+        else:
+            url = find_best_url(msg)
+            if url:
+                await ctx.send(url)
+                return
         url = find_best_url(msg, 1)
         if url:
             await ctx.send(url)
             return
-        await ctx.send(f"dew it https://starwars.fandom.com/pt/wiki/{msg.replace(' ', '_')}")
+        await ctx.send(f"Faça ou não faça, a {msg} não há.")

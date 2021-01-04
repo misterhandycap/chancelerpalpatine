@@ -142,7 +142,8 @@ def find_best_url(page, get_wookie=False):
             set_pages.add(v.get('ns'))
     if set_pages:
         #não está vazio
-        if 0 not in set_pages:
+        set_other_ns = set_pages - {0, 114}
+        if 0 not in set_pages and not(set_other_ns):
             return f"https://starwars.fandom.com/pt/wiki/Legends:{page}"
         return f"https://starwars.fandom.com/{language}wiki/{page}"
     return None
