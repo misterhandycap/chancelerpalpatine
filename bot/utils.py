@@ -6,7 +6,7 @@ from asyncio import get_running_loop, new_event_loop
 from concurrent.futures.thread import ThreadPoolExecutor
 from functools import partial
 
-#from bot.chess.player import Player
+from bot.chess.player import Player
 
 def run_cpu_bound_task(func, *args, **kwargs):
     async def function_wrapper(*args, **kwargs):
@@ -146,12 +146,3 @@ def find_best_url(page, get_wookie=False):
             return f"https://starwars.fandom.com/pt/wiki/Legends:{page}"
         return f"https://starwars.fandom.com/{language}wiki/{page}"
     return None
-            
-                          
-    
-            
-        
-        
-            
-            
-        
