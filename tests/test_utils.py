@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from bot.utils import paginate
+from bot.utils import paginate, find_best_url
 
 
 class TestUtils(TestCase):
@@ -44,3 +44,19 @@ class TestUtils(TestCase):
 
         self.assertEqual(result[0], elems[5:])
         self.assertEqual(result[1], 2)
+
+    def test_return_canon_at_find_best_url(self):
+        grogu = find_best_url('Grogu')
+        self.assertEqual(grogu, 'https://starwars.fandom.com/pt/wiki/Grogu')
+
+    def test_return_legends_at_find_best_url(self):
+        jaina = find_best_url('Rei')
+        self.assertEqual(jaina, 'https://starwars.fandom.com/pt/wiki/Legends:Rei')
+        
+    def test_return_wookie_at_find_best_url(self):
+        ligalac = find_best_url('Library Galactica', 1)
+        self.assertEqual(ligalac, 'https://starwars.fandom.com/wiki/Library_Galactica')
+
+    def test_invalid_input_at_find_best_url(self):
+        sequels = find_best_url('sequels kkkk')
+        self.assertEqual(sequels, None)

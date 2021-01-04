@@ -1,11 +1,12 @@
 import os
 import re
-
+import requests
+import json
 from asyncio import get_running_loop, new_event_loop
 from concurrent.futures.thread import ThreadPoolExecutor
 from functools import partial
 
-from bot.chess.player import Player
+#from bot.chess.player import Player
 
 def run_cpu_bound_task(func, *args, **kwargs):
     async def function_wrapper(*args, **kwargs):
@@ -126,3 +127,31 @@ class PaginatedEmbedManager():
         except:
             return await reaction.message.add_reaction('⚠️')
         await reaction.message.remove_reaction(emoji, user)
+
+def find_best_url(page, get_wookie=False):
+    
+    language = '' if get_wookie else 'pt/'
+    url = f'https://starwars.fandom.com/{language}api.php?action=query&prop=info&titles={page}|Legends:{page}&format=json'
+    r = requests.get(url)
+    page = page.replace(" ", "_")
+    myjson = json.loads(r.text)
+    pages = myjson['query']['pages']    
+    set_pages = set()
+    for v in pages.values():
+        if v.get('length', 0):
+            set_pages.add(v.get('ns'))
+    if set_pages:
+        #não está vazio
+        if 0 not in set_pages:
+            return f"https://starwars.fandom.com/pt/wiki/Legends:{page}"
+        return f"https://starwars.fandom.com/{language}wiki/{page}"
+    return None
+            
+                          
+    
+            
+        
+        
+            
+            
+        

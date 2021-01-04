@@ -9,7 +9,7 @@ import discord
 from discord.ext import commands
 
 from bot.aurebesh import text_to_aurebesh_img
-from bot.utils import paginate, PaginatedEmbedManager
+from bot.utils import paginate, PaginatedEmbedManager, find_best_url
 
 from bot.tradutor import Tradutor
 
@@ -131,11 +131,15 @@ class GeneralCog(commands.Cog):
     @commands.command(aliases=['tr', 'traducaosww'])
     async def traducao(self, ctx, *, palavra):
         """
-        Busca palavra no dicionário da SWW.
+        Busca palavra no apêndice de tradução da SWW.
         """
+        traduzido, ref = self.traducao_da_sww.busca_palavra(palavra)
+        url = find_best_url(traduzido)
 
-        #palavra = " ".join(args)
-        await ctx.send(self.traducao_da_sww.busca_palavra(palavra))
+        msg = discord.Embed(title=f'{traduzido.title()}', description=f'Palavra original = {palavra}\n{ref}', url = url, colour=discord.Color.blurple(), timestamp=ctx.message.created_at)    
+        await ctx.send(traduzido)
+        await ctx.send(embed=msg)
+
     
     @vision.error
     async def clear_error(self, ctx, error):
@@ -193,28 +197,21 @@ class GeneralCog(commands.Cog):
         plagueis = discord.Embed(title='Já ouviu a tragédia de Darth Plagueis, o sábio?...', description='Eu achei que não. \nNão é uma história que um Jedi lhe contaria.\nÉ uma lenda Sith. \nDarth Plagueis era um Lorde Sombrio de Sith, tão poderoso e tão sábio que conseguia utilizar a Força para influenciar os midiclorians para criar vida. \nEle tinha tantos conhecimento do lado sombrio que podia até impedir que aqueles que lhe eram próximos morressem. \nAcontece que o lado sombrio é o caminho para muitas habilidades que muitos consideram serem... não naturais. \nEle se tornou tão poderoso; que a única coisa que ele tinha medo era, perder seu poder, o que acabou, é claro, ele perdeu. \nInfelizmente, ele ensinou a seu aprendiz tudo o que sabia; então, seu o seu aprendiz o matou enquanto dormia. \nÉ irônico. \nEle poderia salvar outros da morte, mas não podia a salvar a si mesmo.', colour=discord.Color.blurple(), timestamp=ctx.message.created_at)
         await ctx.send(embed=plagueis)
 
-    @commands.command(aliases=['google', 'buscar', 'search'])
-    async def busca(self, ctx, *args):
+    @commands.command(aliases=['buscar', 'search'])
+    async def busca(self, ctx, *, msg):
         """
         Faz uma busca pelo buscador definido (padrão: Google)
         """
-        if not args:
+        if not msg:
             await ctx.send("O que você quer buscar?")
             return
-            
-        dicio_serviços = {
-            'sww':'https://starwars.fandom.com/pt/wiki/',
-            'starwarswiki':'https://starwars.fandom.com/pt/wiki/',
-            'wookie':'https://starwars.fandom.com/wiki/',
-            'google':'https://www.google.com/search?q=',
-            'aw':'https://avatar.fandom.com/pt-br/wiki/',
-            'avatar':'https://avatar.fandom.com/pt-br/wiki/',
-        }
-        
-        if args[0].lower() in dicio_serviços:
-            buscador = dicio_serviços[args[0].lower()]
-            entrada = " ".join(args[1:])
-        else:
-            buscador = dicio_serviços["google"]
-            entrada = " ".join(args)
-        await ctx.send(f'{buscador}{entrada.replace(" ", "_")}')
+
+        url = find_best_url(msg)
+        if url:
+            await ctx.send(url)
+            return
+        url = find_best_url(msg, 1)
+        if url:
+            await ctx.send(url)
+            return
+        await ctx.send(f"dew it https://starwars.fandom.com/pt/wiki/{msg.replace(' ', '_')}")
