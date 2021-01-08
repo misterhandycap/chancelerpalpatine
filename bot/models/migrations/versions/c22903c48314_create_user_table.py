@@ -20,6 +20,7 @@ def upgrade():
     op.create_table(
         'user',
         sa.Column('id', sa.BigInteger, primary_key=True, nullable=False),
+        sa.Column('name', sa.String, nullable=True),
         sa.Column('xp_points', sa.Integer, default=0),
     )
 

@@ -22,10 +22,12 @@ def upgrade():
     op.create_table(
         'chess_game',
         sa.Column('id', GUID, primary_key=True, nullable=False),
-        sa.Column('player1', sa.BigInteger, sa.ForeignKey('user.id'), nullable=True),
-        sa.Column('player2', sa.BigInteger, sa.ForeignKey('user.id'), nullable=True),
+        sa.Column('player1_id', sa.BigInteger, sa.ForeignKey('user.id'), nullable=True),
+        sa.Column('player2_id', sa.BigInteger, sa.ForeignKey('user.id'), nullable=True),
         sa.Column('pgn', sa.String),
-        sa.Column('result', sa.Integer, nullable=True),
+        sa.Column('result', sa.SmallInteger, nullable=True),
+        sa.Column('color_schema', sa.String, nullable=True),
+        sa.Column('cpu_level', sa.SmallInteger, nullable=True),
     )
 
 
