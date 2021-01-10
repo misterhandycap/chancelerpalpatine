@@ -8,7 +8,7 @@ import time
 import discord
 from discord.ext import commands
 
-from bot.aurebesh import text_to_aurebesh_img, meme_image
+from bot.aurebesh import text_to_aurebesh_img, meme_saimaluco_image
 from bot.utils import paginate, PaginatedEmbedManager
 
 
@@ -94,11 +94,11 @@ class GeneralCog(commands.Cog):
         return help_embed
 
     @commands.command()
-    async def meme(self, ctx, *, text):
+    async def saimaluco(self, ctx, *, text):
         """
-        Manda o meme com o texto enviado
+        Manda o meme sai maluco com o texto enviado
         """
-        image = meme_image(text)
+        image = meme_saimaluco_image(text)
         await ctx.send(file=discord.File(image, 'meme.png'))
     
     @commands.command()
