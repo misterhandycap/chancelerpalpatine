@@ -23,6 +23,9 @@ RUN apk add openssl openssl-dev
 # Numpy deps
 RUN apk --no-cache add musl-dev linux-headers g++ gfortran libpng-dev openblas-dev wget
 
+# Postgres deps
+RUN apk add postgresql-dev
+
 # We copy just the requirements.txt first to leverage Docker cache
 COPY ./requirements.txt /app/requirements.txt
 
