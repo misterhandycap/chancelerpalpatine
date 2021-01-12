@@ -1,3 +1,4 @@
+import logging
 import os
 import pickle
 from io import BytesIO
@@ -15,14 +16,16 @@ from chess.pgn import Game as ChessGame
 from bot import client
 from bot.chess.game import Game
 from bot.chess.player import Player
+from bot.models import Session
+from bot.models.chess_game import ChessGame as ChessGameModel
 from bot.utils import convert_users_to_players, paginate, run_cpu_bound_task
 
 
 class Chess():
 
-    def __init__(self, pickle_filename='games.pickle'):
+    def __init__(self):
         self.games = []
-        self.pickle_filename = pickle_filename
+        self.db_session = Session()
         self.stockfish_path = os.environ.get("STOCKFISH_PATH_EXE", '')
         self.stockfish_limit = {
             "time": int(os.environ.get("STOCKFISH_TIME_LIMIT", '5')),
@@ -38,16 +41,16 @@ class Chess():
 
     def load_games(self):
         """
-        Load all ongoing games from pickle file
+        Load all ongoing games from database
 
         :return: List of ongoing games
         :rtype: List[Games]
         """
         try:
-            with open(self.pickle_filename, 'rb') as f:
-                self.games = pickle.load(f)
-        except FileNotFoundError:
-            self.games = []
+            chess_games_models = self.db_session.query(ChessGameModel).filter_by(result=None)
+            self.games = [Game.from_chess_game_model(x) for x in chess_games_models]
+        except Exception as e:
+            logging.warning(e, exc_info=True)
         finally:
             return self.games
 
@@ -64,6 +67,7 @@ class Chess():
         game.player1 = player1
         game.player2 = player2
         game.current_player = player1
+        game.result = game.board.result()
         game.color_schema = color_schema
         game.cpu_level = cpu_level
 
@@ -125,7 +129,9 @@ class Chess():
         
         board_png_bytes = self.build_png_board(game)
         if game.board.is_game_over(claim_draw=True):
+            game.result = game.board.result()
             pgn = self.generate_pgn(game)
+            game.save(self.db_session)
             self.games.remove(game)
             return f'Fim de jogo!\n\n{pgn}', board_png_bytes
 
@@ -141,16 +147,18 @@ class Chess():
         :rtype: str
         """
         board_png_bytes = self.build_png_board(game)
+        game.result = '0-1' if game.board.turn == chess.WHITE else '1-0'
         pgn = self.generate_pgn(game)
+        game.save(self.db_session)
         self.games.remove(game)
         return f'{game.current_player.name} abandonou a partida!\n{pgn}', board_png_bytes
 
     def save_games(self):
         """
-        Save all ongoing games into pickle file
+        Save all ongoing games into database
         """
-        with open(self.pickle_filename, 'wb') as f:
-            pickle.dump(self.games, f)
+        for game in self.games:
+            game.save(self.db_session)
 
     def generate_pgn(self, game: Game):
         """
@@ -164,7 +172,7 @@ class Chess():
         chess_game = ChessGame()
         chess_game.headers["White"] = str(game.player1.name)
         chess_game.headers["Black"] = str(game.player2.name)
-        chess_game.headers["Result"] = str(game.board.result())
+        chess_game.headers["Result"] = str(game.result)
         last_node = chess_game
         for move in game.board.move_stack:
             last_node = last_node.add_variation(move)

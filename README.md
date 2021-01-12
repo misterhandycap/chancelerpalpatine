@@ -25,6 +25,12 @@ nano .env
 pip3 freeze > requirements.txt
 ```
 
+## Running database migrations
+
+```bash
+alembic upgrade head
+```
+
 ## Running tests
 
 ```bash
