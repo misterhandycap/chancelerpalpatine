@@ -8,7 +8,8 @@ import time
 import discord
 from discord.ext import commands
 
-from bot.aurebesh import text_to_aurebesh_img, meme_saimaluco_image
+from bot.aurebesh import text_to_aurebesh_img
+from bot.meme import meme_saimaluco_image
 from bot.utils import paginate, PaginatedEmbedManager
 
 
