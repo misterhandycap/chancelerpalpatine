@@ -1,4 +1,5 @@
 import inspect
+import logging
 
 import discord
 from discord.ext import commands
@@ -34,9 +35,13 @@ class ChessCog(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.chess_bot = Chess()
-        self.chess_bot.load_games()
         self.puzzle_bot = Puzzle()
 
+    @commands.Cog.listener()
+    async def on_connect(self):
+        await self.chess_bot.load_games()
+        logging.info(f'Successfully loaded {len(self.chess_bot.games)} active chess games')
+    
     @commands.command(aliases=['xn'])
     async def xadrez_novo(self, ctx, user2: discord.User, color_schema=None):
         """
@@ -69,7 +74,7 @@ class ChessCog(commands.Cog):
         await ctx.send(result)
         if board_png_bytes:
             await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
-            self.chess_bot.save_games()
+            await self.chess_bot.save_games()
 
             evaluation = await self.chess_bot.eval_last_move(game)
             if evaluation["blunder"]:
@@ -86,11 +91,11 @@ class ChessCog(commands.Cog):
         """
         await ctx.trigger_typing()
         game = kwargs['game']
-        result, board_png_bytes = self.chess_bot.resign(game)
+        result, board_png_bytes = await self.chess_bot.resign(game)
         await ctx.send(result)
         if board_png_bytes:
             await ctx.send(file=discord.File(board_png_bytes, 'board.png'))
-            self.chess_bot.save_games()
+            await self.chess_bot.save_games()
 
     @commands.command(aliases=['xpgn'])
     @get_current_game
