@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
-from bot import client
+from bot.client import client
 
 load_dotenv()
 
