@@ -27,18 +27,17 @@ class Game():
         except:
             return False
 
-    def save(self, db_session):
-        chess_game = db_session.query(ChessGame).get(self.id) or ChessGame()
-        chess_game.player1 = db_session.query(User).get(self.player1.id) or User(id=self.player1.id, name=self.player1.name)
-        chess_game.player2 = db_session.query(User).get(self.player2.id) or User(id=self.player2.id, name=self.player2.name)
+    async def save(self):
+        chess_game = await ChessGame.get(self.id) or ChessGame()
+        chess_game.player1 = await User.get(self.player1.id) or User(id=self.player1.id, name=self.player1.name)
+        chess_game.player2 = await User.get(self.player2.id) or User(id=self.player2.id, name=self.player2.name)
         pgn_game = PGN().from_board(self.board)
         chess_game.pgn = str(pgn_game)
         chess_game.result = {'1-0': 1, '0-1': -1, '1/2-1/2': 0, '*': None}[self.result]
         chess_game.color_schema = self.color_schema
         chess_game.cpu_level = self.cpu_level
-        db_session.add(chess_game)
-        db_session.commit()
-        self.id = chess_game.id
+        chess_game_id = await ChessGame.save(chess_game)
+        self.id = chess_game_id
 
     @classmethod
     def from_chess_game_model(cls, chess_game):

@@ -36,3 +36,9 @@ alembic upgrade head
 ```bash
 python3 -m unittest discover -s tests/
 ```
+
+## Creating new migrations
+
+```bash
+PYTHONPATH=$(pwd) alembic revision -m "MIGRATION_NAME"
+```

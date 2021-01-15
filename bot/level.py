@@ -2,9 +2,14 @@ import json
 import os
 import random
 import time
+from datetime import datetime, timedelta
 
 import discord
 from discord.ext import commands
+
+from bot.models.user import User
+from bot.models.xp_point import XpPoint
+from bot.utils import paginate
 
 
 class LevelCog(commands.Cog):
@@ -26,16 +31,6 @@ class LevelCog(commands.Cog):
                 
                 return f"Já ouviu a história de Darth {name}, {gender} sábi{gender}?"
             return "Já ouviu a história de Darth Plagueis, o Sábio?"
-
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        with open('users.json', 'r') as f:
-            users = json.load(f)
-
-            await self.update_data(users, member)
-
-        with open('users.json', 'w') as f:
-            json.dump(users, f)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -78,69 +73,74 @@ class LevelCog(commands.Cog):
                 message.content.lower().startswith('sábi')):
             await message.channel.send(self.sabio(message.content))
 
-        with open('users.json', 'r') as f:
-            users = json.load(f)
+        if message.author.bot or not message.guild:
+            return
+        
+        xp_points = await self.update_data(message.author, message.guild.id)
+        exp = random.randint(5, 15)
+        await self.add_xp(xp_points, exp)
+        await self.level_up(xp_points, message)
+        await XpPoint.save(xp_points)
 
-            if message.author.bot:
-                return
-            else:
-                await self.update_data(users, message.author)
-                exp = random.randint(5, 15)
-                await self.add_xp(users, message.author, exp)
-                await self.level_up(users, message.author, message.channel)
 
-            with open('users.json', 'w') as f:
-                json.dump(users, f)
+    async def update_data(self, user, server_id):
+        xp_points = await XpPoint.get_by_user_and_server(user.id, server_id)
+        if not xp_points:
+            xp_points = XpPoint()
+            xp_points.user = await User.get(user.id) or User(id=user.id, name=user.name)
+            xp_points.server_id = server_id
+            xp_points.points = 0
+            xp_points.level = 1
+            xp_points.updated_at = datetime.utcnow()
+        return xp_points
 
-    async def update_data(self, users, user):
-        if not str(user.id) in users:
-            users[str(user.id)] = {}
-            users[str(user.id)]['experiencia'] = 0
-            users[str(user.id)]['level'] = 1
-            users[str(user.id)]['ultima_mesg'] = 0
-            users[str(user.id)]['id'] = user.id
+    async def add_xp(self, xp_points, xp):
+        if (xp_points.updated_at - datetime.utcnow()).seconds > 40:
+            xp_points.points += xp
+            xp_points.updated_at = datetime.utcnow()
 
-    async def add_xp(self, users, user, xp):
-        if time.time() - users[str(user.id)].get('ultima_mesg', 0) > 40:
-            users[str(user.id)]['experiencia'] += xp
-            users[str(user.id)]['ultima_mesg'] = time.time()
-
-    async def level_up(self, users, user, channel):
-        experiencia = users[str(user.id)]['experiencia']
-        level_start = users[str(user.id)]['level']
+    async def level_up(self, xp_points, message):
+        experiencia = xp_points.points
+        level_start = xp_points.level
         level_end = int(experiencia **(1/4))
         bot_env = os.environ.get("ENV", 'dev')
 
         if level_start < level_end:
             if bot_env == 'prod':
-                await channel.send(
+                await message.channel.send(
                     '{} subiu ao nível {}! Assistiremos sua carreira com grande interesse.'.format(
-                        user.mention, level_end))
-            users[str(user.id)]['level'] = level_end
+                        message.author.mention, level_end))
+            xp_points.level = level_end
 
     @commands.command(aliases=['nivel'])
     async def level(self, ctx):
         """
         Mostra o nível de usuário ao usuário que pediu
         """
-        user_id = str(ctx.author.id)
-        with open('users.json', 'r') as f:
-            users = json.load(f)
+        xp_point = await XpPoint.get_by_user_and_server(ctx.author.id, ctx.message.guild.id)
+        if not xp_point:
+            xp_point = XpPoint(level=0, points=0)
 
-            levelbed = discord.Embed(title='Nível', description=f'{ctx.author.mention} se encontra atualmente no nível {users[str(ctx.author.id)]["level"]} com {users[str(ctx.author.id)]["experiencia"]}', colour=discord.Color.red(), timestamp=ctx.message.created_at)
-            levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
-            await ctx.send(embed=levelbed)
+        levelbed = discord.Embed(
+            title='Nível',
+            description=f'{ctx.author.mention} se encontra atualmente no nível {xp_point.level} com {xp_point.points}',
+            colour=discord.Color.red(),
+            timestamp=ctx.message.created_at
+        )
+        levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
+        await ctx.send(embed=levelbed)
 
     @commands.command(aliases=['board'])
-    async def rank(self, ctx):
+    async def rank(self, ctx, page_number=1):
         """
         Mostra a tabela de niveis de usuários em ordem de maior pra menor
         """
-        user_id = str(ctx.author.id)
-        with open('users.json', 'r') as f:
-            users = json.load(f)
+        page_size = 5
+        xp_points = await XpPoint.list_by_server(ctx.message.guild.id)
 
-        rank = sorted(users.items(), key=lambda x: x[1]['experiencia'], reverse=True)
-        msg = '\n '.join([str(x[1]['experiencia']) for x in rank])
+        rank, last_page = paginate(xp_points, page_number, page_size)
+
+        msg = '\n'.join([f'* **{r.user.name}** - {r.points}' for r in rank])
+        msg += f'\n\nPágina {page_number} de {last_page}'
 
         await ctx.send(msg)

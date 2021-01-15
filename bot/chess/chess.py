@@ -13,10 +13,8 @@ import chess.engine
 import chess.svg
 from chess.pgn import Game as ChessGame
 
-from bot import client
 from bot.chess.game import Game
 from bot.chess.player import Player
-from bot.models import Session
 from bot.models.chess_game import ChessGame as ChessGameModel
 from bot.utils import convert_users_to_players, paginate, run_cpu_bound_task
 
@@ -25,7 +23,6 @@ class Chess():
 
     def __init__(self):
         self.games = []
-        self.db_session = Session()
         self.stockfish_path = os.environ.get("STOCKFISH_PATH_EXE", '')
         self.stockfish_limit = {
             "time": int(os.environ.get("STOCKFISH_TIME_LIMIT", '5')),
@@ -39,7 +36,7 @@ class Chess():
             "known_hosts": None
         }
 
-    def load_games(self):
+    async def load_games(self):
         """
         Load all ongoing games from database
 
@@ -47,7 +44,7 @@ class Chess():
         :rtype: List[Games]
         """
         try:
-            chess_games_models = self.db_session.query(ChessGameModel).filter_by(result=None)
+            chess_games_models = await ChessGameModel.get_all_ongoing_games()
             self.games = [Game.from_chess_game_model(x) for x in chess_games_models]
         except Exception as e:
             logging.warning(e, exc_info=True)
@@ -131,13 +128,13 @@ class Chess():
         if game.board.is_game_over(claim_draw=True):
             game.result = game.board.result()
             pgn = self.generate_pgn(game)
-            game.save(self.db_session)
+            await game.save()
             self.games.remove(game)
             return f'Fim de jogo!\n\n{pgn}', board_png_bytes
 
         return f'Seu turno é agora, {game.current_player.name}', board_png_bytes
 
-    def resign(self, game: Game):
+    async def resign(self, game: Game):
         """
         Resigns the given game. Only the next player to move can resign their game.
 
@@ -149,16 +146,16 @@ class Chess():
         board_png_bytes = self.build_png_board(game)
         game.result = '0-1' if game.board.turn == chess.WHITE else '1-0'
         pgn = self.generate_pgn(game)
-        game.save(self.db_session)
+        await game.save()
         self.games.remove(game)
         return f'{game.current_player.name} abandonou a partida!\n{pgn}', board_png_bytes
 
-    def save_games(self):
+    async def save_games(self):
         """
         Save all ongoing games into database
         """
         for game in self.games:
-            game.save(self.db_session)
+            await game.save()
 
     def generate_pgn(self, game: Game):
         """
