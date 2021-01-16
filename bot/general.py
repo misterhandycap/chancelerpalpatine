@@ -10,6 +10,7 @@ from discord.ext import commands
 
 from bot.aurebesh import text_to_aurebesh_img
 from bot.meme import meme_saimaluco_image
+from bot.social.profile import Profile
 from bot.utils import paginate, PaginatedEmbedManager
 
 
@@ -21,6 +22,7 @@ class GeneralCog(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.help_cmd_manager = PaginatedEmbedManager(client, self._create_paginated_help_embed)
+        self.profile_bot = Profile()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -215,3 +217,15 @@ class GeneralCog(commands.Cog):
             buscador = dicio_serviços["google"]
             entrada = " ".join(args)
         await ctx.send(f'{buscador}{entrada.replace(" ", "_")}')
+
+    @commands.command(aliases=['perfil'])
+    async def profile(self, ctx):
+        """
+        Exibe o seu perfil
+        """
+        await ctx.trigger_typing()
+        user_avatar = await ctx.message.author.avatar_url_as(size=128).read()
+        image = await self.profile_bot.get_user_profile(ctx.message.author.id, user_avatar)
+        if not image:
+            return await ctx.send('Quem é você?')
+        await ctx.send(file=discord.File(image, 'perfil.png'))
