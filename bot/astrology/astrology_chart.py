@@ -11,38 +11,39 @@ from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 
 from bot.astrology.exception import AstrologyInvalidInput
-from bot.astrology.user_chart import UserChart
+from bot.models.astrology_chart import AstrologyChart as AstrologyChartModel
+from bot.models.user import User
 
 
 class AstrologyChart():
 
-    def __init__(self, pickle_filename='astrology_charts.pickle'):
-        self.pickle_filename = pickle_filename
-        self.charts = []
+    async def get_user_chart(self, user_id: str):
+        astrology_chart = await AstrologyChartModel.get_by_user_id(user_id)
+        if not astrology_chart:
+            return None
 
-    def load_charts(self):
-        try:
-            with open(self.pickle_filename, 'rb') as f:
-                self.charts = pickle.load(f)
-        except FileNotFoundError:
-            self.charts = []
-        finally:
-            return self.charts
-    
-    def get_user_chart(self, user_id: str):
-        return next((uc for uc in self.charts if uc.user_id == str(user_id)), None)
+        chart_datetime = (
+            [
+                astrology_chart.datetime.year,
+                astrology_chart.datetime.month,
+                astrology_chart.datetime.day
+            ],
+            [
+                '+',
+                astrology_chart.datetime.hour,
+                astrology_chart.datetime.minute,
+                astrology_chart.datetime.second
+            ],
+            astrology_chart.timezone
+        )
+        chart_geopos = (astrology_chart.latitude, astrology_chart.longitude)
+        return self.calc_chart_raw(chart_datetime, chart_geopos)
     
     async def calc_chart(self, user_id: str, date: str, time: str, city_name: str) -> Chart:
         geopos = await self._get_lat_lng_from_city_name(city_name)
         timezone = self._get_timezone_from_lat_lng(*geopos, f'{date} {time}')
         
-        chart = self.calc_chart_raw((date, time, timezone), geopos)
-        
-        self._remove_user_s_charts(user_id)
-        user_chart = UserChart(user_id, chart)
-        self.charts.append(user_chart)
-        self.save_charts()
-        return chart
+        return self.calc_chart_raw((date, time, timezone), geopos)
 
     def calc_chart_raw(self, datetime: tuple, geopos: tuple):
         chart_datetime = Datetime(*datetime)
@@ -58,9 +59,21 @@ class AstrologyChart():
     def get_moon_sign(self, chart: Chart) -> str:
         return chart.getObject(MOON).sign
 
-    def save_charts(self):
-        with open(self.pickle_filename, 'wb') as f:
-            pickle.dump(self.charts, f)
+    async def save_chart(self, user_id: str, chart: Chart) -> str:
+        astrology_chart = await AstrologyChartModel.get_by_user_id(user_id) or AstrologyChartModel()
+        astrology_chart.user = await User.get(user_id) or User(id=user_id)
+        astrology_chart.datetime = datetime(
+            chart.date.date.toList()[1],
+            chart.date.date.toList()[2],
+            chart.date.date.toList()[3],
+            chart.date.time.toList()[1],
+            chart.date.time.toList()[2],
+        )
+        astrology_chart.timezone = chart.date.utcoffset.toString()
+        astrology_chart.latitude = chart.pos.lat
+        astrology_chart.longitude = chart.pos.lon
+        
+        return await AstrologyChartModel.save(astrology_chart)
 
     async def _get_lat_lng_from_city_name(self, city_name: str):
         async with Nominatim(
