@@ -15,7 +15,6 @@ class AstrologyCog(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.astrology_bot = AstrologyChart()
-        self.astrology_bot.load_charts()
 
     @commands.command()
     async def mapa_astral(self, ctx, date=None, time=None, *args):
@@ -24,13 +23,14 @@ class AstrologyCog(commands.Cog):
         """
         city_name = ' '.join(args)
         if not isinstance(ctx.channel, discord.channel.DMChannel):
-            user_chart = self.astrology_bot.get_user_chart(ctx.author.id)
+            user_chart = await self.astrology_bot.get_user_chart(ctx.author.id)
             if not user_chart:
                 return await ctx.send('Você ainda não criou seu mapa astral. Para fazê-lo, mande esse comando via DM 😁')
-            return await self.send_astrology_triad(ctx, user_chart.chart)
+            return await self.send_astrology_triad(ctx, user_chart)
         try:
             await ctx.trigger_typing()
             chart = await self.astrology_bot.calc_chart(ctx.author.id, date, time, city_name)
+            await self.astrology_bot.save_chart(ctx.author.id, chart)
         except AstrologyInvalidInput as e:
             return await ctx.send(e.message)
         except Exception as e:

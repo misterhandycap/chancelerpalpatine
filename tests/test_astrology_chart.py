@@ -1,15 +1,13 @@
 import asyncio
-import pickle
 import os
 import warnings
 
-from bot.astrology.astrology_chart import AstrologyChart
-from bot.astrology.exception import AstrologyInvalidInput
-from bot.astrology.user_chart import UserChart
 from vcr_unittest import VCRTestCase
 
-PICKLE_FILENAME = 'astrology_charts_test.pickle'
-
+from bot.astrology.astrology_chart import AstrologyChart
+from bot.astrology.exception import AstrologyInvalidInput
+from bot.models.astrology_chart import AstrologyChart as AstrologyChartModel
+from tests.support.db_connection import clear_data, Session
 
 class TestAstrologyChart(VCRTestCase):
 
@@ -18,10 +16,7 @@ class TestAstrologyChart(VCRTestCase):
         warnings.simplefilter("ignore")
     
     def tearDown(self):
-        try:
-            os.remove(PICKLE_FILENAME)
-        except FileNotFoundError:
-            pass
+        clear_data(Session())
     
     def test_calc_chart_valid_params(self):
         astrology_chart = AstrologyChart()
@@ -77,59 +72,43 @@ class TestAstrologyChart(VCRTestCase):
 
     def test_get_user_chart_user_chart_exists(self):
         user_id = 14
-        astrology_chart = AstrologyChart(pickle_filename=PICKLE_FILENAME)
+        astrology_chart = AstrologyChart()
         datetime = ('1997/08/10', '07:17', '-03:00')
         geopos = (-23.5506507, -46.6333824)
         chart = astrology_chart.calc_chart_raw(datetime, geopos)
-        user_chart = UserChart(user_id, chart)
-        astrology_chart.charts.append(user_chart)
+        asyncio.run(astrology_chart.save_chart(user_id, chart))
 
-        result = astrology_chart.get_user_chart(user_id)
+        result = asyncio.run(astrology_chart.get_user_chart(user_id))
 
-        self.assertEqual(result, user_chart)
+        self.assertEqual(str(chart.date), str(result.date))
+        self.assertEqual(str(chart.pos), str(result.pos))
 
     def test_get_user_chart_user_chart_does_not_exist(self):
         user_id = 14
-        astrology_chart = AstrologyChart(pickle_filename=PICKLE_FILENAME)
+        astrology_chart = AstrologyChart()
         datetime = ('1997/08/10', '07:17', '-03:00')
         geopos = (-23.5506507, -46.6333824)
         chart = astrology_chart.calc_chart_raw(datetime, geopos)
-        user_chart = UserChart(user_id, chart)
-        astrology_chart.charts.append(user_chart)
+        asyncio.run(astrology_chart.save_chart(user_id, chart))
 
-        result = astrology_chart.get_user_chart(98)
+        result = asyncio.run(astrology_chart.get_user_chart(98))
 
         self.assertIsNone(result)
 
-    def test_load_charts_file_exists(self):
-        astrology_chart = AstrologyChart(pickle_filename=PICKLE_FILENAME)
+    def test_save_chart(self):
+        user_id = 14
+        astrology_chart = AstrologyChart()
         datetime = ('1997/08/10', '07:17', '-03:00')
         geopos = (-23.5506507, -46.6333824)
         chart = astrology_chart.calc_chart_raw(datetime, geopos)
-        user_chart = UserChart(user_id='14', chart=chart)
+        
+        result_id = asyncio.run(astrology_chart.save_chart(user_id, chart))
 
-        with open(PICKLE_FILENAME, 'wb') as f:
-            pickle.dump([user_chart], f)
-
-        self.assertEqual(astrology_chart.charts, [])
-
-        astrology_chart.load_charts()
-
-        self.assertListEqual(astrology_chart.charts, [user_chart])
-    
-    def test_load_charts_file_does_not_exist(self):
-        astrology_chart = AstrologyChart(pickle_filename=PICKLE_FILENAME)
-        self.assertEqual(astrology_chart.charts, [])
-
-    def test_save_charts(self):
-        astrology_chart = AstrologyChart(pickle_filename=PICKLE_FILENAME)
-        datetime = ('1997/08/10', '07:17', '-03:00')
-        geopos = (-23.5506507, -46.6333824)
-        chart = astrology_chart.calc_chart_raw(datetime, geopos)
-        user_chart = UserChart(user_id=14, chart=chart)
-        astrology_chart.charts.append(user_chart)
-
-        astrology_chart.save_charts()
-
-        with open(PICKLE_FILENAME, 'rb') as f:
-            self.assertListEqual(astrology_chart.charts, pickle.load(f))
+        result = Session().query(AstrologyChartModel).get(result_id)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.user_id, user_id)
+        self.assertEqual(result.datetime.strftime(
+            '%Y/%m/%d %H:%M'), f'{datetime[0]} {datetime[1]}') 
+        self.assertEqual(result.timezone, '-03:00:00')
+        self.assertEqual(result.latitude, geopos[0])
+        self.assertEqual(result.longitude, geopos[1])
