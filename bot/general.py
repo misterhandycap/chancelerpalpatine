@@ -224,7 +224,8 @@ class GeneralCog(commands.Cog):
         Exibe o seu perfil
         """
         await ctx.trigger_typing()
-        user_avatar = await ctx.message.author.avatar_url_as(size=128).read()
+        user_avatar = await ctx.message.author.avatar_url_as(
+            size=128, static_format='png').read()
         image = await self.profile_bot.get_user_profile(ctx.message.author.id, user_avatar)
         if not image:
             return await ctx.send('Quem é você?')
