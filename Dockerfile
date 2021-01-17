@@ -1,4 +1,4 @@
-FROM python:3.7-alpine
+FROM python:3.7-alpine as builder
 
 RUN apk add --no-cache gcc libc-dev libffi-dev
 
@@ -31,9 +31,26 @@ COPY ./requirements.txt /app/requirements.txt
 
 WORKDIR /app
 
-RUN pip3 install -r requirements.txt
+RUN pip3 install --user -r requirements.txt
+
+FROM python:3.7-alpine
+
+COPY --from=builder /root/.local /root/.local
 
 COPY . /app
+
+WORKDIR /app
+
+ENV PATH=/root/.local/bin:$PATH
+
+# Runtime dependencies
+RUN apk add cairo libjpeg openjpeg tiff openblas postgresql-libs
+
+# For some reason, Cairo requests libcairo.so.2 instead of installed libcairo.so
+RUN ln -s /usr/lib/libcairo.so.2 /usr/lib/libcairo.so
+
+# Updated SSL certificates
+RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
 ENTRYPOINT [ "python3" ]
 
