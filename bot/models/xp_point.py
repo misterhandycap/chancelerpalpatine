@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Integer, select
+from sqlalchemy import (BigInteger, Column, DateTime, ForeignKey, Integer,
+                        func, select)
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import relationship, joinedload
+from sqlalchemy.orm import joinedload, relationship
 
 from bot.models import Base, engine
 
@@ -34,6 +35,14 @@ class XpPoint(Base):
                     .order_by(XpPoint.points.desc())
                     .options(joinedload(XpPoint.user))
             )).scalars().fetchall()
+
+    @classmethod
+    async def get_user_aggregated_points(cls, user_id):
+        async with AsyncSession(engine) as session:
+            return (await session.execute(
+                select(func.sum(XpPoint.points)).select_from(XpPoint)
+                    .where(XpPoint.user_id == user_id)
+            )).scalars().first()
 
     @classmethod
     async def save(cls, xp_point):

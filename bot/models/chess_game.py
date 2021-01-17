@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from sqlalchemy import (BigInteger, Column, ForeignKey, SmallInteger, String,
-                        select)
+                        and_, func, or_, select)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import relationship, subqueryload
 
@@ -37,6 +37,18 @@ class ChessGame(Base):
                     subqueryload(ChessGame.player2)
                 )
             )).scalars().fetchall()
+
+    @classmethod
+    async def get_number_of_victories(cls, user_id):
+        async with AsyncSession(engine) as session:
+            return (await session.execute(
+                select(func.count()).select_from(ChessGame).where(
+                    or_(
+                        and_(ChessGame.result == 1, ChessGame.player1_id == user_id),
+                        and_(ChessGame.result == -1, ChessGame.player2_id == user_id)
+                    )
+                )
+            )).scalars().first()
     
     @classmethod
     async def save(cls, chess_game):
