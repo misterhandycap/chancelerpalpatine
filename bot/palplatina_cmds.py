@@ -50,10 +50,11 @@ class PalplatinaCmds(commands.Cog):
         user = await User.get(ctx.message.author.id)
         
         moedas = discord.Embed(
-            title = 'Daily!',
-            description = f'{ctx.author.mention} possui {user.currency} palplatinas.',
-            colour = discord.Color.greyple(),
-            timestamp = ctx.message.created_at
+            title='Daily!',
+            description=f'{ctx.author.mention} possui {user.currency} palplatinas.',
+            colour=discord.Color.greyple(),
+            timestamp=ctx.message.created_at
         )
-        moedas.set_thumbnail(url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')
+        moedas.set_thumbnail(
+            url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')
         await ctx.send(embed=moedas)
