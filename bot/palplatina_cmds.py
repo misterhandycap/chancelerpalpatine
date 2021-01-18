@@ -24,9 +24,9 @@ class PalplatinaCmds(commands.Cog):
             
             palplatinasrejeitou = discord.Embed(
                 title='Daily!',
-                description=f'Você já pegou seu daily hoje. Ambição leva ao lado sombrio da força, gosto disso.',
-                colour=discord.Color.greyple(),
-                timestamp=ctx.message.created_at
+                description = f'Você já pegou seu daily hoje. Ambição leva ao lado sombrio da força, gosto disso.',
+                colour = discord.Color.greyple(),
+                timestamp = ctx.message.created_at
             )
             palplatinasrejeitou.set_thumbnail(url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')    
 
@@ -35,10 +35,10 @@ class PalplatinaCmds(commands.Cog):
             user.daily_last_collected_at = datetime.utcnow()
             user.currency += 300
             palplatinasrecebeu = discord.Embed(
-                title='Daily!',
-                description=f'Você recebeu 300 palplatinas, faça bom uso',
-                colour=discord.Color.greyple(),
-                timestamp=ctx.message.created_at
+                title = 'Daily!',
+                description = f'Você recebeu 300 palplatinas, faça bom uso',
+                colour = discord.Color.greyple(),
+                timestamp = ctx.message.created_at
             )
             palplatinasrecebeu.set_thumbnail(url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')
             await ctx.send(embed=palplatinasrecebeu)
@@ -50,10 +50,10 @@ class PalplatinaCmds(commands.Cog):
         user = await User.get(ctx.message.author.id)
         
         moedas = discord.Embed(
-            title='Daily!',
-                description=f'{ctx.author.mention} possui {user.currency} palplatinas.',
-                colour=discord.Color.greyple(),
-                timestamp=ctx.message.created_at
+            title = 'Daily!',
+            description = f'{ctx.author.mention} possui {user.currency} palplatinas.',
+            colour = discord.Color.greyple(),
+            timestamp = ctx.message.created_at
         )
         moedas.set_thumbnail(url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')
         await ctx.send(embed=moedas)
