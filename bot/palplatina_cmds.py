@@ -57,7 +57,3 @@ class PalplatinaCmds(commands.Cog):
         )
         moedas.set_thumbnail(url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')
         await ctx.send(embed=moedas)
-
-    @commands.command(aliases=['comprar'])
-    async def loja(self, ctx):
-        user = await User.get(ctx.message.author.id)
