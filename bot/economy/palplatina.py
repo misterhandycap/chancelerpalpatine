@@ -13,13 +13,13 @@ class Palplatina():
             user.daily_last_collected_at = None
 
         if user.daily_last_collected_at and (datetime.utcnow() - user.daily_last_collected_at).days < 1:
-            return False
-        else:
-            user.daily_last_collected_at = datetime.utcnow()
-            user.currency += 300
-            
-            await User.save(user)
-            return user
+            return False, user
+        
+        user.daily_last_collected_at = datetime.utcnow()
+        user.currency += 300
+        
+        await User.save(user)
+        return True, user
 
     async def get_currency(self, user_id):
         user = await User.get(user_id)
