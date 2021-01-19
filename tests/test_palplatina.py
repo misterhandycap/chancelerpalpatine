@@ -27,16 +27,18 @@ class TestPalplatina(TestCase):
         db_session.add(user)
         db_session.commit()
 
-        result = asyncio.run(Palplatina().give_daily(user.id, user.name))
+        result, user_actual = asyncio.run(Palplatina().give_daily(user.id, user.name))
 
-        self.assertEqual(result.currency, 450)
+        self.assertTrue(result)
+        self.assertEqual(user_actual.currency, 450)
         self.assertEqual(Session().query(User).get(user.id).currency, 450)
 
     def test_give_daily_new_user(self):
-        result = asyncio.run(Palplatina().give_daily(14, "name"))
+        result, user = asyncio.run(Palplatina().give_daily(14, "name"))
 
-        self.assertEqual(result.currency, 300)
-        self.assertEqual(result.name, "name")
+        self.assertTrue(result)
+        self.assertEqual(user.currency, 300)
+        self.assertEqual(user.name, "name")
         self.assertEqual(Session().query(User).get(14).currency, 300)
 
     def test_give_daily_not_clear_for_new_daily(self):
@@ -48,9 +50,10 @@ class TestPalplatina(TestCase):
         db_session.add(user)
         db_session.commit()
 
-        result = asyncio.run(Palplatina().give_daily(user.id, user.name))
+        result, user_actual = asyncio.run(Palplatina().give_daily(user.id, user.name))
 
         self.assertFalse(result)
+        self.assertEqual(user_actual.currency, 150)
         self.assertEqual(Session().query(User).get(user.id).currency, 150)
 
     def test_get_currency_user_exists(self):
