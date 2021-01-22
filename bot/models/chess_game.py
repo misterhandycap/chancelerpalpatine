@@ -22,11 +22,15 @@ class ChessGame(Base):
     cpu_level = Column(SmallInteger, nullable=True)
 
     @classmethod
-    async def get(cls, chess_game_id):
+    async def get(cls, chess_game_id, preload_players=False):
+        query = select(ChessGame).where(ChessGame.id == chess_game_id)
+        if preload_players:
+            query = query.options(
+                subqueryload(ChessGame.player1),
+                subqueryload(ChessGame.player2)
+            )
         async with AsyncSession(engine) as session:
-            return (await session.execute(
-                select(ChessGame).where(ChessGame.id == chess_game_id)
-            )).scalars().first()
+            return (await session.execute(query)).scalars().first()
 
     @classmethod
     async def get_all_ongoing_games(cls):
