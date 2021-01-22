@@ -298,6 +298,7 @@ class Chess():
         png_bytes = svg2png(bytestring=chess.svg.board(board=game.board, lastmove=last_move, style=css))
         return BytesIO(png_bytes)
 
+    @run_cpu_bound_task
     def build_animated_sequence_gif(self, game: Game, game_move: int, sequence: list) -> BytesIO:
         """
         Builds an animated GIF for illustrating a given game's possible variation

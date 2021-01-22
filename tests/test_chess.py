@@ -740,7 +740,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         sequence = ['Nf3', 'd6', 'd4', 'cxd4', 'Nxd4', 'Nf6', 'Nc3', 'a6']
 
-        result = chess_bot.build_animated_sequence_gif(game, 2, sequence)
+        result = asyncio.run(chess_bot.build_animated_sequence_gif(game, 2, sequence))
 
         with open('tests/support/build_animated_sequence_gif.gif', 'rb') as f:
             self.assertEqual(result.getvalue(), f.read())
@@ -759,7 +759,7 @@ class TestChess(TestCase):
         chess_bot.games.append(game)
         sequence = ['Nf3', 'd6', 'd4', 'Rxa8', 'Nxd4', 'Nf6', 'Nc3', 'a6']
 
-        result = chess_bot.build_animated_sequence_gif(game, 2, sequence)
+        result = asyncio.run(chess_bot.build_animated_sequence_gif(game, 2, sequence))
 
         self.assertIsNone(result)
 

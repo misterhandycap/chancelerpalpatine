@@ -133,7 +133,7 @@ class ChessCog(commands.Cog):
         chess_game = await self.chess_bot.get_game_by_id(game_id)
         if not chess_game:
             return await ctx.send("Partida não encontrada")
-        gif_bytes = self.chess_bot.build_animated_sequence_gif(chess_game, move_number, moves)
+        gif_bytes = await self.chess_bot.build_animated_sequence_gif(chess_game, move_number, moves)
         if not gif_bytes:
             return await ctx.send("Movimento inválido na sequência fornecida")
         return await ctx.send(file=discord.File(gif_bytes, 'variation.gif'))
