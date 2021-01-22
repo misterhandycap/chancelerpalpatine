@@ -1,6 +1,7 @@
 import asyncio
 import os
 import warnings
+from uuid import uuid4
 from unittest import TestCase
 
 import chess
@@ -407,6 +408,7 @@ class TestChess(TestCase):
 
         self.assertIn("abandonou a partida!", result)
         self.assertIn('Result "1-0"', result)
+        self.assertIn(f"Id da partida: `{game.id}`", result)
         self.assertEqual(len(chess_bot.games), 0)
         self.assertEqual(Session().query(ChessGame).filter_by(result=1).count(), 1)
         with open('tests/support/make_move_legal_move.png', 'rb') as f:
@@ -723,3 +725,85 @@ class TestChess(TestCase):
             self.assertEqual(result["mate_in"], -2)
         else:
             self.assertIsNone(result["mate_in"])
+
+    def test_build_animated_sequence_gif_valid_params(self):
+        board = chess.Board()
+        board.push_san('e4')
+        board.push_san('c5')
+        board.push_san('Nc3')
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+        sequence = ['Nf3', 'd6', 'd4', 'cxd4', 'Nxd4', 'Nf6', 'Nc3', 'a6']
+
+        result = asyncio.run(chess_bot.build_animated_sequence_gif(game, 2, sequence))
+
+        with open('tests/support/build_animated_sequence_gif.gif', 'rb') as f:
+            self.assertEqual(result.getvalue(), f.read())
+
+    def test_build_animated_sequence_gif_invalid_move_in_sequence(self):
+        board = chess.Board()
+        board.push_san('e4')
+        board.push_san('c5')
+        board.push_san('Nc3')
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+        sequence = ['Nf3', 'd6', 'd4', 'Rxa8', 'Nxd4', 'Nf6', 'Nc3', 'a6']
+
+        result = asyncio.run(chess_bot.build_animated_sequence_gif(game, 2, sequence))
+
+        self.assertIsNone(result)
+
+    def test_get_game_by_id_game_exists(self):
+        warnings.simplefilter('ignore')
+        board1 = chess.Board()
+        board1.push_san("e4")
+        board1.push_san("e5")
+        game1 = Game()
+        game1.board = board1
+        game1.player1 = FakeDiscordUser(id=1)
+        game1.player2 = FakeDiscordUser(id=2)
+        asyncio.run(game1.save())
+
+        result = asyncio.run(Chess().get_game_by_id(game1.id))
+
+        self.assertEqual(result, game1)
+
+    def test_get_game_by_id_game_does_not_exist(self):
+        warnings.simplefilter('ignore')
+        board1 = chess.Board()
+        board1.push_san("e4")
+        board1.push_san("e5")
+        game1 = Game()
+        game1.board = board1
+        game1.player1 = FakeDiscordUser(id=1)
+        game1.player2 = FakeDiscordUser(id=2)
+        asyncio.run(game1.save())
+
+        result = asyncio.run(Chess().get_game_by_id(uuid4()))
+
+        self.assertIsNone(result)
+
+    def test_get_game_by_id_game_invalid_uuid(self):
+        warnings.simplefilter('ignore')
+        board1 = chess.Board()
+        board1.push_san("e4")
+        board1.push_san("e5")
+        game1 = Game()
+        game1.board = board1
+        game1.player1 = FakeDiscordUser(id=1)
+        game1.player2 = FakeDiscordUser(id=2)
+        asyncio.run(game1.save())
+
+        result = asyncio.run(Chess().get_game_by_id("invalid_id"))
+
+        self.assertIsNone(result)

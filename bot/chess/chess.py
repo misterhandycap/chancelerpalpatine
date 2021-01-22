@@ -51,6 +51,24 @@ class Chess():
         finally:
             return self.games
 
+    async def get_game_by_id(self, chess_game_id: str) -> Game:
+        """
+        Fetches from database chess game by given chess game id
+
+        :param chess_game_id: Chess game's UUID
+        :type chess_game_id: str
+        :return: Chess game
+        :rtype: Game
+        """
+        try:
+            chess_game_model = await ChessGameModel.get(
+                chess_game_id, preload_players=True)
+            if not chess_game_model:
+                return None
+        except:
+            return None
+        return Game.from_chess_game_model(chess_game_model)
+
     def new_game(self, user1, user2, color_schema=None, cpu_level=None):
         player1, player2 = convert_users_to_players(user1, user2)
         current_players_pairs = map(lambda x: [x.player1, x.player2], self.games)
@@ -107,15 +125,10 @@ class Chess():
         :return: Bot message and PNG board
         :rtype: Tuple[str, BytesIO]
         """
-        try:
-            game.board.push_uci(move)
-        except ValueError:
-            try:
-                game.board.push_san(move)
-            except ValueError:
-                return 'Movimento inválido', None
-        except Exception as e:
-            return str(e), None
+        chess_move = self._parse_str_move(game, move)
+        if not chess_move:
+            return 'Movimento inválido', None
+        game.board.push(chess_move)
 
         game.current_player = game.player1 if game.current_player == game.player2 else game.player2
 
@@ -145,8 +158,8 @@ class Chess():
         """
         board_png_bytes = self.build_png_board(game)
         game.result = '0-1' if game.board.turn == chess.WHITE else '1-0'
-        pgn = self.generate_pgn(game)
         await game.save()
+        pgn = self.generate_pgn(game)
         self.games.remove(game)
         return f'{game.current_player.name} abandonou a partida!\n{pgn}', board_png_bytes
 
@@ -174,7 +187,10 @@ class Chess():
         for move in game.board.move_stack:
             last_node = last_node.add_variation(move)
 
-        return f"```\n{str(chess_game)}\n```"
+        result = f"```\n{str(chess_game)}\n```"
+        if game.id:
+            result += f'Id da partida: `{game.id}`'
+        return result
 
     @run_cpu_bound_task
     def get_all_boards_png(self, page: int=0):
@@ -281,6 +297,62 @@ class Chess():
         """ % colors
         png_bytes = svg2png(bytestring=chess.svg.board(board=game.board, lastmove=last_move, style=css))
         return BytesIO(png_bytes)
+
+    @run_cpu_bound_task
+    def build_animated_sequence_gif(self, game: Game, game_move: int, sequence: list) -> BytesIO:
+        """
+        Builds an animated GIF for illustrating a given game's possible variation
+
+        :param game: Game to be used for variation
+        :type game: Game
+        :param game_move: Number of game's move for the start of variation
+        :type game_move: int
+        :param sequence: Variation's sequence of move
+        :type sequence: str[]
+        :return: Animated gif's bytesIO
+        :rtype: BytesIO
+        """
+        game_moves = game.board.move_stack
+        new_board = chess.Board()
+        new_game = Game()
+        new_game.board = new_board
+        new_game.color_schema = game.color_schema
+        for move in game_moves[:game_move]:
+            new_board.push(move)
+        
+        first_gif_frame = Image.open(self.build_png_board(new_game))
+        gif_frames = []
+        for variant_move in sequence:
+            variant_chess_move = self._parse_str_move(new_game, variant_move)
+            if not variant_chess_move:
+                return
+            new_board.push(variant_chess_move)
+            gif_frame = Image.open(self.build_png_board(new_game))
+            gif_frames.append(gif_frame)
+        
+        bytesio = BytesIO()
+        first_gif_frame.save(
+            bytesio,
+            format='gif',
+            save_all=True,
+            append_images=gif_frames,
+            duration=1000,
+            loop=0
+        )
+        bytesio.seek(0)
+        return bytesio
+    
+    def _parse_str_move(self, game: Game, move: str) -> chess.Move:
+        try:
+            return game.board.parse_uci(move)
+        except ValueError:
+            try:
+                return game.board.parse_san(move)
+            except ValueError:
+                return None
+        except Exception as e:
+            logging.warning(e)
+            return None
     
     def _is_last_move_blunder(self, game: Game, analysis: dict):
         last_eval = game.last_eval
