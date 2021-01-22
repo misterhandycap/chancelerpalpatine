@@ -119,6 +119,25 @@ class ChessCog(commands.Cog):
         else:
             await ctx.send(file=discord.File(png_bytes, 'boards.png'))
 
+    @commands.command(aliases=['xgif'])
+    async def xadrez_gif(self, ctx, game_id: str, move_number: int, *moves):
+        """
+        Exibe um GIF animado com uma variante fornecida para o jogo em questão, a partir do lance fornecido
+
+        É necessário passar o jogo em questão, identificado com seu UUID, e o número do lance a partir do qual \
+            a sequência fornecida se inicia, que deve ser uma sequência de lances em UCI ou SAN separados por espaço.
+
+        Exemplo de uso: xgif f63e5e4f-dd94-4439-a283-33a1c1a065a0 11 Nxf5 Qxf5 Qxf5 gxf5
+        """
+        await ctx.trigger_typing()
+        chess_game = await self.chess_bot.get_game_by_id(game_id)
+        if not chess_game:
+            return await ctx.send("Partida não encontrada")
+        gif_bytes = await self.chess_bot.build_animated_sequence_gif(chess_game, move_number, moves)
+        if not gif_bytes:
+            return await ctx.send("Movimento inválido na sequência fornecida")
+        return await ctx.send(file=discord.File(gif_bytes, 'variation.gif'))
+
     @commands.command(aliases=['xp'])
     async def xadrez_puzzle(self, ctx, puzzle_id=None, move=''):
         """

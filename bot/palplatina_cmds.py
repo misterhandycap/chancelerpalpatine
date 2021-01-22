@@ -55,3 +55,10 @@ class PalplatinaCmds(commands.Cog):
         embed.set_thumbnail(
             url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')
         await ctx.send(embed=embed)
+
+
+    @commands.command()
+    async def pagar(self, ctx, user2: discord.User, amount: int):
+        give_currency = await self.palplatina.give_currency(ctx.message.author.id, user2.id, amount)
+
+        await ctx.send('s')
