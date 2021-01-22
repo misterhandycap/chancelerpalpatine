@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, Column, Integer, DateTime, select, String
+from sqlalchemy import BigInteger, Column, DateTime, Integer, select, String
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.models import engine, Base

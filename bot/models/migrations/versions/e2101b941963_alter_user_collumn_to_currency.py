@@ -23,3 +23,4 @@ def upgrade():
 
 def downgrade():
     op.alter_column('user', 'currency', nullable=False, new_column_name='xp_points')
+    op.drop_column('user', 'daily_last_collected_at')
