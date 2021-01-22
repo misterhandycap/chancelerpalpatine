@@ -31,8 +31,13 @@ class GeneralCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument) and 'User' in str(error) and 'not found' in str(error):
-            await ctx.send('Mestre quem?')
+        if isinstance(error, commands.BadArgument):
+            if 'User' in str(error) and 'not found' in str(error):
+                await ctx.send('Mestre quem?')
+            else:
+                await ctx.send(
+                    'Parâmetro inválido. Consulte a descrição do comando abaixo para informações sobre sua correta utilização:')
+                await ctx.send(embed=self._create_cmd_help_embed(ctx.command))
         elif isinstance(error, commands.CommandNotFound):
             await ctx.send('Esta ordem não existe, agora se me der licença...')
         elif isinstance(error, commands.MissingRequiredArgument):
@@ -65,15 +70,7 @@ class GeneralCog(commands.Cog):
                 cmd = [x for x in bot_commands if x.name == cmd_name][0]
             except IndexError:
                 return await ctx.send(f"Comando não encontrado. Veja todos os comandos disponíveis com `{bot_prefix}ajuda`")
-            help_embed = discord.Embed(
-                title=f'Ajuda - {cmd.name}',
-                description=cmd.help or 'Sem descrição disponível',
-                colour=discord.Color.blurple(),
-                timestamp=ctx.message.created_at
-            )
-            help_embed.add_field(name='Nomes alternativos', value='\n'.join(cmd.aliases) or 'Nenhum')
-            help_embed.add_field(name='Parâmetros', value=cmd.signature or 'Nenhum')
-            help_embed.add_field(name='Categoria', value=cmd.cog.description if cmd.cog else 'Nenhuma')
+            help_embed = self._create_cmd_help_embed(cmd)
             await ctx.send(embed=help_embed)
 
     async def _create_paginated_help_embed(self, page_number):
@@ -90,10 +87,21 @@ class GeneralCog(commands.Cog):
         for cmd in paginated_commands:
             help_embed.add_field(
                 name=f'{bot_prefix}{cmd.name}',
-                value=cmd.help or 'Sem descrição disponível'
+                value=cmd.short_doc or 'Sem descrição disponível'
             )
         self.help_cmd_manager.last_page = last_page
 
+        return help_embed
+
+    def _create_cmd_help_embed(self, cmd):
+        help_embed = discord.Embed(
+            title=f'Ajuda - {cmd.name}',
+            description=cmd.help or 'Sem descrição disponível',
+            colour=discord.Color.blurple()
+        )
+        help_embed.add_field(name='Nomes alternativos', value='\n'.join(cmd.aliases) or 'Nenhum')
+        help_embed.add_field(name='Parâmetros', value=cmd.signature or 'Nenhum')
+        help_embed.add_field(name='Categoria', value=cmd.cog.description if cmd.cog else 'Nenhuma')
         return help_embed
 
     @commands.command()
