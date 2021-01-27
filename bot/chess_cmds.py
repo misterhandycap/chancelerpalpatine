@@ -107,6 +107,18 @@ class ChessCog(commands.Cog):
         result = self.chess_bot.generate_pgn(game)
         await ctx.send(result)
 
+    @commands.command(aliases=['xpos'])
+    @get_current_game
+    async def xadrez_posicao(self, ctx, *, user2: discord.User=None, **kwargs):
+        """
+        Mostra a posição atual da partida em andamento
+
+        Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo.
+        """
+        game = kwargs['game']
+        image = self.chess_bot.build_png_board(game)
+        await ctx.send(file=discord.File(image, 'board.png'))
+
     @commands.command(aliases=['xt', 'xadrez_jogos'])
     async def xadrez_todos(self, ctx, page=0):
         """
