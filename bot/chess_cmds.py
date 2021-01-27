@@ -45,8 +45,11 @@ class ChessCog(commands.Cog):
     @commands.command(aliases=['xn'])
     async def xadrez_novo(self, ctx, user2: discord.User, color_schema=None):
         """
-        Inicie uma nova partida de xadrez com alguém.
-        Passe o ID de usuário para começar uma partida
+        Inicie uma nova partida de xadrez com alguém
+
+        Passe o usuário contra o qual deseja jogar para começar uma partida. \
+        Se quiser personalizar as cores do tabuleiro, passe o nome da cor que deseja usar \
+        (opções válidas: blue, purple, green, red, gray e wood).
         """
         result = self.chess_bot.new_game(ctx.author, user2, color_schema=color_schema)
         await ctx.send(result)
@@ -54,8 +57,11 @@ class ChessCog(commands.Cog):
     @commands.command(aliases=['xpve', 'xcpu', 'xb'])
     async def xadrez_bot(self, ctx, cpu_level: int, color_schema=None):
         """
-        Inicie uma nova partida de xadrez contra o bot.
-        Passe o nível de dificuldade (de 0 a 20)
+        Inicie uma nova partida de xadrez contra o bot
+
+        Passe o nível de dificuldade que desejar (de 0 a 20). \
+        Se quiser personalizar as cores do tabuleiro, passe o nome da cor que deseja usar \
+        (opções válidas: `blue`, `purple`, `green`, `red`, `gray` e `wood`).
         """
         bot_info = await self.client.application_info()
         result = self.chess_bot.new_game(
@@ -67,6 +73,8 @@ class ChessCog(commands.Cog):
     async def xadrez_jogar(self, ctx, move, *, user2: discord.User=None, **kwargs):
         """
         Faça uma jogada em sua partida atual
+
+        Use anotação SAN ou UCI. Movimentos inválidos ou ambíguos são rejeitados.
         """
         await ctx.trigger_typing()
         game = kwargs['game']
@@ -139,7 +147,7 @@ class ChessCog(commands.Cog):
         É necessário passar o jogo em questão, identificado com seu UUID, e o número do lance a partir do qual \
             a sequência fornecida se inicia, que deve ser uma sequência de lances em UCI ou SAN separados por espaço.
 
-        Exemplo de uso: xgif f63e5e4f-dd94-4439-a283-33a1c1a065a0 11 Nxf5 Qxf5 Qxf5 gxf5
+        Exemplo de uso: `xgif f63e5e4f-dd94-4439-a283-33a1c1a065a0 11 Nxf5 Qxf5 Qxf5 gxf5`
         """
         await ctx.trigger_typing()
         chess_game = await self.chess_bot.get_game_by_id(game_id)
@@ -154,6 +162,12 @@ class ChessCog(commands.Cog):
     async def xadrez_puzzle(self, ctx, puzzle_id=None, move=''):
         """
         Pratique um puzzle de xadrez
+
+        Envie o comando sem argumentos para um novo puzzle. Para tentar uma jogada em um puzzle, \
+        envie o ID do puzzle como primeiro argumento e a jogada como segundo.
+
+        Exemplo de novo puzzle: `xadrez_puzzle`
+        Exemplo de jogada em puzzle existente: `xadrez_puzzle 557b7aa7e13823b82b9bc1e9 Qa2`
         """
         await ctx.trigger_typing()
         if not puzzle_id:
