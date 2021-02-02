@@ -1,6 +1,10 @@
+import json
+import logging
 import os
 from io import BytesIO
 from textwrap import wrap
+
+from aiohttp import ClientSession
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -18,3 +22,12 @@ def meme_saimaluco_image(text):
     image_final.save(bytesio, format="png")
     bytesio.seek(0)
     return bytesio
+
+async def random_cat():
+    try:
+        async with ClientSession() as session:
+            async with session.get("https://aws.random.cat/meow") as response:
+                return (await response.json())['file']
+    except Exception as e:
+        logging.warning(e)
+        return None

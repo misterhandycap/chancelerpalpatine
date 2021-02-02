@@ -9,7 +9,7 @@ import discord
 from discord.ext import commands
 
 from bot.aurebesh import text_to_aurebesh_img
-from bot.meme import meme_saimaluco_image
+from bot.meme import meme_saimaluco_image, random_cat
 from bot.social.profile import Profile
 from bot.utils import paginate, PaginatedEmbedManager
 
@@ -156,6 +156,19 @@ class GeneralCog(commands.Cog):
         """
         previsao = ['Cara', 'Coroa']
         await ctx.send(f'{random.choice(previsao)}')
+
+    @commands.command(aliases=['cat'])
+    async def gato(self, ctx):
+        """
+        Mostra uma foto aleatória de gato 🐈
+        """
+        await ctx.trigger_typing()
+        image_url = await random_cat()
+        if not image_url:
+            return await ctx.send("Não consegui encontrar um gato 😢")
+        embed = discord.Embed(title="Gato")
+        embed.set_image(url=image_url)
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=['pedrapapeltesoura', 'ppt', 'dino'])
     async def rps(self, ctx, player_choice_str=''):
