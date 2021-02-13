@@ -64,8 +64,11 @@ class PalplatinaCmds(commands.Cog):
         """
         Veja os itens disponíveis para serem adquiridos
         """
+        discord_file = discord.File("bot/images/arnaldo-o-hutt.gif", 'hutt.gif')
         await self.shop_paginated_embed_manager.send_embed(
-            await self._build_shop_embed(page_number), page_number, ctx)
+            await self._build_shop_embed(page_number), page_number,
+            ctx, discord_file
+        )
 
     async def _build_shop_embed(self, page_number):
         profile_items, last_page = await self.palplatina.get_available_items(page_number-1)
@@ -73,6 +76,7 @@ class PalplatinaCmds(commands.Cog):
             title='Lojinha do Chanceler',
             description='Navegue pelos itens disponíveis'
         )
+        embed.set_thumbnail(url="attachment://hutt.gif")
         self.shop_paginated_embed_manager.last_page = last_page
         for profile_item in profile_items:
             embed.add_field(
