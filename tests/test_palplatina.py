@@ -225,3 +225,21 @@ class TestPalplatina(TestCase):
         result = asyncio.run(Palplatina().get_user_items(14))
 
         self.assertEqual(len(result), 0)
+
+    def test_get_item_item_exists(self):
+        profile_item = ProfileItem()
+        profile_item.name = 'Item'
+        profile_item.price = 100
+        profile_item.type = 'badge'
+        profile_item.file_path = '/some/path.png'
+        self.db_session.add(profile_item)
+        self.db_session.commit()
+
+        result = asyncio.run(Palplatina().get_item(profile_item.name))
+
+        self.assertEqual(result.id, profile_item.id)
+
+    def test_get_item_item_does_not_exist(self):
+        result = asyncio.run(Palplatina().get_item("item"))
+
+        self.assertIsNone(result)

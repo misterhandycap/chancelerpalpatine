@@ -75,7 +75,10 @@ class PalplatinaCmds(commands.Cog):
         )
         self.shop_paginated_embed_manager.last_page = last_page
         for profile_item in profile_items:
-            embed.add_field(name=profile_item.name, value=profile_item.price)
+            embed.add_field(
+                name=profile_item.name,
+                value=f'Preço: {profile_item.price}\nTipo: {profile_item.type.name.capitalize()}'
+            )
         return embed
     
     @commands.command(aliases=['items'])
@@ -89,7 +92,10 @@ class PalplatinaCmds(commands.Cog):
             description='Navegue pelos sues itens'
         )
         for profile_item in profile_items:
-            embed.add_field(name=profile_item.name, value=profile_item.price)
+            embed.add_field(
+                name=profile_item.name,
+                value=profile_item.type.name.capitalize()
+            )
         await ctx.send(embed=embed)
 
     @commands.command(aliases=['buy'])
@@ -100,5 +106,43 @@ class PalplatinaCmds(commands.Cog):
         Informe o nome do item que deseja comprar. Para que possa fazê-lo, é necessário \
             que tenha palplatinas suficientes.
         """
-        result = await self.palplatina.buy_item(ctx.message.author.id, profile_item_name)
-        await ctx.send(result)
+        profile_item = await self.palplatina.get_item(profile_item_name)
+        if not profile_item:
+            return await ctx.send('Item não encontrado')
+        
+        embed = discord.Embed(
+            title='Comprar item',
+            description=profile_item.name
+        )
+        if profile_item.get_file_contents():
+            discord_file = discord.File(profile_item.file_path, 'item.png')
+            embed.set_thumbnail(url="attachment://item.png")
+        embed.set_author(name=ctx.author)
+        embed.add_field(name='Preço', value=profile_item.price)
+        embed.add_field(name='Suas palplatinas', value=await self.palplatina.get_currency(ctx.message.author.id))
+        
+        message = await ctx.send(embed=embed, file=discord_file)
+        await message.add_reaction('✅')
+        await message.add_reaction('🚫')
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        confirm_emoji = '✅'
+        cancel_emoji = '🚫'
+        valid_emojis = [confirm_emoji, cancel_emoji]
+        if not reaction.message.embeds:
+            return
+        embed = reaction.message.embeds[0]
+        if not (embed.title == 'Comprar item' and str(user) == embed.author.name):
+            return
+
+        emoji = str(reaction)
+        if emoji not in valid_emojis:
+            return
+
+        if emoji == confirm_emoji:
+            result = await self.palplatina.buy_item(user.id, embed.description)
+        else:
+            result = 'Compra cancelada'
+        
+        await reaction.message.channel.send(content=f'{embed.author.name}: {result}')

@@ -30,6 +30,9 @@ class Palplatina():
 
     async def get_available_items(self, page=0):
         return await ProfileItem.all(page, page_size=9)
+
+    async def get_item(self, item_name):
+        return await ProfileItem.get_by_name(item_name)
     
     async def get_user_items(self, user_id):
         user = await User.get(user_id, preload_profile_items=True)
