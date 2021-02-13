@@ -90,7 +90,7 @@ class TestPalplatina(TestCase):
         self.db_session.add(profile_item)
         self.db_session.commit()
 
-        result = asyncio.run(Palplatina().buy_item(user.id, profile_item.id))
+        result = asyncio.run(Palplatina().buy_item(user.id, profile_item.name))
 
         self.assertEqual(result, 'Item bought. Enjoy!')
         persisted_user = Session().query(User).get(user.id)
@@ -113,7 +113,7 @@ class TestPalplatina(TestCase):
         self.db_session.add(profile_item)
         self.db_session.commit()
 
-        result = asyncio.run(Palplatina().buy_item(user.id, profile_item.id))
+        result = asyncio.run(Palplatina().buy_item(user.id, profile_item.name))
 
         self.assertEqual(result, 'Not enough credits')
         persisted_user = Session().query(User).get(user.id)
@@ -136,7 +136,7 @@ class TestPalplatina(TestCase):
         self.db_session.add(user)
         self.db_session.commit()
 
-        result = asyncio.run(Palplatina().buy_item(user.id, profile_item.id))
+        result = asyncio.run(Palplatina().buy_item(user.id, profile_item.name))
 
         self.assertEqual(result, 'You already own this item')
         persisted_user = Session().query(User).get(user.id)
@@ -178,8 +178,10 @@ class TestPalplatina(TestCase):
 
         result = asyncio.run(Palplatina().get_available_items(page=0))
 
-        self.assertEqual(len(result), 9)
-        fetched_items_names = [item.name for item in result]
+        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result[0]), 9)
+        self.assertEqual(result[1], 2)
+        fetched_items_names = [item.name for item in result[0]]
         self.assertIn('Item0', fetched_items_names)
         self.assertIn('Item8', fetched_items_names)
         self.assertNotIn('Item9', fetched_items_names)

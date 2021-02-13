@@ -37,9 +37,9 @@ class Palplatina():
             return []
         return user.profile_items
 
-    async def buy_item(self, user_id, item_id):
+    async def buy_item(self, user_id, item_name):
         user = await User.get(user_id, preload_profile_items=True)
-        profile_item = await ProfileItem.get(item_id)
+        profile_item = await ProfileItem.get_by_name(item_name)
         if not profile_item or not user:
             return 'Item not found'
 

@@ -3,7 +3,7 @@ import logging
 from io import BytesIO
 from uuid import uuid4
 
-from sqlalchemy import Column, DateTime, Enum, Integer, select, String
+from sqlalchemy import Column, DateTime, Enum, func, Integer, select, String
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.models import Base, engine
@@ -33,10 +33,19 @@ class ProfileItem(Base):
             return None
 
     @classmethod
-    async def all(cls, page=0, page_size=9):
+    async def get_by_name(cls, item_name):
         async with AsyncSession(engine) as session:
             return (await session.execute(
+                select(ProfileItem).where(ProfileItem.name == item_name))).scalars().first()
+
+    @classmethod
+    async def all(cls, page=0, page_size=9):
+        async with AsyncSession(engine) as session:
+            page_content = (await session.execute(
                 select(ProfileItem).offset(page*page_size).limit(page_size))).scalars().fetchall()
+            total_entries = (await session.execute(func.count(ProfileItem.id))).scalar()
+            last_page = int(total_entries // page_size) + (total_entries % page_size > 0)
+            return page_content, last_page
 
     def get_file_contents(self):
         try:
