@@ -55,3 +55,36 @@ class PalplatinaCmds(commands.Cog):
         embed.set_thumbnail(
             url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')
         await ctx.send(embed=embed)
+
+    @commands.command(aliases=['shop', 'lojinha'])
+    async def loja(self, ctx, page_number=1):
+        """
+        Veja os itens disponíveis para serem adquiridos
+        """
+        profile_items = await self.palplatina.get_available_items(page_number-1)
+        embed = discord.Embed(
+            title='Lojinha do Chanceler',
+            description='Navegue pelos itens disponíveis'
+        )
+        for profile_item in profile_items:
+            embed.add_field(name=profile_item.name, value=profile_item.price)
+        await ctx.send(embed=embed)
+    
+    @commands.command(aliases=['items'])
+    async def itens(self, ctx):
+        """
+        Veja os itens que você comprou
+        """
+        profile_items = await self.palplatina.get_user_items(ctx.message.author.id)
+        items_names = [item.name for item in profile_items]
+        if items_names == []:
+            return await ctx.send('Você não tem nenhum item')
+        await ctx.send(', '.join(items_names))
+
+    @commands.command(aliases=['buy'])
+    async def comprar(self, ctx, profile_item_id):
+        """
+        Compre um item para seu perfil
+        """
+        result = await self.palplatina.buy_item(ctx.message.author.id, profile_item_id)
+        await ctx.send(result)

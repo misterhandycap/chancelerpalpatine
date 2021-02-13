@@ -5,6 +5,7 @@ from unittest import TestCase
 from dotenv import load_dotenv
 
 from bot.economy.palplatina import Palplatina
+from bot.models.profile_item import ProfileItem
 from bot.models.user import User
 from tests.support.db_connection import clear_data, Session
 
@@ -15,17 +16,20 @@ class TestPalplatina(TestCase):
     def setUpClass(cls):
         load_dotenv()
     
+    def setUp(self):
+        self.db_session = Session()
+    
     def tearDown(self):
-        clear_data(Session())
+        clear_data(self.db_session)
+        self.db_session.close()
     
     def test_give_daily_clear_for_new_daily(self):
-        db_session = Session()
         user = User()
         user.id = 14
         user.daily_last_collected_at = datetime.utcnow() - timedelta(days=1)
         user.currency = 150
-        db_session.add(user)
-        db_session.commit()
+        self.db_session.add(user)
+        self.db_session.commit()
 
         result, user_actual = asyncio.run(Palplatina().give_daily(user.id, user.name))
 
@@ -42,13 +46,12 @@ class TestPalplatina(TestCase):
         self.assertEqual(Session().query(User).get(14).currency, 300)
 
     def test_give_daily_not_clear_for_new_daily(self):
-        db_session = Session()
         user = User()
         user.id = 14
         user.daily_last_collected_at = datetime.utcnow()
         user.currency = 150
-        db_session.add(user)
-        db_session.commit()
+        self.db_session.add(user)
+        self.db_session.commit()
 
         result, user_actual = asyncio.run(Palplatina().give_daily(user.id, user.name))
 
@@ -57,13 +60,12 @@ class TestPalplatina(TestCase):
         self.assertEqual(Session().query(User).get(user.id).currency, 150)
 
     def test_get_currency_user_exists(self):
-        db_session = Session()
         user = User()
         user.id = 14
         user.daily_last_collected_at = datetime.utcnow()
         user.currency = 150
-        db_session.add(user)
-        db_session.commit()
+        self.db_session.add(user)
+        self.db_session.commit()
 
         result = asyncio.run(Palplatina().get_currency(user.id))
 
@@ -73,3 +75,151 @@ class TestPalplatina(TestCase):
         result = asyncio.run(Palplatina().get_currency(14))
 
         self.assertEqual(result, 0)
+
+    def test_buy_item_success(self):
+        user = User()
+        user.id = 14
+        user.daily_last_collected_at = datetime.utcnow()
+        user.currency = 150
+        self.db_session.add(user)
+        profile_item = ProfileItem()
+        profile_item.name = 'Item'
+        profile_item.price = 100
+        profile_item.type = 'badge'
+        profile_item.file_path = '/some/path.png'
+        self.db_session.add(profile_item)
+        self.db_session.commit()
+
+        result = asyncio.run(Palplatina().buy_item(user.id, profile_item.id))
+
+        self.assertEqual(result, 'Item bought. Enjoy!')
+        persisted_user = Session().query(User).get(user.id)
+        persisted_user_profile_items = persisted_user.profile_items
+        self.assertEqual(persisted_user.currency, 50)
+        self.assertEqual(len(persisted_user_profile_items), 1)
+        self.assertEqual(persisted_user_profile_items[0].id, profile_item.id)
+
+    def test_buy_item_not_enough_currency(self):
+        user = User()
+        user.id = 14
+        user.daily_last_collected_at = datetime.utcnow()
+        user.currency = 150
+        self.db_session.add(user)
+        profile_item = ProfileItem()
+        profile_item.name = 'Item'
+        profile_item.price = 200
+        profile_item.type = 'badge'
+        profile_item.file_path = '/some/path.png'
+        self.db_session.add(profile_item)
+        self.db_session.commit()
+
+        result = asyncio.run(Palplatina().buy_item(user.id, profile_item.id))
+
+        self.assertEqual(result, 'Not enough credits')
+        persisted_user = Session().query(User).get(user.id)
+        persisted_user_profile_items = persisted_user.profile_items
+        self.assertEqual(persisted_user.currency, 150)
+        self.assertEqual(len(persisted_user_profile_items), 0)
+
+    def test_buy_item_item_already_bought(self):
+        profile_item = ProfileItem()
+        profile_item.name = 'Item'
+        profile_item.price = 100
+        profile_item.type = 'badge'
+        profile_item.file_path = '/some/path.png'
+        self.db_session.add(profile_item)
+        user = User()
+        user.id = 14
+        user.daily_last_collected_at = datetime.utcnow()
+        user.currency = 150
+        user.profile_items = [profile_item]
+        self.db_session.add(user)
+        self.db_session.commit()
+
+        result = asyncio.run(Palplatina().buy_item(user.id, profile_item.id))
+
+        self.assertEqual(result, 'You already own this item')
+        persisted_user = Session().query(User).get(user.id)
+        persisted_user_profile_items = persisted_user.profile_items
+        self.assertEqual(persisted_user.currency, 150)
+        self.assertEqual(len(persisted_user_profile_items), 1)
+        self.assertEqual(persisted_user_profile_items[0].id, profile_item.id)
+
+    def test_buy_item_item_not_found(self):
+        user = User()
+        user.id = 14
+        user.daily_last_collected_at = datetime.utcnow()
+        user.currency = 150
+        self.db_session.add(user)
+        self.db_session.commit()
+
+        result = asyncio.run(Palplatina().buy_item(user.id, 'random'))
+
+        self.assertEqual(result, 'Item not found')
+        persisted_user = Session().query(User).get(user.id)
+        persisted_user_profile_items = persisted_user.profile_items
+        self.assertEqual(persisted_user.currency, 150)
+        self.assertEqual(len(persisted_user_profile_items), 0)
+
+    def test_buy_item_user_not_found(self):
+        result = asyncio.run(Palplatina().buy_item(14, 'random'))
+
+        self.assertEqual(result, 'Item not found')
+
+    def test_get_available_items(self):
+        for i in range(12):
+            profile_item = ProfileItem()
+            profile_item.name = f'Item{i}'
+            profile_item.price = i*25
+            profile_item.type = 'badge' if i % 2 else 'wallpaper'
+            profile_item.file_path = f'/some/path_{i}.png'
+            self.db_session.add(profile_item)
+        self.db_session.commit()
+
+        result = asyncio.run(Palplatina().get_available_items(page=0))
+
+        self.assertEqual(len(result), 9)
+        fetched_items_names = [item.name for item in result]
+        self.assertIn('Item0', fetched_items_names)
+        self.assertIn('Item8', fetched_items_names)
+        self.assertNotIn('Item9', fetched_items_names)
+        self.assertNotIn('Item11', fetched_items_names)
+
+    def test_get_user_items_user_has_items(self):
+        user = User()
+        user.id = 14
+        user.daily_last_collected_at = datetime.utcnow()
+        user.currency = 150
+        for i in range(2):
+            profile_item = ProfileItem()
+            profile_item.name = f'Item{i}'
+            profile_item.price = 100*i
+            profile_item.type = 'badge'
+            profile_item.file_path = f'/some/path{i}.png'
+            user.profile_items.append(profile_item)
+        self.db_session.add(user)
+        self.db_session.commit()
+
+        result = asyncio.run(Palplatina().get_user_items(user.id))
+
+        self.assertEqual(len(result), 2)
+        fetched_items_names = [item.name for item in result]
+        self.assertIn('Item0', fetched_items_names)
+        self.assertIn('Item1', fetched_items_names)
+
+    def test_get_user_items_user_has_no_items(self):
+        user = User()
+        user.id = 14
+        user.daily_last_collected_at = datetime.utcnow()
+        user.currency = 150
+        self.db_session.add(user)
+        self.db_session.commit()
+
+        result = asyncio.run(Palplatina().get_user_items(user.id))
+
+        self.assertEqual(len(result), 0)
+
+    def test_get_user_items_user_not_found(self):
+        result = asyncio.run(Palplatina().get_user_items(14))
+
+        self.assertEqual(len(result), 0)
