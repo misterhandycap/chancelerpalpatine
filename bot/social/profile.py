@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from bot.astrology.astrology_chart import AstrologyChart
 from bot.models.chess_game import ChessGame
+from bot.models.profile_item import ProfileItemType
 from bot.models.user import User
 from bot.models.xp_point import XpPoint
 
@@ -28,9 +29,10 @@ class Profile():
         """
         text_max_width = 10
         
-        user = await User.get(user_id)
+        user = await User.get(user_id, preload_profile_items=True)
         if not user:
             return
+        user_profile_badges = [item for item in user.profile_items if item.type == ProfileItemType.badge]
         user_chart = await self.astrology_bot.get_user_chart(user_id)
         user_sign = None
         if user_chart:
@@ -53,8 +55,20 @@ class Profile():
             image_draw.text((400, 620), f'Vitórias no xadrez: {user_chess_victories}', fill="#FFF", font=image_font_subtitle)
             image_draw.text((400, 580), f'Signo: {user_sign}', fill="#FFF", font=image_font_subtitle)
             image_final.paste(image_user_avatar.resize((110, 110)), (0, 0))
+            image_final = self._draw_user_badges(image_final, user_profile_badges)
 
         bytesio = BytesIO()
         image_final.save(bytesio, format="png")
         bytesio.seek(0)
         return bytesio
+
+    def _draw_user_badges(self, image, profile_items):
+        for index, profile_item in enumerate(profile_items):
+            image_bytes_io = profile_item.get_file_contents()
+            if not image_bytes_io:
+                continue
+            image_badge = Image.open(image_bytes_io)
+            image_badge_resized = image_badge.resize((60, 60))
+            x_position = 450 + index * 70
+            image.paste(image_badge_resized, (x_position, 10), mask=image_badge_resized)
+        return image
