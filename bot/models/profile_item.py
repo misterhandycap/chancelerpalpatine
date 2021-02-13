@@ -19,7 +19,7 @@ class ProfileItem(Base):
     __tablename__ = 'profile_item'
     id = Column(GUID(), primary_key=True, default=uuid4)
     type = Column(Enum(ProfileItemType), nullable=False)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     price = Column(Integer, nullable=False)
     file_path = Column(String, nullable=False)
 

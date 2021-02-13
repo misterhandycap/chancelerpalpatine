@@ -23,7 +23,7 @@ def upgrade():
         'profile_item',
         sa.Column('id', GUID, primary_key=True),
         sa.Column('type', sa.Enum('badge', 'wallpaper', name='profile_item_type'), nullable=False),
-        sa.Column('name', sa.String, nullable=False),
+        sa.Column('name', sa.String, nullable=False, unique=True),
         sa.Column('price', sa.Integer, nullable=False),
         sa.Column('file_path', sa.String, nullable=False)
     )
