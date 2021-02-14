@@ -118,6 +118,7 @@ class PalplatinaCmds(commands.Cog):
             title='Comprar item',
             description=profile_item.name
         )
+        discord_file = None
         if profile_item.get_file_contents():
             discord_file = discord.File(profile_item.file_path, 'item.png')
             embed.set_thumbnail(url="attachment://item.png")
