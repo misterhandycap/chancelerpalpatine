@@ -16,13 +16,10 @@ class AnimeCog(commands.Cog):
         self.anime_bot = Anime()
 
     @commands.command(aliases=['busca_anime', 'buscar_anime', 'anime_buscar'])
-    async def anime_busca(self, ctx, *args):
+    async def anime_busca(self, ctx, *, query):
         """
         Faça uma pesquisa por um nome de anime
         """
-        query = ' '.join(args)
-        if not query:
-            return await ctx.send("Uso: `cp!anime_busca BUSCA`")
         await ctx.trigger_typing()
         results = self.anime_bot.search_anime(query)
 
@@ -39,13 +36,10 @@ class AnimeCog(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def anime(self, ctx, *args):
+    async def anime(self, ctx, *, query):
         """
         Veja informações do anime buscado com MyAnimeList
         """
-        query = ' '.join(args)
-        if not query:
-            return await ctx.send("Uso: `cp!anime BUSCA`")
         await ctx.trigger_typing()
         try:
             result = self.anime_bot.get_anime(int(query))
@@ -70,3 +64,7 @@ class AnimeCog(commands.Cog):
         embed.add_field(name='Score', value=result.score)
         embed.add_field(name='Num episodes', value=result.episodes)
         await ctx.send(embed=embed)
+
+    async def cog_command_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f'Uso: `{self.client.command_prefix}{ctx.command.name} BUSCA`')

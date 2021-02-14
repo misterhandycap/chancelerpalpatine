@@ -21,15 +21,19 @@ def get_current_game(func):
             return
             
         await func(*args, **kwargs)
+    command_signature = inspect.signature(func)
+    command_signature_parameters = command_signature.parameters.copy()
+    del command_signature_parameters['game']
     function_wrapper.__name__ = func.__name__
-    function_wrapper.__signature__ = inspect.signature(func)
     function_wrapper.__doc__ = func.__doc__
+    function_wrapper.__signature__ = command_signature.replace(
+        parameters=command_signature_parameters.values())
     return function_wrapper
 
 
 class ChessCog(commands.Cog):
     """
-    Comandos para xadrez
+    Xadrez
     """
 
     def __init__(self, client):
@@ -49,10 +53,21 @@ class ChessCog(commands.Cog):
 
         Passe o usuário contra o qual deseja jogar para começar uma partida. \
         Se quiser personalizar as cores do tabuleiro, passe o nome da cor que deseja usar \
-        (opções válidas: blue, purple, green, red, gray e wood).
+        (opções válidas: `blue`, `purple`, `green`, `red`, `gray` e `wood`).
         """
+        bot_info = await self.client.application_info()
+        if user2.id == bot_info.id:
+            return await ctx.send(
+                "Para jogar uma partida contra o bot, "
+                f"use o comando `{self.client.command_prefix}xadrez_bot`")
         result = self.chess_bot.new_game(ctx.author, user2, color_schema=color_schema)
         await ctx.send(result)
+
+    @xadrez_novo.error
+    async def _user_arg_error_handler(self, ctx, error):
+        if (isinstance(error, commands.BadArgument) and
+                'User' in str(error) and 'not found' in str(error)):
+            await ctx.send('Mestre quem?')
 
     @commands.command(aliases=['xpve', 'xcpu', 'xb'])
     async def xadrez_bot(self, ctx, cpu_level: int, color_schema=None):
@@ -70,14 +85,13 @@ class ChessCog(commands.Cog):
 
     @commands.command(aliases=['xj'])
     @get_current_game
-    async def xadrez_jogar(self, ctx, move, *, user2: discord.User=None, **kwargs):
+    async def xadrez_jogar(self, ctx, move, *, user2: discord.User=None, game):
         """
         Faça uma jogada em sua partida atual
 
         Use anotação SAN ou UCI. Movimentos inválidos ou ambíguos são rejeitados.
         """
         await ctx.trigger_typing()
-        game = kwargs['game']
         result, board_png_bytes = await self.chess_bot.make_move(game, move)
         await ctx.send(result)
         if board_png_bytes:
@@ -93,12 +107,11 @@ class ChessCog(commands.Cog):
 
     @commands.command(aliases=['xa'])
     @get_current_game
-    async def xadrez_abandonar(self, ctx, *, user2: discord.User=None, **kwargs):
+    async def xadrez_abandonar(self, ctx, *, user2: discord.User=None, game):
         """
         Abandone a partida atual
         """
         await ctx.trigger_typing()
-        game = kwargs['game']
         result, board_png_bytes = await self.chess_bot.resign(game)
         await ctx.send(result)
         if board_png_bytes:
@@ -107,28 +120,26 @@ class ChessCog(commands.Cog):
 
     @commands.command(aliases=['xpgn'])
     @get_current_game
-    async def xadrez_pgn(self, ctx, *, user2: discord.User=None, **kwargs):
+    async def xadrez_pgn(self, ctx, *, user2: discord.User=None, game):
         """
         Gera o PGN da partida atual
         """
-        game = kwargs['game']
         result = self.chess_bot.generate_pgn(game)
         await ctx.send(result)
 
     @commands.command(aliases=['xpos'])
     @get_current_game
-    async def xadrez_posicao(self, ctx, *, user2: discord.User=None, **kwargs):
+    async def xadrez_posicao(self, ctx, *, user2: discord.User=None, game):
         """
         Mostra a posição atual da partida em andamento
 
         Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo.
         """
-        game = kwargs['game']
         image = self.chess_bot.build_png_board(game)
         await ctx.send(file=discord.File(image, 'board.png'))
 
     @commands.command(aliases=['xt', 'xadrez_jogos'])
-    async def xadrez_todos(self, ctx, page=0):
+    async def xadrez_todos(self, ctx, page: int=0):
         """
         Veja todas as partidas que estão sendo jogadas agora
         """

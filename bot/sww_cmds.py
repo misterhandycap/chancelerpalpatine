@@ -19,7 +19,7 @@ class StarWarsWikiCog(commands.Cog):
             client, self._build_medals_embed)
 
     @commands.command(aliases=['lb'])
-    async def leaderboard(self, ctx, page=1):
+    async def leaderboard(self, ctx, page: int=1):
         """
         Exibe o leaderboard de medalhas da Star Wars Wiki
         """
@@ -35,11 +35,10 @@ class StarWarsWikiCog(commands.Cog):
             return await ctx.send("Houve um erro ao obter o quadro de lideranças da Star Wars Wiki.")
 
     @commands.command(aliases=['medalha'])
-    async def medal(self, ctx, *args):
+    async def medal(self, ctx, *, medal_name):
         """
         Exibe detalhes de uma medalha da Star Wars Wiki
         """
-        medal_name = ' '.join(args)
         await ctx.trigger_typing()
         try:
             leaderboard_data = await self.leaderboard_bot.get()

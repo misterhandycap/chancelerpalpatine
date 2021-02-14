@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 import discord
@@ -64,7 +65,8 @@ class PalplatinaCmds(commands.Cog):
         """
         Veja os itens disponíveis para serem adquiridos
         """
-        discord_file = discord.File("bot/images/arnaldo-o-hutt.gif", 'hutt.gif')
+        discord_file = discord.File(
+            os.path.join('bot', 'images', 'arnaldo-o-hutt.gif'), 'hutt.gif')
         await self.shop_paginated_embed_manager.send_embed(
             await self._build_shop_embed(page_number), page_number,
             ctx, discord_file
@@ -74,7 +76,8 @@ class PalplatinaCmds(commands.Cog):
         profile_items, last_page = await self.palplatina.get_available_items(page_number-1)
         embed = discord.Embed(
             title='Lojinha do Chanceler',
-            description='Navegue pelos itens disponíveis'
+            description='Navegue pelos itens disponíveis',
+            colour=discord.Color.green()
         )
         embed.set_thumbnail(url="attachment://hutt.gif")
         self.shop_paginated_embed_manager.last_page = last_page
@@ -93,7 +96,8 @@ class PalplatinaCmds(commands.Cog):
         profile_items = await self.palplatina.get_user_items(ctx.message.author.id)
         embed = discord.Embed(
             title='Seus itens adquiridos',
-            description='Navegue pelos sues itens'
+            description='Navegue pelos seus itens',
+            colour=discord.Color.green()
         )
         for profile_item in profile_items:
             embed.add_field(

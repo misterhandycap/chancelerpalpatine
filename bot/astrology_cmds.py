@@ -9,7 +9,7 @@ from bot.astrology.exception import AstrologyInvalidInput
 
 class AstrologyCog(commands.Cog):
     """
-    Comandos relacionados à astrologia
+    Astrologia
     """
 
     def __init__(self, client):
@@ -17,11 +17,20 @@ class AstrologyCog(commands.Cog):
         self.astrology_bot = AstrologyChart()
 
     @commands.command()
-    async def mapa_astral(self, ctx, date=None, time=None, *args):
+    async def mapa_astral(self, ctx, date=None, time=None, *, city_name=None):
         """
         Visualize ou crie via DM seu mapa astral
+
+        Para criar seu mapa astral, envie esse comando em DM para o bot informando \
+            a data, hora e local de seu nascimento da seguinte forma: \
+            `YYYY/mm/dd HH:MM Nome da cidade`.
+
+        Se já tiver criado seu mapa astral, envie esse comando sem argumentos para \
+            visualizá-lo em qualquer canal.
+
+        Exemplo de uso para criação de mapa astral: `mapa_astral 2000/15/01 12:00 Brasília`
+        Exemplo de uso para visualização de mapa criado: `mapa_astral`
         """
-        city_name = ' '.join(args)
         if not isinstance(ctx.channel, discord.channel.DMChannel):
             user_chart = await self.astrology_bot.get_user_chart(ctx.author.id)
             if not user_chart:

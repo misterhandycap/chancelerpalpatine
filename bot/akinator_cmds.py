@@ -6,7 +6,7 @@ from bot.akinator.akinator_game import AkinatorGame
 
 class AkinatorCog(commands.Cog):
     """
-    Comandos para jogos com Akinator
+    Jogos com Akinator
     """
 
     emoji_answers = {
@@ -25,6 +25,13 @@ class AkinatorCog(commands.Cog):
     async def akinator_novo(self, ctx):
         """
         Novo jogo com Akinator
+
+        Responda às perguntas do Akinator através de reações. Legenda:
+        ✅: Sim
+        🇵: Provavelmente sim
+        🤷: Não sei / talvez
+        🇺: Provavelmente não
+        🚫: Não
         """
         await ctx.trigger_typing()
         game, question = await self.akinator_bot.new_game(ctx.author)
@@ -67,3 +74,6 @@ class AkinatorCog(commands.Cog):
         message = await channel.send(embed=embed)
         for emoji in self.emoji_answers.values():
             await message.add_reaction(emoji)
+
+    async def cog_command_error(self, ctx, error):
+        await ctx.send("Houve um erro com o Akinator.")
