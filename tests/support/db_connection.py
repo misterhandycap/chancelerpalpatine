@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 
 from bot.models import Base
+from bot.models.profile_item import ProfileItem
 
 engine = create_engine(os.environ.get("DB_TESTING_URL"))
 Session = sessionmaker(bind=engine)
