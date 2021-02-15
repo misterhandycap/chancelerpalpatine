@@ -70,5 +70,8 @@ class Profile():
             image_badge = Image.open(image_bytes_io)
             image_badge_resized = image_badge.resize((60, 60))
             x_position = 450 + index * 70
-            image.paste(image_badge_resized, (x_position, 10), mask=image_badge_resized)
+            if image_badge_resized.mode == 'RGBA':
+                image.paste(image_badge_resized, (x_position, 10), mask=image_badge_resized)
+            else:
+                image.paste(image_badge_resized, (x_position, 10))
         return image

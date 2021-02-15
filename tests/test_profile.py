@@ -64,7 +64,12 @@ class TestProfile(TestCase):
         profile_badge_2.price = 100
         profile_badge_2.type = "badge"
         profile_badge_2.file_path = os.path.join("tests", "support", "badge2.png")
-        user_1.profile_items = [profile_badge_1, profile_badge_2]
+        profile_badge_3 = ProfileItem()
+        profile_badge_3.name = "Item3 without Alpha channel"
+        profile_badge_3.price = 100
+        profile_badge_3.type = "badge"
+        profile_badge_3.file_path = os.path.join("tests", "support", "badge3.png")
+        user_1.profile_items = [profile_badge_1, profile_badge_2, profile_badge_3]
         self.test_session.add(user_1)
         self.test_session.commit()
         with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
