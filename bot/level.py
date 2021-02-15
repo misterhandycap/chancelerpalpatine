@@ -113,17 +113,21 @@ class LevelCog(commands.Cog):
             xp_points.level = level_end
 
     @commands.command(aliases=['nivel'])
-    async def level(self, ctx):
+    async def level(self, ctx, user: discord.User=None):
         """
-        Mostra o nível de usuário ao usuário que pediu
+        Mostra o nível de usuário
+
+        Passe um usuário para ver seu nível. Se não for passado nenhum usuário, \
+            o seu nível de usuário será retornado.
         """
-        xp_point = await XpPoint.get_by_user_and_server(ctx.author.id, ctx.message.guild.id)
+        selected_user = user if user else ctx.author
+        xp_point = await XpPoint.get_by_user_and_server(selected_user.id, ctx.message.guild.id)
         if not xp_point:
             xp_point = XpPoint(level=0, points=0)
 
         levelbed = discord.Embed(
             title='Nível',
-            description=f'{ctx.author.mention} se encontra atualmente no nível {xp_point.level} com {xp_point.points}',
+            description=f'{selected_user.mention} se encontra atualmente no nível {xp_point.level} com {xp_point.points}',
             colour=discord.Color.red(),
             timestamp=ctx.message.created_at
         )
@@ -131,7 +135,7 @@ class LevelCog(commands.Cog):
         await ctx.send(embed=levelbed)
 
     @commands.command(aliases=['board'])
-    async def rank(self, ctx, page_number=1):
+    async def rank(self, ctx, page_number: int=1):
         """
         Mostra a tabela de niveis de usuários em ordem de maior pra menor
         """

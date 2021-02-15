@@ -21,8 +21,12 @@ class TestChess(TestCase):
     def setUpClass(cls):
         load_dotenv()
     
+    def setUp(self):
+        self.db_session = Session()
+    
     def tearDown(self):
-        clear_data(Session())
+        clear_data(self.db_session)
+        self.db_session.close()
 
     def test_load_games_entries_exist(self):
         warnings.simplefilter('ignore')
@@ -262,7 +266,7 @@ class TestChess(TestCase):
         self.assertEqual(len(game.board.move_stack), 3)
         self.assertEqual(game.current_player, game.player2)
         
-        with open('tests/support/make_move_legal_move.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'make_move_legal_move.png'), 'rb') as f:
             self.assertEqual(result_board.getvalue(), f.read())
 
     def test_make_move_legal_san_move_in_players_turn(self):
@@ -283,7 +287,7 @@ class TestChess(TestCase):
         self.assertEqual(len(game.board.move_stack), 3)
         self.assertEqual(game.current_player, game.player2)
 
-        with open('tests/support/make_move_legal_move.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'make_move_legal_move.png'), 'rb') as f:
             self.assertEqual(result_board.getvalue(), f.read())
 
     def test_make_move_finish_game(self):
@@ -304,8 +308,8 @@ class TestChess(TestCase):
         self.assertIn("Fim de jogo", result)
         self.assertIn("1. g4 e5 2. f4 Qh4# 0-1", result)
         self.assertEqual(len(chess_bot.games), 0)
-        self.assertEqual(Session().query(ChessGame).filter_by(result=-1).count(), 1)
-        with open('tests/support/make_move_finish_game.png', 'rb') as f:
+        self.assertEqual(self.db_session.query(ChessGame).filter_by(result=-1).count(), 1)
+        with open(os.path.join('tests', 'support', 'make_move_finish_game.png'), 'rb') as f:
             self.assertEqual(result_board.getvalue(), f.read())
 
     def test_make_move_legal_move_pve(self):
@@ -346,8 +350,8 @@ class TestChess(TestCase):
             self.assertIn("Fim de jogo", result)
             self.assertIn("1. g4 e5 2. f4 Qh4# 0-1", result)
             self.assertEqual(len(chess_bot.games), 0)
-            self.assertEqual(Session().query(ChessGame).filter_by(result=-1).count(), 1)
-            with open('tests/support/make_move_finish_game.png', 'rb') as f:
+            self.assertEqual(self.db_session.query(ChessGame).filter_by(result=-1).count(), 1)
+            with open(os.path.join('tests', 'support', 'make_move_finish_game.png'), 'rb') as f:
                 self.assertEqual(result_board.getvalue(), f.read())
 
     def test_make_move_finish_game_pve_player_wins(self):
@@ -369,7 +373,7 @@ class TestChess(TestCase):
 
         self.assertIn("Fim de jogo", result)
         self.assertIn("1. e4 g5 2. d4 f5 3. Qh5# 1-0", result)
-        self.assertEqual(Session().query(ChessGame).filter_by(result=1).count(), 1)
+        self.assertEqual(self.db_session.query(ChessGame).filter_by(result=1).count(), 1)
         self.assertEqual(len(chess_bot.games), 0)
 
     def test_make_move_illegal_move_in_players_turn(self):
@@ -410,8 +414,8 @@ class TestChess(TestCase):
         self.assertIn('Result "1-0"', result)
         self.assertIn(f"Id da partida: `{game.id}`", result)
         self.assertEqual(len(chess_bot.games), 0)
-        self.assertEqual(Session().query(ChessGame).filter_by(result=1).count(), 1)
-        with open('tests/support/make_move_legal_move.png', 'rb') as f:
+        self.assertEqual(self.db_session.query(ChessGame).filter_by(result=1).count(), 1)
+        with open(os.path.join('tests', 'support', 'make_move_legal_move.png'), 'rb') as f:
             self.assertEqual(result_board.getvalue(), f.read())
 
     def test_save_games(self):
@@ -434,7 +438,7 @@ class TestChess(TestCase):
 
         asyncio.run(chess_bot.save_games())
 
-        expected = [Game.from_chess_game_model(x) for x in Session().query(ChessGame)]
+        expected = [Game.from_chess_game_model(x) for x in self.db_session.query(ChessGame)]
 
         self.assertEqual(chess_bot.games, expected)
         self.assertEqual(game1.color_schema, expected[0].color_schema)
@@ -476,7 +480,7 @@ class TestChess(TestCase):
 
         image_bytesio = asyncio.run(chess_bot.get_all_boards_png())
 
-        with open("tests/support/get_all_boards_png_one_game.png", 'rb') as f:
+        with open(os.path.join('tests', 'support', 'get_all_boards_png_one_game.png'), 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
 
     def test_get_all_boards_png_three_games(self):
@@ -507,7 +511,7 @@ class TestChess(TestCase):
         
         image_bytesio = asyncio.run(chess_bot.get_all_boards_png())
 
-        with open("tests/support/get_all_boards_png_three_games.png", 'rb') as f:
+        with open(os.path.join('tests', 'support', 'get_all_boards_png_three_games.png'), 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
 
     def test_get_all_boards_png_no_twelve_games(self):
@@ -543,7 +547,7 @@ class TestChess(TestCase):
 
         image_bytesio = asyncio.run(chess_bot.get_all_boards_png())
 
-        with open("tests/support/get_all_boards_png_twelve_games.png", 'rb') as f:
+        with open(os.path.join('tests', 'support', 'get_all_boards_png_twelve_games.png'), 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
 
     def test_get_all_boards_png_no_twelve_games_second_page(self):
@@ -579,7 +583,7 @@ class TestChess(TestCase):
 
         image_bytesio = asyncio.run(chess_bot.get_all_boards_png(page=2), debug=True)
 
-        with open("tests/support/get_all_boards_png_twelve_games_second_page.png", 'rb') as f:
+        with open(os.path.join('tests', 'support', 'get_all_boards_png_twelve_games_second_page.png'), 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
     
     def test_get_all_boards_png_no_games_being_played(self):
@@ -742,7 +746,7 @@ class TestChess(TestCase):
 
         result = asyncio.run(chess_bot.build_animated_sequence_gif(game, 2, sequence))
 
-        with open('tests/support/build_animated_sequence_gif.gif', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'build_animated_sequence_gif.gif'), 'rb') as f:
             self.assertEqual(result.getvalue(), f.read())
 
     def test_build_animated_sequence_gif_invalid_move_in_sequence(self):

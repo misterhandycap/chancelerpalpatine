@@ -1,4 +1,5 @@
 import asyncio
+import os
 from unittest import TestCase
 
 from dotenv import load_dotenv
@@ -43,12 +44,12 @@ class TestProfile(TestCase):
         geopos = (-23.5506507, -46.6333824)
         chart = astrology_bot.calc_chart_raw(datetime, geopos)
         asyncio.run(astrology_bot.save_chart(user_1.id, chart))
-        with open('tests/support/user_avatar.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
             user_avatar_bytes = f.read()
 
         result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes))
 
-        with open('tests/support/get_user_profile_all_fields.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'get_user_profile_all_fields.png'), 'rb') as f:
             self.assertEqual(result.getvalue(), f.read())
 
     def test_get_user_profile_user_has_badges(self):
@@ -57,37 +58,42 @@ class TestProfile(TestCase):
         profile_badge_1.name = "Item1"
         profile_badge_1.price = 100
         profile_badge_1.type = "badge"
-        profile_badge_1.file_path = "tests/support/badge1.png"
+        profile_badge_1.file_path = os.path.join("tests", "support", "badge1.png")
         profile_badge_2 = ProfileItem()
         profile_badge_2.name = "Item2"
         profile_badge_2.price = 100
         profile_badge_2.type = "badge"
-        profile_badge_2.file_path = "tests/support/badge2.png"
-        user_1.profile_items = [profile_badge_1, profile_badge_2]
+        profile_badge_2.file_path = os.path.join("tests", "support", "badge2.png")
+        profile_badge_3 = ProfileItem()
+        profile_badge_3.name = "Item3 without Alpha channel"
+        profile_badge_3.price = 100
+        profile_badge_3.type = "badge"
+        profile_badge_3.file_path = os.path.join("tests", "support", "badge3.png")
+        user_1.profile_items = [profile_badge_1, profile_badge_2, profile_badge_3]
         self.test_session.add(user_1)
         self.test_session.commit()
-        with open('tests/support/user_avatar.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
             user_avatar_bytes = f.read()
 
         result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes))
 
-        with open('tests/support/get_user_profile_with_badges.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'get_user_profile_with_badges.png'), 'rb') as f:
             self.assertEqual(result.getvalue(), f.read())
 
     def test_get_user_profile_user_exists_no_info(self):
         user_1 = User(id=14, name='Name')
         self.test_session.add(user_1)
         self.test_session.commit()
-        with open('tests/support/user_avatar.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
             user_avatar_bytes = f.read()
 
         result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes))
 
-        with open('tests/support/get_user_profile_no_info.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'get_user_profile_no_info.png'), 'rb') as f:
             self.assertEqual(result.getvalue(), f.read())
 
     def test_get_user_profile_no_user(self):
-        with open('tests/support/user_avatar.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
             user_avatar_bytes = f.read()
 
         result = asyncio.run(Profile().get_user_profile(14, user_avatar_bytes))

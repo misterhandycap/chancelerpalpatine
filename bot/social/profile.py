@@ -42,7 +42,7 @@ class Profile():
         if not user_total_points:
             user_total_points = 0
 
-        with open('bot/images/profile_bg.jpg', 'rb') as f:
+        with open(os.path.join('bot', 'images', 'profile_bg.jpg'), 'rb') as f:
             image_final = Image.open(f)
             image_font_title = ImageFont.truetype(os.environ.get("TRUETYPE_FONT_FOR_PROFILE"), size=48)
             image_font_subtitle = ImageFont.truetype(os.environ.get("TRUETYPE_FONT_FOR_PROFILE"), size=32)
@@ -70,5 +70,8 @@ class Profile():
             image_badge = Image.open(image_bytes_io)
             image_badge_resized = image_badge.resize((60, 60))
             x_position = 450 + index * 70
-            image.paste(image_badge_resized, (x_position, 10), mask=image_badge_resized)
+            if image_badge_resized.mode == 'RGBA':
+                image.paste(image_badge_resized, (x_position, 10), mask=image_badge_resized)
+            else:
+                image.paste(image_badge_resized, (x_position, 10))
         return image

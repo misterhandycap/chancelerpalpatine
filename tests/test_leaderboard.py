@@ -1,4 +1,5 @@
 import logging
+import os
 import warnings
 
 from asyncio import run
@@ -183,7 +184,7 @@ class TestLeaderboard(VCRTestCase):
 
         actual = run(leaderboard_bot.draw_leaderboard(leaderboard, 2))
 
-        with open('tests/support/draw_leaderboard_second_page.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'draw_leaderboard_second_page.png'), 'rb') as f:
             self.assertEqual(actual.getvalue(), f.read())
 
     def test_complete_leaderboard_flow(self):

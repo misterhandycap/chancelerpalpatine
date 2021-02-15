@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 def meme_saimaluco_image(text):
     text_max_width = 10
-    with open('bot/images/saimaluco_meme.png', 'rb') as f:
+    with open(os.path.join('bot', 'images', 'saimaluco_meme.png'), 'rb') as f:
         image_final = Image.open(f)
         image_font = ImageFont.truetype(os.environ.get("TRUETYPE_FONT_FOR_POINTS_PATH"), size=12)
         image_draw = ImageDraw.Draw(image_final)

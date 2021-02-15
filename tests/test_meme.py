@@ -1,3 +1,4 @@
+import os
 from asyncio import run
 from urllib.parse import urlparse
 
@@ -11,7 +12,7 @@ class TestMeme(VCRTestCase):
     def test_meme_saimaluco_image(self):
         actual = meme_saimaluco_image('Test 123 really long text loooongword')
 
-        with open('tests/support/meme_saimaluco_image.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'meme_saimaluco_image.png'), 'rb') as f:
             self.assertEqual(actual.getvalue(), f.read())
 
     def test_random_cat(self):
