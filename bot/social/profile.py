@@ -42,7 +42,7 @@ class Profile():
         if not user_total_points:
             user_total_points = 0
 
-        with open('bot/images/profile_bg.jpg', 'rb') as f:
+        with open(os.path.join('bot', 'images', 'profile_bg.jpg'), 'rb') as f:
             image_final = Image.open(f)
             image_font_title = ImageFont.truetype(os.environ.get("TRUETYPE_FONT_FOR_PROFILE"), size=48)
             image_font_subtitle = ImageFont.truetype(os.environ.get("TRUETYPE_FONT_FOR_PROFILE"), size=32)

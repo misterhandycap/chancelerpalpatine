@@ -1,4 +1,5 @@
 import asyncio
+import os
 from datetime import datetime, timedelta
 from unittest import TestCase
 
@@ -86,7 +87,7 @@ class TestPalplatina(TestCase):
         profile_item.name = 'Item'
         profile_item.price = 100
         profile_item.type = 'badge'
-        profile_item.file_path = '/some/path.png'
+        profile_item.file_path = os.path.join('some', 'path.png')
         self.db_session.add(profile_item)
         self.db_session.commit()
 
@@ -109,7 +110,7 @@ class TestPalplatina(TestCase):
         profile_item.name = 'Item'
         profile_item.price = 200
         profile_item.type = 'badge'
-        profile_item.file_path = '/some/path.png'
+        profile_item.file_path = os.path.join('some', 'path.png')
         self.db_session.add(profile_item)
         self.db_session.commit()
 
@@ -126,7 +127,7 @@ class TestPalplatina(TestCase):
         profile_item.name = 'Item'
         profile_item.price = 100
         profile_item.type = 'badge'
-        profile_item.file_path = '/some/path.png'
+        profile_item.file_path = os.path.join('some', 'path.png')
         self.db_session.add(profile_item)
         user = User()
         user.id = 14
@@ -172,7 +173,7 @@ class TestPalplatina(TestCase):
             profile_item.name = f'Item{i}'
             profile_item.price = i*25
             profile_item.type = 'badge' if i % 2 else 'wallpaper'
-            profile_item.file_path = f'/some/path_{i}.png'
+            profile_item.file_path = os.path.join('some', f'path_{i}.png')
             self.db_session.add(profile_item)
         self.db_session.commit()
 
@@ -197,7 +198,7 @@ class TestPalplatina(TestCase):
             profile_item.name = f'Item{i}'
             profile_item.price = 100*i
             profile_item.type = 'badge'
-            profile_item.file_path = f'/some/path{i}.png'
+            profile_item.file_path = os.path.join('some', f'path_{i}.png')
             user.profile_items.append(profile_item)
         self.db_session.add(user)
         self.db_session.commit()
@@ -231,7 +232,7 @@ class TestPalplatina(TestCase):
         profile_item.name = 'Item'
         profile_item.price = 100
         profile_item.type = 'badge'
-        profile_item.file_path = '/some/path.png'
+        profile_item.file_path = os.path.join('some', 'path.png')
         self.db_session.add(profile_item)
         self.db_session.commit()
 

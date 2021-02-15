@@ -262,7 +262,7 @@ class TestChess(TestCase):
         self.assertEqual(len(game.board.move_stack), 3)
         self.assertEqual(game.current_player, game.player2)
         
-        with open('tests/support/make_move_legal_move.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'make_move_legal_move.png'), 'rb') as f:
             self.assertEqual(result_board.getvalue(), f.read())
 
     def test_make_move_legal_san_move_in_players_turn(self):
@@ -283,7 +283,7 @@ class TestChess(TestCase):
         self.assertEqual(len(game.board.move_stack), 3)
         self.assertEqual(game.current_player, game.player2)
 
-        with open('tests/support/make_move_legal_move.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'make_move_legal_move.png'), 'rb') as f:
             self.assertEqual(result_board.getvalue(), f.read())
 
     def test_make_move_finish_game(self):
@@ -305,7 +305,7 @@ class TestChess(TestCase):
         self.assertIn("1. g4 e5 2. f4 Qh4# 0-1", result)
         self.assertEqual(len(chess_bot.games), 0)
         self.assertEqual(Session().query(ChessGame).filter_by(result=-1).count(), 1)
-        with open('tests/support/make_move_finish_game.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'make_move_finish_game.png'), 'rb') as f:
             self.assertEqual(result_board.getvalue(), f.read())
 
     def test_make_move_legal_move_pve(self):
@@ -347,7 +347,7 @@ class TestChess(TestCase):
             self.assertIn("1. g4 e5 2. f4 Qh4# 0-1", result)
             self.assertEqual(len(chess_bot.games), 0)
             self.assertEqual(Session().query(ChessGame).filter_by(result=-1).count(), 1)
-            with open('tests/support/make_move_finish_game.png', 'rb') as f:
+            with open(os.path.join('tests', 'support', 'make_move_finish_game.png'), 'rb') as f:
                 self.assertEqual(result_board.getvalue(), f.read())
 
     def test_make_move_finish_game_pve_player_wins(self):
@@ -411,7 +411,7 @@ class TestChess(TestCase):
         self.assertIn(f"Id da partida: `{game.id}`", result)
         self.assertEqual(len(chess_bot.games), 0)
         self.assertEqual(Session().query(ChessGame).filter_by(result=1).count(), 1)
-        with open('tests/support/make_move_legal_move.png', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'make_move_legal_move.png'), 'rb') as f:
             self.assertEqual(result_board.getvalue(), f.read())
 
     def test_save_games(self):
@@ -476,7 +476,7 @@ class TestChess(TestCase):
 
         image_bytesio = asyncio.run(chess_bot.get_all_boards_png())
 
-        with open("tests/support/get_all_boards_png_one_game.png", 'rb') as f:
+        with open(os.path.join('tests', 'support', 'get_all_boards_png_one_game.png'), 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
 
     def test_get_all_boards_png_three_games(self):
@@ -507,7 +507,7 @@ class TestChess(TestCase):
         
         image_bytesio = asyncio.run(chess_bot.get_all_boards_png())
 
-        with open("tests/support/get_all_boards_png_three_games.png", 'rb') as f:
+        with open(os.path.join('tests', 'support', 'get_all_boards_png_three_games.png'), 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
 
     def test_get_all_boards_png_no_twelve_games(self):
@@ -543,7 +543,7 @@ class TestChess(TestCase):
 
         image_bytesio = asyncio.run(chess_bot.get_all_boards_png())
 
-        with open("tests/support/get_all_boards_png_twelve_games.png", 'rb') as f:
+        with open(os.path.join('tests', 'support', 'get_all_boards_png_twelve_games.png'), 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
 
     def test_get_all_boards_png_no_twelve_games_second_page(self):
@@ -579,7 +579,7 @@ class TestChess(TestCase):
 
         image_bytesio = asyncio.run(chess_bot.get_all_boards_png(page=2), debug=True)
 
-        with open("tests/support/get_all_boards_png_twelve_games_second_page.png", 'rb') as f:
+        with open(os.path.join('tests', 'support', 'get_all_boards_png_twelve_games_second_page.png'), 'rb') as f:
             self.assertEqual(image_bytesio.read(), f.read())
     
     def test_get_all_boards_png_no_games_being_played(self):
@@ -742,7 +742,7 @@ class TestChess(TestCase):
 
         result = asyncio.run(chess_bot.build_animated_sequence_gif(game, 2, sequence))
 
-        with open('tests/support/build_animated_sequence_gif.gif', 'rb') as f:
+        with open(os.path.join('tests', 'support', 'build_animated_sequence_gif.gif'), 'rb') as f:
             self.assertEqual(result.getvalue(), f.read())
 
     def test_build_animated_sequence_gif_invalid_move_in_sequence(self):
