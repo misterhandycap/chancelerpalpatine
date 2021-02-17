@@ -36,6 +36,8 @@ class GeneralCog(commands.Cog):
     async def on_command_error(self, ctx, error):
         try:
             raise error
+        except (commands.UserNotFound, commands.MemberNotFound):
+            await ctx.send('Mestre quem?')
         except commands.BadArgument:
             await ctx.send(
                 content=('Parâmetro inválido. '
