@@ -36,24 +36,35 @@ class GeneralCog(commands.Cog):
     async def on_command_error(self, ctx, error):
         try:
             raise error
+        except (commands.UserNotFound, commands.MemberNotFound):
+            await ctx.reply(
+                content='Mestre quem?',
+                mention_author=False
+            )
         except commands.BadArgument:
-            await ctx.send(
+            await ctx.reply(
                 content=('Parâmetro inválido. '
                 'Consulte a descrição do comando abaixo para informações sobre sua correta utilização:'),
-                embed=self._create_cmd_help_embed(ctx.command)
+                embed=self._create_cmd_help_embed(ctx.command),
+                mention_author=False
             )
         except commands.CommandNotFound:
-            await ctx.send('Esta ordem não existe, agora se me der licença...')
+            await ctx.reply(
+                content='Esta ordem não existe, agora se me der licença...',
+                mention_author=False
+            )
         except commands.MissingRequiredArgument:
-            await ctx.send(
+            await ctx.reply(
                 content=f"Esse comando requer um argumento (`{error.param.name}`) que não foi passado. "\
                 "Consulte a descrição do comando abaixo para informações sobre sua correta utilização:",
-                embed=self._create_cmd_help_embed(ctx.command)
+                embed=self._create_cmd_help_embed(ctx.command),
+                mention_author=False
             )
         except commands.MissingPermissions:
-            await ctx.send(
+            await ctx.reply(
                 "Você não tem as seguintes permissões necessárias para rodar esse comando: "
-                f"`{'`, `'.join(error.missing_perms)}`"
+                f"`{'`, `'.join(error.missing_perms)}`",
+                mention_author=False
             )
         except:
             logging.warning(f'{error.__class__}: {error}')

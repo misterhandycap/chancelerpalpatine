@@ -87,12 +87,6 @@ class ChessCog(commands.Cog):
         result = self.chess_bot.new_game(ctx.author, user2, color_schema=color_schema)
         await ctx.send(result)
 
-    @xadrez_novo.error
-    async def _user_arg_error_handler(self, ctx, error):
-        if (isinstance(error, commands.BadArgument) and
-                'User' in str(error) and 'not found' in str(error)):
-            await ctx.send('Mestre quem?')
-
     @commands.command(aliases=['xpve', 'xcpu', 'xb'])
     async def xadrez_bot(self, ctx, cpu_level: int, color_schema=None):
         """
