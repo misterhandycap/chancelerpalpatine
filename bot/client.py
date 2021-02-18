@@ -12,6 +12,7 @@ from bot.general import GeneralCog
 from bot.level import LevelCog
 from bot.palplatina_cmds import PalplatinaCmds
 from bot.sww_cmds import StarWarsWikiCog
+from bot.across_the_stars_cmds import AcrossTheStarsCmds
 
 load_dotenv()
 
@@ -31,6 +32,7 @@ client.add_cog(AkinatorCog(client))
 client.add_cog(AnimeCog(client))
 client.add_cog(StarWarsWikiCog(client))
 client.add_cog(PalplatinaCmds(client))
+client.add_cog(AcrossTheStarsCmds(client))
 
 astrology_bot = None
 if os.environ.get("DISABLE_ASTROLOGY") not in ['True', 'true']:

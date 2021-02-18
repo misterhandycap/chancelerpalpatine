@@ -31,6 +31,7 @@ class GeneralCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
+<<<<<<< Updated upstream
         if isinstance(error, commands.BadArgument):
             if 'User' in str(error) and 'not found' in str(error):
                 await ctx.send('Mestre quem?')
@@ -45,6 +46,40 @@ class GeneralCog(commands.Cog):
             await ctx.send(f'Esse comando requer um argumento que não foi passado. Veja `{bot_prefix}help` para mais informações.')
         else:
             logging.warning(f'{error.__class__}: {error}')
+=======
+        try:
+            raise error
+        except (commands.UserNotFound, commands.MemberNotFound):
+            await ctx.reply(
+                content='Mestre quem?',
+                mention_author=False
+            )
+        except commands.BadArgument:
+            await ctx.reply(
+                content=('Parâmetro inválido. '
+                'Consulte a descrição do comando abaixo para informações sobre sua correta utilização:'),
+                embed=self._create_cmd_help_embed(ctx.command),
+                mention_author=False
+            )
+        except commands.CommandNotFound:
+            await ctx.reply(
+                content='Esta ordem não existe, agora se me der licença...',
+                mention_author=False
+            )
+        except commands.MissingRequiredArgument:
+            await ctx.reply(
+                content=f"Esse comando requer um argumento (`{error.param.name}`) que não foi passado. "\
+                "Consulte a descrição do comando abaixo para informações sobre sua correta utilização:",
+                embed=self._create_cmd_help_embed(ctx.command),
+                mention_author=False
+            )
+        except commands.MissingPermissions:
+            await ctx.reply(
+                "Você não tem as seguintes permissões necessárias para rodar esse comando: "
+                f"`{'`, `'.join(error.missing_perms)}`",
+                mention_author=False
+            )
+>>>>>>> Stashed changes
 
     @commands.command(aliases=['ajuda'])
     async def help(self, ctx, page_or_cmd='1'):
@@ -218,6 +253,7 @@ class GeneralCog(commands.Cog):
             'avatar':'https://avatar.fandom.com/pt-br/wiki/',
         }
         
+<<<<<<< Updated upstream
         if args[0].lower() in dicio_serviços:
             buscador = dicio_serviços[args[0].lower()]
             entrada = " ".join(args[1:])
@@ -225,6 +261,10 @@ class GeneralCog(commands.Cog):
             buscador = dicio_serviços["google"]
             entrada = " ".join(args)
         await ctx.send(f'{buscador}{entrada.replace(" ", "_")}')
+=======
+        await ctx.reply(f'{search_engine}{actual_query.replace(" ", "_")}',
+        mention_author=False)
+>>>>>>> Stashed changes
 
     @commands.command(aliases=['perfil'])
     async def profile(self, ctx):
@@ -237,4 +277,5 @@ class GeneralCog(commands.Cog):
         image = await self.profile_bot.get_user_profile(ctx.message.author.id, user_avatar)
         if not image:
             return await ctx.send('Quem é você?')
-        await ctx.send(file=discord.File(image, 'perfil.png'))
+        await ctx.reply(file=discord.File(image, 'perfil.png'),
+        mention_author=False)

@@ -36,7 +36,8 @@ class AnimeCog(commands.Cog):
         )
         for result in results[:5]:
             embed.add_field(name=result['title'], value=result['synopsis'])
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed,
+        mention_author=False)
 
     @commands.command()
     async def anime(self, ctx, *args):
@@ -70,3 +71,11 @@ class AnimeCog(commands.Cog):
         embed.add_field(name='Score', value=result.score)
         embed.add_field(name='Num episodes', value=result.episodes)
         await ctx.send(embed=embed)
+<<<<<<< Updated upstream
+=======
+
+    async def cog_command_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.reply(f'Uso: `{self.client.command_prefix}{ctx.command.name} BUSCA`',
+            mention_author=False)
+>>>>>>> Stashed changes
