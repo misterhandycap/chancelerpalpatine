@@ -71,11 +71,10 @@ class AnimeCog(commands.Cog):
         embed.add_field(name='Score', value=result.score)
         embed.add_field(name='Num episodes', value=result.episodes)
         await ctx.send(embed=embed)
-<<<<<<< Updated upstream
-=======
 
     async def cog_command_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.reply(f'Uso: `{self.client.command_prefix}{ctx.command.name} BUSCA`',
-            mention_author=False)
->>>>>>> Stashed changes
+            await ctx.reply(
+                f'Uso: `{self.client.command_prefix}{ctx.command.name} BUSCA`',
+                mention_author=False
+            )

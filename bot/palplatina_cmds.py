@@ -57,12 +57,6 @@ class PalplatinaCmds(commands.Cog):
             url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')
         await ctx.send(embed=embed)
 
-<<<<<<< Updated upstream
-
-    @commands.command()
-    async def pagar(self, ctx, user2: discord.User, amount: int):
-        give_currency = await self.palplatina.give_currency(ctx.message.author.id, user2.id, amount)
-=======
     @commands.command(aliases=['shop', 'lojinha'])
     async def loja(self, ctx, page_number=1):
         """
@@ -154,6 +148,5 @@ class PalplatinaCmds(commands.Cog):
         emoji = str(reaction)
         if emoji not in valid_emojis:
             return
->>>>>>> Stashed changes
 
         await ctx.send('s')

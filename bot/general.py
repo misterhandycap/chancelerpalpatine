@@ -31,22 +31,6 @@ class GeneralCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-<<<<<<< Updated upstream
-        if isinstance(error, commands.BadArgument):
-            if 'User' in str(error) and 'not found' in str(error):
-                await ctx.send('Mestre quem?')
-            else:
-                await ctx.send(
-                    'Parâmetro inválido. Consulte a descrição do comando abaixo para informações sobre sua correta utilização:')
-                await ctx.send(embed=self._create_cmd_help_embed(ctx.command))
-        elif isinstance(error, commands.CommandNotFound):
-            await ctx.send('Esta ordem não existe, agora se me der licença...')
-        elif isinstance(error, commands.MissingRequiredArgument):
-            bot_prefix = os.environ.get("BOT_PREFIX", 'cp!')
-            await ctx.send(f'Esse comando requer um argumento que não foi passado. Veja `{bot_prefix}help` para mais informações.')
-        else:
-            logging.warning(f'{error.__class__}: {error}')
-=======
         try:
             raise error
         except (commands.UserNotFound, commands.MemberNotFound):
@@ -79,7 +63,6 @@ class GeneralCog(commands.Cog):
                 f"`{'`, `'.join(error.missing_perms)}`",
                 mention_author=False
             )
->>>>>>> Stashed changes
 
     @commands.command(aliases=['ajuda'])
     async def help(self, ctx, page_or_cmd='1'):
@@ -253,7 +236,6 @@ class GeneralCog(commands.Cog):
             'avatar':'https://avatar.fandom.com/pt-br/wiki/',
         }
         
-<<<<<<< Updated upstream
         if args[0].lower() in dicio_serviços:
             buscador = dicio_serviços[args[0].lower()]
             entrada = " ".join(args[1:])
@@ -261,10 +243,6 @@ class GeneralCog(commands.Cog):
             buscador = dicio_serviços["google"]
             entrada = " ".join(args)
         await ctx.send(f'{buscador}{entrada.replace(" ", "_")}')
-=======
-        await ctx.reply(f'{search_engine}{actual_query.replace(" ", "_")}',
-        mention_author=False)
->>>>>>> Stashed changes
 
     @commands.command(aliases=['perfil'])
     async def profile(self, ctx):
