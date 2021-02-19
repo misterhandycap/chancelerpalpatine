@@ -1,6 +1,7 @@
 from bot.across_the_stars.planets import Planets
 import discord
 from discord.ext import commands
+import os
 
 
 class AcrossTheStarsCmds(commands.Cog):
@@ -11,26 +12,22 @@ class AcrossTheStarsCmds(commands.Cog):
 
     @commands.command(aliases=['planets'])
     async def planetas(self, ctx, *, args):
-        planets = await self.planets.list_of_planets(region=args)
-        
-    discord_file = discord.File(
+        discord_file = discord.File(
             os.path.join('bot', 'images', 'arnaldo-o-hutt.gif'), 'hutt.gif')
-        await self.shop_paginated_embed_manager.send_embed(
-            await self._build_shop_embed(page_number), page_number,
-            ctx, discord_file
-        )
+
+        planets = await self.planets.list_of_planets(region=args)
 
         embed = discord.Embed(
             title='Empório do Arnaldo',
-            description='Se torne senador em nome de um planeta.',
+            description='Se torne o senador para um planeta',
             colour=discord.Color.green()
         )
         embed.set_thumbnail(url="attachment://hutt.gif")
-        self.shop_paginated_embed_manager.last_page = last_page
         for planet in planets:
             embed.add_field(
-                name=profile_item.name,
-                value=f'Preço: {profile_item.price}\nTipo: {profile_item.type.name.capitalize()}'
+                name=planet.name,
+                value=f'Preço: {planet.price}\nRegião: {planet.region.capitalize()}\nClima: {planet.climate.capitalize()}\nCircunferência: {planet.circuference}\nMassa: {planet.mass}'
+            )
 
-        await ctx.reply(embed=embed
+        await ctx.reply(embed=embed, file=discord_file,
         mention_author=False)
