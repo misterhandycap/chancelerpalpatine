@@ -14,7 +14,6 @@ class Planet(Base):
     region = Column(String, nullable=False)
     climate = Column(String, nullable=False)
     circuference = Column(Integer, nullable=False)
-    mass = Column(Integer, nullable=False)
 
     @classmethod
     async def all(cls, region=None, climate=None, circuference=None, mass=None):

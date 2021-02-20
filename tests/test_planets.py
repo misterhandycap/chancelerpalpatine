@@ -17,6 +17,5 @@ class TestPlanets(TestCase):
         planet.region = 'Orla Exterior'
         planet.climate = 'Desértico'
         planet.circuference = 100000
-        planet.mass = 100000
         session.add(planet)
         session.commit()

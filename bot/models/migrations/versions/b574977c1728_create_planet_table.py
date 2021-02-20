@@ -29,8 +29,7 @@ def upgrade():
         sa.Column('price', sa.Integer, nullable=False),
         sa.Column('region', sa.String, nullable=False),
         sa.Column('climate', sa.String, nullable=False),
-        sa.Column('circuference', sa.Integer, nullable=False),
-        sa.Column('mass', sa.Integer, nullable=False),
+        sa.Column('circuference', sa.Integer, nullable=False)
     )
 
 def downgrade():

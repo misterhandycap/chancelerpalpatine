@@ -26,7 +26,7 @@ class AcrossTheStarsCmds(commands.Cog):
         for planet in planets:
             embed.add_field(
                 name=planet.name,
-                value=f'Preço: {planet.price}\nRegião: {planet.region.capitalize()}\nClima: {planet.climate.capitalize()}\nCircunferência: {planet.circuference}\nMassa: {planet.mass}'
+                value=f'Preço: {planet.price}\nRegião: {planet.region.capitalize()}\nClima: {planet.climate.capitalize()}\nCircunferência: {planet.circuference}'
             )
 
         await ctx.reply(embed=embed, file=discord_file,
