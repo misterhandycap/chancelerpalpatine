@@ -33,8 +33,8 @@ class AkinatorCog(commands.Cog):
         🇺: Provavelmente não
         🚫: Não
         """
-        await ctx.trigger_typing()
-        game, question = await self.akinator_bot.new_game(ctx.author)
+        async with ctx.channel.typing():
+            game, question = await self.akinator_bot.new_game(ctx.author)
         await ctx.send("Jogo iniciado. Responda reagindo às perguntas do bot.")
         await self.send_embed(question, ctx.author, ctx)
 
@@ -51,9 +51,9 @@ class AkinatorCog(commands.Cog):
         if emoji not in self.emoji_answers.values():
             return
         
-        await reaction.message.channel.trigger_typing()
         answer = [k for k, v in self.emoji_answers.items() if v == emoji][0]
-        result = await self.akinator_bot.answer_question(game, answer)
+        async with reaction.message.channel.typing():
+            result = await self.akinator_bot.answer_question(game, answer)
         if isinstance(result, str):
             await self.send_embed(result, user, reaction.message.channel)
         else:

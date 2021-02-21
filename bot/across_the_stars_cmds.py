@@ -13,7 +13,7 @@ class AcrossTheStarsCmds(commands.Cog):
         self.planets = Planets()
 
     @commands.command(aliases=['planets'])
-    async def planetas(self, ctx, *, region):
+    async def planetas(self, ctx, *, region=None):
         """
         Lista todos os planetas disponíveis da região fornecida
         """
@@ -31,8 +31,8 @@ class AcrossTheStarsCmds(commands.Cog):
         for planet in planets:
             embed.add_field(
                 name=planet.name,
-                value=f'Preço: {planet.price}\nRegião: {planet.region.capitalize()}\nClima: {planet.climate.capitalize()}\nCircunferência: {planet.circuference}'
+                value=f'Preço: {planet.price}\nRegião: {planet.region}\n'\
+                    f'Clima: {planet.climate}\nCircunferência: {planet.circuference}'
             )
 
-        await ctx.reply(embed=embed, file=discord_file,
-        mention_author=False)
+        await ctx.reply(embed=embed, file=discord_file, mention_author=False)

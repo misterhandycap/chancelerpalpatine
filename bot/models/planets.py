@@ -16,8 +16,9 @@ class Planet(Base):
     circuference = Column(Integer, nullable=False)
 
     @classmethod
-    async def all(cls, region=None, climate=None, circuference=None, mass=None):
+    async def all(cls, **kwargs):
+        filtered_kwargs = {k: v for k, v in kwargs.items() if v != None}
         async with AsyncSession(engine) as session:
             return (await session.execute(
-                select(Planet).filter_by(region=region) #, climate=climate, circuference=circuference, mass=mass) 
+                select(Planet).filter_by(**filtered_kwargs)
             )).scalars().fetchall()

@@ -75,7 +75,7 @@ class PalplatinaCmds(commands.Cog):
     async def _build_shop_embed(self, page_number):
         profile_items, last_page = await self.palplatina.get_available_items(page_number-1)
         embed = discord.Embed(
-            title='Lojinha do Chanceler',
+            title='Empório do Arnaldo',
             description='Navegue pelos itens disponíveis',
             colour=discord.Color.green()
         )
