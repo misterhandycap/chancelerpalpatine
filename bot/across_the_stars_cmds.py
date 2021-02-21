@@ -14,13 +14,13 @@ class AcrossTheStarsCmds(commands.Cog):
 
     @commands.command(aliases=['planets'])
     async def planetas(self, ctx, *, region):
-    """
-    Lista todos os planetas disponíveis da região fornecida
-    """
+        """
+        Lista todos os planetas disponíveis da região fornecida
+        """
         discord_file = discord.File(
             os.path.join('bot', 'images', 'arnaldo-o-hutt.gif'), 'hutt.gif')
 
-        planets = await self.planets.list_of_planets(region=args)
+        planets = await self.planets.list_of_planets(region=region)
 
         embed = discord.Embed(
             title='Empório do Arnaldo',

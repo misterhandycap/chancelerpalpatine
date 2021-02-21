@@ -21,7 +21,7 @@ class GeneralCog(commands.Cog):
     Miscelânea
     """
 
-    emoji_answers_vote = {
+    emoji_answers_vote = [
         '1️⃣',
         '2️⃣',
         '3️⃣',
@@ -32,7 +32,7 @@ class GeneralCog(commands.Cog):
         '8️⃣',
         '9️⃣',
         '🔟'
-     }
+    ]
 
 
     def __init__(self, client):
@@ -327,14 +327,13 @@ class GeneralCog(commands.Cog):
         await ctx.send(file=discord.File(image, 'perfil.png'))
 
     @commands.command(aliases=['votar', 'vote', 'poll'])
-        """
-        Vote na proposta de um usuário!
-        """
     async def voto(self, ctx, *, args):
         options = args.split(';')
         question = options[0]
         choices = options[1:]
-        
+        """
+        Vote na proposta de um usuário!
+        """
         embed = discord.Embed(
             title='Voto',
             description='Vote na proposta de um colega!',
@@ -348,5 +347,5 @@ class GeneralCog(commands.Cog):
         )
 
         response_msg = await ctx.send(embed=embed)
-        for emoji in list(self.emoji_answers_vote.values())[:len(options[1:])]:
+        for emoji in self.emoji_answers_vote[:len(choices)]:
             await response_msg.add_reaction(emoji)
