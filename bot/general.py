@@ -144,7 +144,7 @@ class GeneralCog(commands.Cog):
         help_embed.add_field(name='Parâmetros', value=cmd.signature or 'Nenhum')
         help_embed.add_field(
             name='Categoria',
-            value=cmd.cog.description if cmd.cog else 'Nenhuma'
+            value=cmd.cog.description if cmd.cog and cmd.cog.description else 'Nenhuma'
         )
         return help_embed
 
