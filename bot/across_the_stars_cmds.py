@@ -5,13 +5,18 @@ import os
 
 
 class AcrossTheStarsCmds(commands.Cog):
-
+    """
+    Jogo Across The Stars
+    """
     def __init__(self, client):
         self.client = client
         self.planets = Planets()
 
     @commands.command(aliases=['planets'])
-    async def planetas(self, ctx, *, args):
+    async def planetas(self, ctx, *, region):
+    """
+    Lista todos os planetas disponíveis da região fornecida
+    """
         discord_file = discord.File(
             os.path.join('bot', 'images', 'arnaldo-o-hutt.gif'), 'hutt.gif')
 
