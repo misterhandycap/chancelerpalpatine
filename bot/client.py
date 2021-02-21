@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
+from bot.across_the_stars_cmds import AcrossTheStarsCmds
 from bot.akinator_cmds import AkinatorCog
 from bot.anime_cmds import AnimeCog
 from bot.chess_cmds import ChessCog
@@ -12,7 +13,6 @@ from bot.general import GeneralCog
 from bot.level import LevelCog
 from bot.palplatina_cmds import PalplatinaCmds
 from bot.sww_cmds import StarWarsWikiCog
-from bot.across_the_stars_cmds import AcrossTheStarsCmds
 
 load_dotenv()
 
