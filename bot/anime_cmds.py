@@ -20,8 +20,8 @@ class AnimeCog(commands.Cog):
         """
         Faça uma pesquisa por um nome de anime
         """
-        await ctx.trigger_typing()
-        results = self.anime_bot.search_anime(query)
+        async with ctx.channel.typing():
+            results = self.anime_bot.search_anime(query)
 
         if not results:
             return await ctx.send("Oops, houve um erro ao buscar pelo seu anime...")
@@ -40,16 +40,16 @@ class AnimeCog(commands.Cog):
         """
         Veja informações do anime buscado com MyAnimeList
         """
-        await ctx.trigger_typing()
-        try:
-            result = self.anime_bot.get_anime(int(query))
-        except:
+        async with ctx.channel.typing():
             try:
-                search_result = self.anime_bot.search_anime(query)[0]
-                result = self.anime_bot.get_anime(int(search_result["mal_id"]))
-            except Exception as e:
-                logging.warning(e, exc_info=True)
-                return await ctx.send("Oops, houve um erro ao buscar pelo seu anime...")
+                result = self.anime_bot.get_anime(int(query))
+            except:
+                try:
+                    search_result = self.anime_bot.search_anime(query)[0]
+                    result = self.anime_bot.get_anime(int(search_result["mal_id"]))
+                except Exception as e:
+                    logging.warning(e, exc_info=True)
+                    return await ctx.send("Oops, houve um erro ao buscar pelo seu anime...")
 
         embed = discord.Embed(
             title=result.title,
