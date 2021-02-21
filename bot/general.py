@@ -13,11 +13,27 @@ from bot.meme import meme_saimaluco_image, random_cat
 from bot.social.profile import Profile
 from bot.utils import paginate, PaginatedEmbedManager
 
+from bot.across_the_stars.vote import Vote
+
 
 class GeneralCog(commands.Cog):
     """
     Miscelânea
     """
+
+    emoji_answers_vote = {
+        '1': '1️⃣',
+        '2': '2️⃣',
+        '3': '3️⃣',
+        '4': '4️⃣',
+        '5': '5️⃣',
+        '6': '6️⃣',
+        '7': '7️⃣',
+        '8': '8️⃣',
+        '9': '9️⃣',
+        '10':'🔟'
+    }
+
 
     def __init__(self, client):
         self.client = client
@@ -309,3 +325,28 @@ class GeneralCog(commands.Cog):
         if not image:
             return await ctx.send('Quem é você?')
         await ctx.send(file=discord.File(image, 'perfil.png'))
+
+    @commands.command(aliases=['votar', 'vote', 'poll'])
+        """
+        Vote na proposta de um usuário!
+        """
+    async def voto(self, ctx, *, args):
+        options = args.split(';')
+        question = options[0]
+        choices = options[1:]
+        
+        embed = discord.Embed(
+            title='Voto',
+            description='Vote na proposta de um colega!',
+            colour=discord.Color.red()
+        )
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png")
+        embed.add_field(  
+            name='Democracia!',       
+            value='Eu amo democracia! {} convocou uma votação! A proposta é {}, e as opções são {}'.format(
+            ctx.message.author.mention, question, choices)
+        )
+
+        response_msg = await ctx.send(embed=embed)
+        for emoji in list(self.emoji_answers_vote.values())[:len(options[1:])]:
+            await response_msg.add_reaction(emoji)
