@@ -21,7 +21,7 @@ class GeneralCog(commands.Cog):
     Miscelânea
     """
 
-     emoji_answers_vote = [
+    emoji_answers_vote = {
         '1️⃣',
         '2️⃣',
         '3️⃣',
@@ -32,7 +32,7 @@ class GeneralCog(commands.Cog):
         '8️⃣',
         '9️⃣',
         '🔟'
-    ]
+     }
 
 
     def __init__(self, client):
