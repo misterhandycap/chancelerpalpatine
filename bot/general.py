@@ -8,32 +8,17 @@ import time
 import discord
 from discord.ext import commands
 
+from bot.across_the_stars.vote import Vote
 from bot.aurebesh import text_to_aurebesh_img
 from bot.meme import meme_saimaluco_image, random_cat
 from bot.social.profile import Profile
 from bot.utils import paginate, PaginatedEmbedManager
-
-from bot.across_the_stars.vote import Vote
 
 
 class GeneralCog(commands.Cog):
     """
     Miscelânea
     """
-
-    emoji_answers_vote = [
-        '1️⃣',
-        '2️⃣',
-        '3️⃣',
-        '4️⃣',
-        '5️⃣',
-        '6️⃣',
-        '7️⃣',
-        '8️⃣',
-        '9️⃣',
-        '🔟'
-    ]
-
 
     def __init__(self, client):
         self.client = client
@@ -89,8 +74,14 @@ class GeneralCog(commands.Cog):
     @commands.command(aliases=['ajuda'])
     async def help(self, ctx, page_or_cmd='1'):
         """
-        Exibe essa mensagem.
-        Passe um comando para obter mais informações sobre ele
+        Exibe essa mensagem
+
+        Passe um comando para obter mais informações sobre ele.
+
+        Parâmetros de comandos entre sinais de maior e menor (`<parametro>`) sinalizam \
+            parâmetros obrigatórios. Já parâmetros entre colchetes (`[parametro]`) \
+            sinalizam parâmetros opcionais. Valores padrões são sinalizados com um \
+            sinal de igual (`[parametro=valor_padrao]`).
         """
         page_number = None
         cmd_name = None
@@ -328,12 +319,22 @@ class GeneralCog(commands.Cog):
 
     @commands.command(aliases=['votar', 'vote', 'poll'])
     async def voto(self, ctx, *, args):
+        """
+        Cria uma votação para as demais pessoas participarem
+
+        A pergunta e as opções devem ser separadas por `;`. Você pode criar votações \
+            com até dez opções.
+
+        Exemplo: `voto Quem é o melhor lorde Sith?;Darth Sidious;Darth Vader;Darth Tyranus`
+        """
+        emoji_answers_vote = [
+            '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'
+        ]
+        choices_limit = len(emoji_answers_vote) + 1
         options = args.split(';')
         question = options[0]
-        choices = options[1:]
-        """
-        Vote na proposta de um usuário!
-        """
+        choices = options[1:choices_limit]
+        
         embed = discord.Embed(
             title='Voto',
             description='Vote na proposta de um colega!',
@@ -341,11 +342,14 @@ class GeneralCog(commands.Cog):
         )
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png")
         embed.add_field(  
-            name='Democracia!',       
-            value='Eu amo democracia! {} convocou uma votação! A proposta é {}, e as opções são {}'.format(
-            ctx.message.author.mention, question, choices)
+            name='Democracia!',
+            value='Eu amo democracia! {} convocou uma votação! A proposta é **{}**, e as opções são:\n{}'.format(
+                ctx.message.author.mention,
+                question,
+                ''.join([f'\n{emoji} - {choice}' for emoji, choice in zip(emoji_answers_vote, choices)])
+            )
         )
 
         response_msg = await ctx.send(embed=embed)
-        for emoji in self.emoji_answers_vote[:len(choices)]:
+        for emoji in emoji_answers_vote[:len(choices)]:
             await response_msg.add_reaction(emoji)
