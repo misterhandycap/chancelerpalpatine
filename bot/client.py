@@ -11,6 +11,7 @@ from bot.anime_cmds import AnimeCog
 from bot.chess_cmds import ChessCog
 from bot.general import GeneralCog
 from bot.level import LevelCog
+from bot.music_cmds import MusicCog
 from bot.palplatina_cmds import PalplatinaCmds
 from bot.sww_cmds import StarWarsWikiCog
 
@@ -36,6 +37,7 @@ client.add_cog(AnimeCog(client))
 client.add_cog(StarWarsWikiCog(client))
 client.add_cog(PalplatinaCmds(client))
 client.add_cog(AcrossTheStarsCmds(client))
+client.add_cog(MusicCog(client))
 
 astrology_bot = None
 if os.environ.get("DISABLE_ASTROLOGY") not in ['True', 'true']:
