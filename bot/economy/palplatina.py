@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from bot.economy.exceptions import AlreadyOwnsItem, ItemNotFound, NotEnoughCredits
 from bot.models.profile_item import ProfileItem
 from bot.models.user import User
 
@@ -44,16 +46,16 @@ class Palplatina():
         user = await User.get(user_id, preload_profile_items=True)
         profile_item = await ProfileItem.get_by_name(item_name)
         if not profile_item or not user:
-            return 'Item not found'
+            raise ItemNotFound()
 
         if user.currency < profile_item.price:
-            return 'Not enough credits'
+            raise NotEnoughCredits()
 
         user.profile_items.append(profile_item)
         user.currency -= profile_item.price
         try:
             await User.save(user)
-            return 'Item bought. Enjoy!'
+            return user
         except:
-            return 'You already own this item'
+            raise AlreadyOwnsItem()
             
