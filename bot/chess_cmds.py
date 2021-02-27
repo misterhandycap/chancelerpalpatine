@@ -1,5 +1,6 @@
 import inspect
 import logging
+from bot.i18n import _
 
 import discord
 from discord.ext import commands
@@ -48,7 +49,7 @@ def get_current_game(func):
 
     function_wrapper.__name__ = func.__name__
     function_wrapper.__doc__ = func.__doc__.format(
-        user2_doc="Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo."
+        user2_doc=_("Identify your opponent in case you are playing multiple games at once.")
     )
     function_wrapper.__signature__ = command_signature.replace(
         parameters=command_signature_parameters.values())
@@ -82,8 +83,9 @@ class ChessCog(commands.Cog):
         bot_info = await self.client.application_info()
         if user2.id == bot_info.id:
             return await ctx.send(
-                "Para jogar uma partida contra o bot, "
-                f"use o comando `{self.client.command_prefix}xadrez_bot`")
+                _("In order to play a game against the bot, use the command `{prefix}xadrez_bot`")
+                .format(prefix=self.client.command_prefix)
+            )
         result = self.chess_bot.new_game(ctx.author, user2, color_schema=color_schema)
         await ctx.send(result)
 
@@ -120,7 +122,11 @@ class ChessCog(commands.Cog):
             if evaluation["blunder"]:
                 await ctx.send("👀")
             elif evaluation["mate_in"] and evaluation["mate_in"] in range(1, 4):
-                sheev_msgs = ["DEW IT!", "Mate-o! Mate-o agora!", f"Muito bom, {game.current_player.name}, muito bom!"]
+                sheev_msgs = [
+                    _("DEW IT!"),
+                    _("Kill him! Kill him now!"),
+                    _("Good, {username}, good!").format(username=game.current_player.name)
+                ]
                 await ctx.send(sheev_msgs[evaluation["mate_in"] - 1])
 
     @commands.command(aliases=['xa'])
@@ -168,7 +174,11 @@ class ChessCog(commands.Cog):
         await ctx.trigger_typing()
         png_bytes = await self.chess_bot.get_all_boards_png(page)
         if not png_bytes:
-            await ctx.send("Nenhuma partida está sendo jogada... ☹️ Inicie uma com `cp!xadrez_novo`.")
+            # await ctx.send(_("Nenhuma partida está sendo jogada... ☹️ Inicie uma com `cp!xadrez_novo`."))
+            await ctx.send(
+                _("No game is being played currently... ☹️ Start a new one with `{prefix}!xadrez_novo`")
+                .format(prefix=self.client.command_prefix)
+            )
         else:
             await ctx.send(file=discord.File(png_bytes, 'boards.png'))
 
@@ -185,10 +195,10 @@ class ChessCog(commands.Cog):
         await ctx.trigger_typing()
         chess_game = await self.chess_bot.get_game_by_id(game_id)
         if not chess_game:
-            return await ctx.send("Partida não encontrada")
+            return await ctx.send(_("Game not found"))
         gif_bytes = await self.chess_bot.build_animated_sequence_gif(chess_game, move_number, moves)
         if not gif_bytes:
-            return await ctx.send("Movimento inválido na sequência fornecida")
+            return await ctx.send(_("Invalid move for the given sequence"))
         return await ctx.send(file=discord.File(gif_bytes, 'variation.gif'))
 
     @commands.command(aliases=['xp'])
@@ -206,10 +216,12 @@ class ChessCog(commands.Cog):
         if not puzzle_id:
             puzzle_dict = await self.puzzle_bot.get_random_puzzle()
             if 'error' in puzzle_dict:
-                return await ctx.send(f'Houve um erro ao obter um novo puzzle: {puzzle_dict["error"]}')
+                return await ctx.send(
+                    f'{_("There has been an error when trying to fetch a new puzzle")}: {puzzle_dict["error"]}')
             puzzle = self.puzzle_bot.build_puzzle(puzzle_dict)
             if 'error' in puzzle:
-                return await ctx.send(f'Houve um erro ao construir um novo puzzle: {puzzle["error"]}')
+                return await ctx.send(
+                    f'{_("There has been an error when trying to build a new puzzle")}: {puzzle["error"]}')
             return await ctx.send(puzzle["id"], file=discord.File(self.chess_bot.build_png_board(puzzle["game"]), 'puzzle.png'))
         
         puzzle_result = self.puzzle_bot.validate_puzzle_move(puzzle_id, move)
@@ -218,9 +230,9 @@ class ChessCog(commands.Cog):
         
         if puzzle_result:
             if self.puzzle_bot.is_puzzle_over(puzzle_id):
-                return await ctx.send("Muito bem, puzzle resolvido 👍")
+                return await ctx.send(_("Good job, puzzle solved 👍"))
         if puzzle_result or move == '':
             return await ctx.send(file=discord.File(
                 self.chess_bot.build_png_board(self.puzzle_bot.puzzles[puzzle_id]["game"]), 'puzzle.png'))
         
-        return await ctx.send("Resposta incorreta")
+        return await ctx.send(_("Wrong answer"))

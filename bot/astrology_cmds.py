@@ -1,4 +1,5 @@
 import logging
+from bot.i18n import _
 
 import discord
 from discord.ext import commands
@@ -34,7 +35,8 @@ class AstrologyCog(commands.Cog):
         if not isinstance(ctx.channel, discord.channel.DMChannel):
             user_chart = await self.astrology_bot.get_user_chart(ctx.author.id)
             if not user_chart:
-                return await ctx.send('Você ainda não criou seu mapa astral. Para fazê-lo, mande esse comando via DM 😁')
+                return await ctx.send(
+                    _('You have not yet created your astrology chart. In order to do so, send this command to my DM 😁'))
             return await self.send_astrology_triad(ctx, user_chart)
         try:
             await ctx.trigger_typing()
@@ -45,7 +47,9 @@ class AstrologyCog(commands.Cog):
         except Exception as e:
             logging.warning(e, exc_info=True)
             return await ctx.send(
-                'Houve um erro momentâneo. Tente novamente em alguns segundos. Se o erro persistir, então pode ser algum bug. 😬')
+                # 'Houve um erro momentâneo. Tente novamente em alguns segundos. Se o erro persistir, então pode ser algum bug. 😬')
+                _('There has been a momentary failure. Please try again in a few moments. If this error persists, then this might be a bug 😬')
+            )
         await self.send_astrology_triad(ctx, chart)
 
     async def send_astrology_triad(self, ctx, chart):
@@ -54,12 +58,12 @@ class AstrologyCog(commands.Cog):
         moon = self.astrology_bot.get_moon_sign(chart)
 
         embed = discord.Embed(
-            title='Seu mapa astral',
-            description='Esse é sua tríade',
+            title=_('Your astrology chart'),
+            description=_('Your astrology triad'),
             colour=discord.Color.blurple(),
             timestamp=ctx.message.created_at
         )
-        embed.add_field(name='Signo solar', value=sign)
-        embed.add_field(name='Signo ascendente', value=asc)
-        embed.add_field(name='Signo lunar', value=moon)
+        embed.add_field(name=_('Solar sign'), value=sign)
+        embed.add_field(name=_('Ascending sign'), value=asc)
+        embed.add_field(name=_('Moon sign'), value=moon)
         await ctx.send(embed=embed)

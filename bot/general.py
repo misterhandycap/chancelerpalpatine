@@ -5,6 +5,7 @@ import os
 import random
 import subprocess
 import time
+from bot.i18n import _
 
 import discord
 from discord.ext import commands
@@ -30,9 +31,9 @@ class GeneralCog(commands.Cog):
     async def on_ready(self):
         await self.client.change_presence(
             status=discord.Status.online,
-            activity=discord.Game(f'Planejando uma ordem surpresa')
+            activity=discord.Game(_('Planning a surprise order'))
         )
-        logging.info('É bom te ver, mestre Jedi.')
+        logging.info('Bot is ready')
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -40,13 +41,13 @@ class GeneralCog(commands.Cog):
             raise error
         except (commands.UserNotFound, commands.MemberNotFound):
             await ctx.reply(
-                content='Mestre quem?',
+                content=_('Master who?'),
                 mention_author=False
             )
         except commands.BadArgument:
             await ctx.reply(
-                content=('Parâmetro inválido. '
-                'Consulte a descrição do comando abaixo para informações sobre sua correta utilização:'),
+                content=(_('Invalid parameter. ') +
+                _('Take a look at the command\'s documentation below for information about its correct usage:')),
                 embed=self._create_cmd_help_embed(ctx.command),
                 mention_author=False
             )
@@ -57,14 +58,15 @@ class GeneralCog(commands.Cog):
             )
         except commands.MissingRequiredArgument:
             await ctx.reply(
-                content=f"Esse comando requer um argumento (`{error.param.name}`) que não foi passado. "\
-                "Consulte a descrição do comando abaixo para informações sobre sua correta utilização:",
+                content=_("This command requires an argument (`{command_name}`) that has not been provided. ")
+                .format(command_name=error.param.name)+
+                _('Take a look at the command\'s documentation below for information about its correct usage:'),
                 embed=self._create_cmd_help_embed(ctx.command),
                 mention_author=False
             )
         except commands.MissingPermissions:
             await ctx.reply(
-                "Você não tem as seguintes permissões necessárias para rodar esse comando: "
+                _("You do not have the required permissions to run this command: ") +
                 f"`{'`, `'.join(error.missing_perms)}`",
                 mention_author=False
             )
@@ -110,7 +112,7 @@ class GeneralCog(commands.Cog):
             try:
                 cmd = [x for x in bot_commands if cmd_name in [x.name] + x.aliases][0]
             except IndexError:
-                return await ctx.send(f"Comando não encontrado. Veja todos os comandos disponíveis com `{bot_prefix}ajuda`")
+                return await ctx.send(f'{_("Command not found. Check all available commands with")} `{bot_prefix}ajuda`')
             help_embed = self._create_cmd_help_embed(cmd)
             await ctx.send(embed=help_embed)
 
@@ -121,14 +123,14 @@ class GeneralCog(commands.Cog):
         
         paginated_commands, last_page = paginate(bot_commands, page_number, max_itens_per_page)
         help_embed = discord.Embed(
-            title='Ajuda',
-            description=f'Comandos ({min(max(page_number, 1), last_page)}/{last_page}):',
+            title=_('Help'),
+            description=f'{_("Commands")} ({min(max(page_number, 1), last_page)}/{last_page}):',
             colour=discord.Color.blurple()
         )
         for cmd in paginated_commands:
             help_embed.add_field(
                 name=f'{bot_prefix}{cmd.name}',
-                value=cmd.short_doc or 'Sem descrição disponível'
+                value=cmd.short_doc or _('No description available')
             )
         self.help_cmd_manager.last_page = last_page
 
@@ -136,16 +138,16 @@ class GeneralCog(commands.Cog):
 
     def _create_cmd_help_embed(self, cmd):
         help_embed = discord.Embed(
-            title=f'Ajuda - {cmd.name}',
-            description=cmd.help or 'Sem descrição disponível',
+            title=f'{_("Help")} - {cmd.name}',
+            description=cmd.help or _('No description available'),
             colour=discord.Color.blurple()
         )
         help_embed.add_field(
-            name='Nomes alternativos', value='\n'.join(cmd.aliases) or 'Nenhum')
-        help_embed.add_field(name='Parâmetros', value=cmd.signature or 'Nenhum')
+            name=_('Aliases'), value='\n'.join(cmd.aliases) or _('None'))
+        help_embed.add_field(name=_('Arguments'), value=cmd.signature or _('None'))
         help_embed.add_field(
-            name='Categoria',
-            value=cmd.cog.description if cmd.cog and cmd.cog.description else 'Nenhuma'
+            name=_('Category'),
+            value=cmd.cog.description if cmd.cog and cmd.cog.description else _('None')
         )
         return help_embed
 
@@ -256,7 +258,7 @@ class GeneralCog(commands.Cog):
         await ctx.trigger_typing()
         image_url = await random_cat()
         if not image_url:
-            return await ctx.send("Não consegui encontrar um gato 😢")
+            return await ctx.send(_("Could not find a cat picture 😢"))
         embed = discord.Embed(title="Gato")
         embed.set_image(url=image_url)
         await ctx.send(embed=embed)
@@ -274,7 +276,7 @@ class GeneralCog(commands.Cog):
         player_choice_str = player_choice_str.title()
         available_options = ['Deus', 'Homem', 'Dinossauro']
         if player_choice_str not in available_options:
-            return await ctx.send("Opção inválida")
+            return await ctx.send(_("Invalid option"))
 
         player_choice = available_options.index(player_choice_str)
         bot_choice = random.randint(0,2)
@@ -355,7 +357,7 @@ class GeneralCog(commands.Cog):
             size=128, static_format='png').read()
         image = await self.profile_bot.get_user_profile(selected_user.id, user_avatar)
         if not image:
-            return await ctx.send('Quem é você?')
+            return await ctx.send(_('Who are you?'))
         await ctx.send(file=discord.File(image, 'perfil.png'))
 
     @commands.command(aliases=['votar', 'vote', 'poll'])
@@ -377,17 +379,17 @@ class GeneralCog(commands.Cog):
         choices = options[1:choices_limit]
         
         embed = discord.Embed(
-            title='Voto',
-            description='Vote na proposta de um colega!',
+            title=_('Vote'),
+            description=_('Vote on your colleague\'s proposition!'),
             colour=discord.Color.red()
         )
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png")
         embed.add_field(  
-            name='Democracia!',
-            value='Eu amo democracia! {} convocou uma votação! A proposta é **{}**, e as opções são:\n{}'.format(
-                ctx.message.author.mention,
-                question,
-                ''.join([f'\n{emoji} - {choice}' for emoji, choice in zip(emoji_answers_vote, choices)])
+            name=_('Democracy!'),
+            value=_('I love democracy! {username} has summoned a vote! The proposition is **{question}**, and its options are:\n{options}').format(
+                username=ctx.message.author.mention,
+                question=question,
+                options=''.join([f'\n{emoji} - {choice}' for emoji, choice in zip(emoji_answers_vote, choices)])
             )
         )
 

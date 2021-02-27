@@ -1,3 +1,5 @@
+from bot.i18n import _
+
 import discord
 from discord.ext import commands
 
@@ -35,7 +37,7 @@ class AkinatorCog(commands.Cog):
         """
         async with ctx.channel.typing():
             game, question = await self.akinator_bot.new_game(ctx.author)
-        await ctx.send("Jogo iniciado. Responda reagindo às perguntas do bot.")
+        await ctx.send(_("Game started. Answer by reaction to the bot's questions."))
         await self.send_embed(question, ctx.author, ctx)
 
     @commands.Cog.listener()
@@ -58,7 +60,8 @@ class AkinatorCog(commands.Cog):
             await self.send_embed(result, user, reaction.message.channel)
         else:
             embed = discord.Embed(
-                title=f'{user.name} pensou em {result.get("name")}',
+                title=_("{username} thought of {name}").format(
+                    username=user.name, name=result.get("name")),
                 description=result.get('description'),
                 colour=discord.Color.blurple()
             )
@@ -76,4 +79,4 @@ class AkinatorCog(commands.Cog):
             await message.add_reaction(emoji)
 
     async def cog_command_error(self, ctx, error):
-        await ctx.send("Houve um erro com o Akinator.")
+        await ctx.send(_("There has been an error with Akinator."))

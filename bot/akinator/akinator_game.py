@@ -1,4 +1,5 @@
 import asyncio
+from bot.i18n import _
 
 import akinator
 from akinator.async_aki import Akinator
@@ -30,4 +31,4 @@ class AkinatorGame():
         try:
             return await game.answer(answer)
         except InvalidAnswerError:
-            return "Resposta inválida. Respostas válidas são: `y`, `n`, `idk`, `p`, `pn`."
+            return f'{_("Invalid answer. Valid answers are:")} `y`, `n`, `idk`, `p`, `pn`.'

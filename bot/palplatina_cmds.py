@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 
 from bot.economy.palplatina import Palplatina
+from bot.i18n import _, change_language
 from bot.utils import PaginatedEmbedManager
 
 
@@ -28,15 +29,15 @@ class PalplatinaCmds(commands.Cog):
             ctx.message.author.id, ctx.message.author.name)
         if received_daily:
             palplatinas_embed = discord.Embed(
-                title = 'Daily!',
-                description = f'Você recebeu 300 palplatinas, faça bom uso.',
+                title = _('Daily!'),
+                description = _('You have received 300 palplatinas, enjoy!'),
                 colour = discord.Color.greyple(),
                 timestamp = ctx.message.created_at
             )
         else:
             palplatinas_embed = discord.Embed(
-                title='Daily!',
-                description=f'Você já pegou seu daily hoje. Ambição leva ao lado sombrio da Força, gosto disso.',
+                title=_('Daily!'),
+                description=_('You have alredy collected your daily today. Ambition leads to the dark side of the Force, I like it.'),
                 colour=discord.Color.greyple(),
                 timestamp=user.daily_last_collected_at
             )
@@ -51,8 +52,11 @@ class PalplatinaCmds(commands.Cog):
         currency = await self.palplatina.get_currency(ctx.message.author.id)
         
         embed = discord.Embed(
-            title='Daily!',
-            description=f'{ctx.author.mention} possui {currency} palplatinas.',
+            title=_('Daily!'),
+            description=_('{username} has {currency} palplatinas.').format(
+                username=ctx.author.mention,
+                currency=currency
+            ),
             colour=discord.Color.greyple(),
             timestamp=ctx.message.created_at
         )
@@ -61,10 +65,11 @@ class PalplatinaCmds(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=['shop', 'lojinha'])
-    async def loja(self, ctx, page_number=1):
+    async def loja(self, ctx, lang, page_number=1):
         """
         Veja os itens disponíveis para serem adquiridos
         """
+        change_language(lang)
         discord_file = discord.File(
             os.path.join('bot', 'images', 'arnaldo-o-hutt.gif'), 'hutt.gif')
         await self.shop_paginated_embed_manager.send_embed(
@@ -75,8 +80,8 @@ class PalplatinaCmds(commands.Cog):
     async def _build_shop_embed(self, page_number):
         profile_items, last_page = await self.palplatina.get_available_items(page_number-1)
         embed = discord.Embed(
-            title='Empório do Arnaldo',
-            description='Navegue pelos itens disponíveis',
+            title=_("Arnaldo's Emporium"),
+            description=_('Browse through all available items'),
             colour=discord.Color.green()
         )
         embed.set_thumbnail(url="attachment://hutt.gif")
@@ -84,7 +89,7 @@ class PalplatinaCmds(commands.Cog):
         for profile_item in profile_items:
             embed.add_field(
                 name=profile_item.name,
-                value=f'Preço: {profile_item.price}\nTipo: {profile_item.type.name.capitalize()}'
+                value=f'{_("Price")}: {profile_item.price}\n{_("Type")}: {profile_item.type.name.capitalize()}'
             )
         return embed
     
@@ -95,8 +100,8 @@ class PalplatinaCmds(commands.Cog):
         """
         profile_items = await self.palplatina.get_user_items(ctx.message.author.id)
         embed = discord.Embed(
-            title='Seus itens adquiridos',
-            description='Navegue pelos seus itens',
+            title=_('Your acquired items'),
+            description=_('Browse through all your acquired items'),
             colour=discord.Color.green()
         )
         for profile_item in profile_items:
@@ -116,10 +121,10 @@ class PalplatinaCmds(commands.Cog):
         """
         profile_item = await self.palplatina.get_item(profile_item_name)
         if not profile_item:
-            return await ctx.send('Item não encontrado')
+            return await ctx.send(_('Item not found'))
         
         embed = discord.Embed(
-            title='Comprar item',
+            title=_('Buy item'),
             description=profile_item.name
         )
         discord_file = None
@@ -127,8 +132,8 @@ class PalplatinaCmds(commands.Cog):
             discord_file = discord.File(profile_item.file_path, 'item.png')
             embed.set_thumbnail(url="attachment://item.png")
         embed.set_author(name=ctx.author)
-        embed.add_field(name='Preço', value=profile_item.price)
-        embed.add_field(name='Suas palplatinas', value=await self.palplatina.get_currency(ctx.message.author.id))
+        embed.add_field(name=_('Price'), value=profile_item.price)
+        embed.add_field(name=_('Your palplatinas'), value=await self.palplatina.get_currency(ctx.message.author.id))
         
         message = await ctx.send(embed=embed, file=discord_file)
         await message.add_reaction('✅')
@@ -142,7 +147,7 @@ class PalplatinaCmds(commands.Cog):
         if not reaction.message.embeds:
             return
         embed = reaction.message.embeds[0]
-        if not (embed.title == 'Comprar item' and str(user) == embed.author.name):
+        if not (embed.title == _('Buy item') and str(user) == embed.author.name):
             return
 
         emoji = str(reaction)
@@ -152,6 +157,6 @@ class PalplatinaCmds(commands.Cog):
         if emoji == confirm_emoji:
             result = await self.palplatina.buy_item(user.id, embed.description)
         else:
-            result = 'Compra cancelada'
+            result = _('Operation canceled')
         
         await reaction.message.channel.send(content=f'{embed.author.name}: {result}')

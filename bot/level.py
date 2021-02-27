@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import discord
 from discord.ext import commands
 
+from bot.i18n import _
 from bot.models.user import User
 from bot.models.xp_point import XpPoint
 from bot.utils import paginate
@@ -30,7 +31,7 @@ class LevelCog(commands.Cog):
                 name = msg[2:]
                 
                 return f"Já ouviu a história de Darth {name}, {gender} sábi{gender}?"
-            return "Já ouviu a história de Darth Plagueis, o Sábio?"
+            return _("Did you ever hear the tragedy of Darth Plagueis, the Wise?")
 
     @commands.Cog.listener()
     async def on_message(self, message):

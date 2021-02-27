@@ -15,6 +15,7 @@ from chess.pgn import Game as ChessGame
 
 from bot.chess.game import Game
 from bot.chess.player import Player
+from bot.i18n import _
 from bot.models.chess_game import ChessGame as ChessGameModel
 from bot.utils import convert_users_to_players, paginate, run_cpu_bound_task
 
@@ -75,7 +76,7 @@ class Chess():
         given_players_pairs = [player1, player2]
 
         if given_players_pairs in current_players_pairs:
-            return 'Partida em andamento'
+            return _('Game already in progress')
 
         game = Game()
         game.board = chess.Board()
@@ -87,7 +88,7 @@ class Chess():
         game.cpu_level = cpu_level
 
         self.games.append(game)
-        return f'Partida iniciada! {player1.name}, faça seu movimento'
+        return _('Game started! {}, play your move').format(player1.name)
 
     def find_current_game(self, user, other_user=None):
         """
@@ -105,13 +106,15 @@ class Chess():
         player, other_player = convert_users_to_players(user, other_user)
         game = [g for g in self.games if g.current_player == player]
         if game == []:
-            raise Exception('Você ou não está na partida atual ou não é mais seu turno.')
+            raise Exception(_('You are either not playing a game or it is not your turn anymore'))
         if len(game) > 1:
             if not other_player:
-                raise Exception(f'Atualmente está jogando {len(game)} partidas. Informe contra qual jogador é este movimento.')
+                raise Exception(_(
+                    'You are currently playing {} games. Please provide your opponent to whom you whish to play this move.')
+                    .format(len(game)))
             game = [g for g in game if set([player.id, other_player.id]) == set([g.player1.id, g.player2.id])]
             if game == []:
-                raise Exception('Partida não encontrada.')
+                raise Exception(_('Game not found'))
         return game[0]
 
     async def make_move(self, game: Game, move: str):
@@ -127,7 +130,7 @@ class Chess():
         """
         chess_move = self._parse_str_move(game, move)
         if not chess_move:
-            return 'Movimento inválido', None
+            return _('Invalid move'), None
         game.board.push(chess_move)
 
         game.current_player = game.player1 if game.current_player == game.player2 else game.player2
@@ -143,9 +146,9 @@ class Chess():
             pgn = self.generate_pgn(game)
             await game.save()
             self.games.remove(game)
-            return f'Fim de jogo!\n\n{pgn}', board_png_bytes
+            return f'{_("Game over!")}\n\n{pgn}', board_png_bytes
 
-        return f'Seu turno é agora, {game.current_player.name}', board_png_bytes
+        return _("That's your turn now, {}").format(game.current_player.name), board_png_bytes
 
     async def resign(self, game: Game):
         """
@@ -161,7 +164,7 @@ class Chess():
         await game.save()
         pgn = self.generate_pgn(game)
         self.games.remove(game)
-        return f'{game.current_player.name} abandonou a partida!\n{pgn}', board_png_bytes
+        return _('{} has abandoned the game!').format(game.current_player.name)+f'\n{pgn}', board_png_bytes
 
     async def save_games(self):
         """
@@ -189,7 +192,7 @@ class Chess():
 
         result = f"```\n{str(chess_game)}\n```"
         if game.id:
-            result += f'Id da partida: `{game.id}`'
+            result += f'Game id: `{game.id}`'
         return result
 
     @run_cpu_bound_task

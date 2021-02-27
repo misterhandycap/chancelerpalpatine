@@ -1,7 +1,10 @@
-from bot.across_the_stars.planets import Planets
+import os
+from bot.i18n import _
+
 import discord
 from discord.ext import commands
-import os
+
+from bot.across_the_stars.planets import Planets
 
 
 class AcrossTheStarsCmds(commands.Cog):
@@ -23,16 +26,16 @@ class AcrossTheStarsCmds(commands.Cog):
         planets = await self.planets.list_of_planets(region=region)
 
         embed = discord.Embed(
-            title='Empório do Arnaldo',
-            description='Se torne o senador para um planeta',
+            title=_("Arnaldo's Emporium"),
+            description=_("Become a planet's senator"),
             colour=discord.Color.green()
         )
         embed.set_thumbnail(url="attachment://hutt.gif")
         for planet in planets:
             embed.add_field(
                 name=planet.name,
-                value=f'Preço: {planet.price}\nRegião: {planet.region}\n'\
-                    f'Clima: {planet.climate}\nCircunferência: {planet.circuference}'
+                value=f'{_("Price")}: {planet.price}\n{_("Region")}: {planet.region}\n'\
+                    f'{_("Climate")}: {planet.climate}\n{_("Circuference")}: {planet.circuference}'
             )
 
         await ctx.reply(embed=embed, file=discord_file, mention_author=False)

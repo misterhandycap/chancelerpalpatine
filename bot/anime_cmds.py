@@ -1,4 +1,5 @@
 import logging
+from bot.i18n import _
 
 import discord
 from discord.ext import commands
@@ -27,7 +28,7 @@ class AnimeCog(commands.Cog):
             return await ctx.send("Oops, houve um erro ao buscar pelo seu anime...")
 
         embed = discord.Embed(
-            title=f'Resultados por "{query}"',
+            title=_("Results for {}").format(query),
             colour=discord.Color.blurple(),
             timestamp=ctx.message.created_at
         )
@@ -49,7 +50,7 @@ class AnimeCog(commands.Cog):
                     result = self.anime_bot.get_anime(int(search_result["mal_id"]))
                 except Exception as e:
                     logging.warning(e, exc_info=True)
-                    return await ctx.send("Oops, houve um erro ao buscar pelo seu anime...")
+                    return await ctx.send(_("Something went wrong when searching for your anime"))
 
         embed = discord.Embed(
             title=result.title,
@@ -67,4 +68,4 @@ class AnimeCog(commands.Cog):
 
     async def cog_command_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(f'Uso: `{self.client.command_prefix}{ctx.command.name} BUSCA`')
+            await ctx.send(f'{_("Usage")}: `{self.client.command_prefix}{ctx.command.name} QUERY`')
