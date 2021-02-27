@@ -42,3 +42,17 @@ python3 -m unittest discover -s tests/
 ```bash
 PYTHONPATH=$(pwd) alembic revision -m "MIGRATION_NAME"
 ```
+
+## Internationalization
+
+First, update base.pot with your changes:
+
+```bash
+pygettext3 -o bot/i18n/base.pot -v bot/
+```
+
+Then add manually your changes to the language files you whish to translate. After translating:
+
+```bash
+msgfmt -o bot/i18n/$LANGUAGE/LC_MESSAGES/base.mo bot/i18n/$LANGUAGE/LC_MESSAGES/base.po
+```
