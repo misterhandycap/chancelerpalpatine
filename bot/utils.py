@@ -6,6 +6,16 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from functools import partial
 
 from bot.chess.player import Player
+from bot.i18n import i18n
+
+def i(ctx, text):
+    server_id = ctx.guild.id
+    lang = get_server_lang(server_id)
+    return i18n(text, lang)
+
+def get_server_lang(server_id):
+    with open('lang.txt') as f:
+        return f.read()
 
 def run_cpu_bound_task(func, *args, **kwargs):
     async def function_wrapper(*args, **kwargs):
@@ -96,9 +106,10 @@ class PaginatedEmbedManager():
 
     async def _on_reaction_add(self, reaction, user):
         valid_emojis = [self.BACKWARD_EMOJI, self.FORWARD_EMOJI]
-        if not reaction.message.embeds:
+        original_message = reaction.message
+        if not original_message.embeds:
             return
-        embed = reaction.message.embeds[0]
+        embed = original_message.embeds[0]
         if not (embed.title == self.embed_title and str(user) == embed.author.name):
             return
 
@@ -121,8 +132,8 @@ class PaginatedEmbedManager():
 
         try:
             embed = self._prepare_embed(
-                await self.callback(page_number), str(user), page_number)
-            await reaction.message.edit(embed=embed)
+                await self.callback(page_number, original_message), str(user), page_number)
+            await original_message.edit(embed=embed)
         except:
-            return await reaction.message.add_reaction('⚠️')
-        await reaction.message.remove_reaction(emoji, user)
+            return await original_message.add_reaction('⚠️')
+        await original_message.remove_reaction(emoji, user)

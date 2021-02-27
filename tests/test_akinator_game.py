@@ -20,7 +20,7 @@ class TestAkinatorGame(VCRTestCase):
         akinator_bot = AkinatorGame()
         user = FakeDiscordUser(id=14)
 
-        actual = asyncio.run(akinator_bot.new_game(user))
+        actual = asyncio.run(akinator_bot.new_game(user, lang='pt'))
 
         self.assertEqual(len(actual), 2)
         self.assertIsInstance(actual[0], Akinator)
@@ -59,9 +59,8 @@ class TestAkinatorGame(VCRTestCase):
         akinator_bot.games[user.id] = Akinator()
         asyncio.run(akinator_bot.games[user.id].start_game())
 
-        actual = asyncio.run(akinator_bot.answer_question(akinator_bot.games[user.id], 'invalid'))
-
-        self.assertIn('Resposta inválida', actual)
+        with self.assertRaises(Exception):
+            asyncio.run(akinator_bot.answer_question(akinator_bot.games[user.id], 'invalid'))
 
     def test_answer_question_game_over(self):
         akinator_bot = AkinatorGame()

@@ -342,5 +342,5 @@ msgstr ""
 msgid "Invalid medals info"
 msgstr ""
 
-msgid "Language update to {lang}"
+msgid "Language updated to {lang}"
 msgstr ""

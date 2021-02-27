@@ -1,6 +1,6 @@
 import os
+from bot.i18n import i18n
 from io import BytesIO
-from textwrap import wrap
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -16,7 +16,7 @@ class Profile():
     def __init__(self):
         self.astrology_bot = AstrologyChart()
     
-    async def get_user_profile(self, user_id: int, user_avatar: bytes):
+    async def get_user_profile(self, user_id: int, user_avatar: bytes, lang='en'):
         """
         Generates an user profile image banner
 
@@ -24,6 +24,8 @@ class Profile():
         :type user_id: int
         :param user_avatar: User's avatar
         :type user_avatar: bytes
+        :param lang: Language to which present the profile
+        :type lang: str
         :return: User's profile banner
         :rtype: BytesIO
         """
@@ -51,9 +53,9 @@ class Profile():
 
             image_draw = ImageDraw.Draw(image_final)
             image_draw.text((120, 25), user.name[:15], fill="#FFF", font=image_font_title)
-            image_draw.text((30, 635), f'Pontos: {user_total_points}', fill="#FFF", font=image_font_description)
-            image_draw.text((400, 620), f'Vitórias no xadrez: {user_chess_victories}', fill="#FFF", font=image_font_subtitle)
-            image_draw.text((400, 580), f'Signo: {user_sign}', fill="#FFF", font=image_font_subtitle)
+            image_draw.text((30, 635), f'{i18n("Points", lang)}: {user_total_points}', fill="#FFF", font=image_font_description)
+            image_draw.text((400, 620), f'{i18n("Chess wins", lang)}: {user_chess_victories}', fill="#FFF", font=image_font_subtitle)
+            image_draw.text((400, 580), f'{i18n("Sign", lang)}: {user_sign}', fill="#FFF", font=image_font_subtitle)
             image_final.paste(image_user_avatar.resize((110, 110)), (0, 0))
             image_final = self._draw_user_badges(image_final, user_profile_badges)
 

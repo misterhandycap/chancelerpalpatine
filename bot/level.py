@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from bot.models.user import User
 from bot.models.xp_point import XpPoint
-from bot.utils import paginate
+from bot.utils import i, paginate
 
 
 class LevelCog(commands.Cog):
@@ -20,7 +20,7 @@ class LevelCog(commands.Cog):
     def __init__(self, client):
         self.client = client
     
-    def sabio(self, msg):
+    def sabio(self, ctx, msg):
         if 'b' in msg:
             start = msg.index('b') + 2
     
@@ -30,7 +30,7 @@ class LevelCog(commands.Cog):
                 name = msg[2:]
                 
                 return f"Já ouviu a história de Darth {name}, {gender} sábi{gender}?"
-            return "Já ouviu a história de Darth Plagueis, o Sábio?"
+            return i(ctx, "Did you ever hear the tragedy of Darth Plagueis, the Wise?")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -71,7 +71,7 @@ class LevelCog(commands.Cog):
         if (message.content.lower().startswith('você é muito sábi') or 
                 message.content.lower().startswith('tão sábi') or 
                 message.content.lower().startswith('sábi')):
-            await message.channel.send(self.sabio(message.content))
+            await message.channel.send(self.sabio(message, message.content))
 
         if message.author.bot or not message.guild:
             return

@@ -338,5 +338,5 @@ msgstr "Erro ao obter conteúdo"
 msgid "Invalid medals info"
 msgstr "Informações sobre medalhas inválidas"
 
-msgid "Language update to {lang}"
+msgid "Language updated to {lang}"
 msgstr "Idioma atualizado para {lang}"
