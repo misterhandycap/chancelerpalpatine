@@ -8,6 +8,8 @@ import chess
 from dotenv import load_dotenv
 
 from bot.chess.chess import Chess
+from bot.chess.exceptions import (GameAlreadyInProgress, GameNotFound, 
+                                InvalidMove, MultipleGamesAtOnce, NoGamesWithPlayer)
 from bot.chess.game import Game
 from bot.chess.player import Player
 from bot.models.chess_game import ChessGame
@@ -75,12 +77,13 @@ class TestChess(TestCase):
         result = chess_bot.new_game(player1, player2)
         games = chess_bot.games
 
-        self.assertIn('Partida iniciada', result)
+        self.assertIsInstance(result, Game)
         self.assertEqual(len(games), 1)
-        self.assertEqual(games[0].player1, player1)
-        self.assertEqual(games[0].player2, player2)
-        self.assertEqual(games[0].board.move_stack, [])
-        self.assertIsNone(games[0].color_schema)
+        self.assertIn(result, games)
+        self.assertEqual(result.player1, player1)
+        self.assertEqual(result.player2, player2)
+        self.assertEqual(result.board.move_stack, [])
+        self.assertIsNone(result.color_schema)
 
     def test_new_game_with_color_schema(self):
         player1 = FakeDiscordUser(id=1)
@@ -91,12 +94,13 @@ class TestChess(TestCase):
         result = chess_bot.new_game(player1, player2, color_schema=color_schema)
         games = chess_bot.games
 
-        self.assertIn('Partida iniciada', result)
+        self.assertIsInstance(result, Game)
         self.assertEqual(len(games), 1)
-        self.assertEqual(games[0].player1, player1)
-        self.assertEqual(games[0].player2, player2)
-        self.assertEqual(games[0].board.move_stack, [])
-        self.assertEqual(games[0].color_schema, color_schema)
+        self.assertIn(result, games)
+        self.assertEqual(result.player1, player1)
+        self.assertEqual(result.player2, player2)
+        self.assertEqual(result.board.move_stack, [])
+        self.assertEqual(result.color_schema, color_schema)
 
     def test_new_game_pve(self):
         player1 = FakeDiscordUser(id=1)
@@ -105,13 +109,14 @@ class TestChess(TestCase):
         result = chess_bot.new_game(player1, None, cpu_level=5)
         games = chess_bot.games
 
-        self.assertIn('Partida iniciada', result)
+        self.assertIsInstance(result, Game)
         self.assertEqual(len(games), 1)
-        self.assertEqual(games[0].player1, player1)
-        self.assertEqual(games[0].player2, None)
-        self.assertEqual(games[0].board.move_stack, [])
-        self.assertEqual(games[0].cpu_level, 5)
-        self.assertIsNone(games[0].color_schema)
+        self.assertIn(result, games)
+        self.assertEqual(result.player1, player1)
+        self.assertEqual(result.player2, None)
+        self.assertEqual(result.board.move_stack, [])
+        self.assertEqual(result.cpu_level, 5)
+        self.assertIsNone(result.color_schema)
 
     def test_new_game_game_already_started(self):
         game = Game()
@@ -121,8 +126,9 @@ class TestChess(TestCase):
         chess_bot = Chess()
         chess_bot.games.append(game)
 
-        result = chess_bot.new_game(game.player1, game.player2)
-        self.assertIn('Partida em andamento', result)
+        with self.assertRaises(GameAlreadyInProgress):
+            chess_bot.new_game(game.player1, game.player2)
+        
         self.assertEqual(len(chess_bot.games), 1)
 
     def test_find_current_game_in_players_turn_no_ambiguity(self):
@@ -260,14 +266,16 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result, result_board = asyncio.run(chess_bot.make_move(game, 'g1f3'))
+        result = asyncio.run(chess_bot.make_move(game, 'g1f3'))
 
-        self.assertIn("Seu turno é agora", result)
-        self.assertEqual(len(game.board.move_stack), 3)
-        self.assertEqual(game.current_player, game.player2)
-        
-        with open(os.path.join('tests', 'support', 'make_move_legal_move.png'), 'rb') as f:
-            self.assertEqual(result_board.getvalue(), f.read())
+        self.assertIsInstance(result, Game)
+        self.assertEqual(len(result.board.move_stack), 3)
+        self.assertEqual(result.current_player, game.player2)
+
+        updated_chess_game = self.db_session.query(ChessGame).filter_by(
+            player1_id=result.player1.id).first()
+        updated_game_from_db = Game.from_chess_game_model(updated_chess_game)
+        self.assertEqual(updated_game_from_db.board.move_stack, result.board.move_stack)
 
     def test_make_move_legal_san_move_in_players_turn(self):
         board = chess.Board()
@@ -281,14 +289,16 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result, result_board = asyncio.run(chess_bot.make_move(game, 'Nf3'))
+        result = asyncio.run(chess_bot.make_move(game, 'Nf3'))
 
-        self.assertIn("Seu turno é agora", result)
-        self.assertEqual(len(game.board.move_stack), 3)
-        self.assertEqual(game.current_player, game.player2)
+        self.assertIsInstance(result, Game)
+        self.assertEqual(len(result.board.move_stack), 3)
+        self.assertEqual(result.current_player, game.player2)
 
-        with open(os.path.join('tests', 'support', 'make_move_legal_move.png'), 'rb') as f:
-            self.assertEqual(result_board.getvalue(), f.read())
+        updated_chess_game = self.db_session.query(ChessGame).filter_by(
+            player1_id=result.player1.id).first()
+        updated_game_from_db = Game.from_chess_game_model(updated_chess_game)
+        self.assertEqual(updated_game_from_db.board.move_stack, result.board.move_stack)
 
     def test_make_move_finish_game(self):
         board = chess.Board()
@@ -303,14 +313,12 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result, result_board = asyncio.run(chess_bot.make_move(game, 'd8h4'))
+        result = asyncio.run(chess_bot.make_move(game, 'd8h4'))
 
-        self.assertIn("Fim de jogo", result)
-        self.assertIn("1. g4 e5 2. f4 Qh4# 0-1", result)
+        self.assertIsInstance(result, Game)
         self.assertEqual(len(chess_bot.games), 0)
         self.assertEqual(self.db_session.query(ChessGame).filter_by(result=-1).count(), 1)
-        with open(os.path.join('tests', 'support', 'make_move_finish_game.png'), 'rb') as f:
-            self.assertEqual(result_board.getvalue(), f.read())
+        self.assertTrue(chess_bot.is_game_over(result))
 
     def test_make_move_legal_move_pve(self):
         board = chess.Board('rn2kb1r/pp1qpppp/2ppbn2/1B6/3PP3/2N2N2/PPP2PPP/R1BQK2R w KQkq - 0 6')
@@ -324,12 +332,17 @@ class TestChess(TestCase):
         chess_bot = Chess()
         chess_bot.games.append(game)
         chess_bot.stockfish_limit['time'] = 1
-        result, result_board = asyncio.run(chess_bot.make_move(game, 'b5d3'))
+        result = asyncio.run(chess_bot.make_move(game, 'b5d3'))
 
-        self.assertIn("Seu turno é agora", result)
+        self.assertIsInstance(result, Game)
         if chess_bot.is_stockfish_enabled():
-            self.assertEqual(len(game.board.move_stack), 2)
-            self.assertEqual(game.current_player, game.player1)
+            self.assertEqual(len(result.board.move_stack), 2)
+            self.assertEqual(result.current_player, game.player1)
+
+        updated_chess_game = self.db_session.query(ChessGame).filter_by(
+            player1_id=result.player1.id).first()
+        updated_game_from_db = Game.from_chess_game_model(updated_chess_game)
+        self.assertEqual(updated_game_from_db.board.move_stack, result.board.move_stack)
 
     def test_make_move_finish_game_pve_player_loses(self):
         board = chess.Board()
@@ -344,15 +357,13 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result, result_board = asyncio.run(chess_bot.make_move(game, 'f4'))
+        result = asyncio.run(chess_bot.make_move(game, 'f4'))
 
+        self.assertIsInstance(result, Game)
         if chess_bot.is_stockfish_enabled():
-            self.assertIn("Fim de jogo", result)
-            self.assertIn("1. g4 e5 2. f4 Qh4# 0-1", result)
             self.assertEqual(len(chess_bot.games), 0)
             self.assertEqual(self.db_session.query(ChessGame).filter_by(result=-1).count(), 1)
-            with open(os.path.join('tests', 'support', 'make_move_finish_game.png'), 'rb') as f:
-                self.assertEqual(result_board.getvalue(), f.read())
+            self.assertTrue(chess_bot.is_game_over(result))
 
     def test_make_move_finish_game_pve_player_wins(self):
         board = chess.Board()
@@ -369,12 +380,12 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result, result_board = asyncio.run(chess_bot.make_move(game, 'Qh5'))
+        result = asyncio.run(chess_bot.make_move(game, 'Qh5'))
 
-        self.assertIn("Fim de jogo", result)
-        self.assertIn("1. e4 g5 2. d4 f5 3. Qh5# 1-0", result)
-        self.assertEqual(self.db_session.query(ChessGame).filter_by(result=1).count(), 1)
+        self.assertIsInstance(result, Game)
         self.assertEqual(len(chess_bot.games), 0)
+        self.assertEqual(self.db_session.query(ChessGame).filter_by(result=1).count(), 1)
+        self.assertTrue(chess_bot.is_game_over(result))
 
     def test_make_move_illegal_move_in_players_turn(self):
         board = chess.Board()
@@ -388,10 +399,10 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result, result_board = asyncio.run(chess_bot.make_move(game, 'invalid'))
 
-        self.assertIn("Movimento inválido", result)
-        self.assertIsNone(result_board)
+        with self.assertRaises(InvalidMove) as e:
+            asyncio.run(chess_bot.make_move(game, 'invalid'))
+
         self.assertEqual(len(game.board.move_stack), 2)
         self.assertEqual(game.current_player, game.player1)
 
@@ -408,15 +419,10 @@ class TestChess(TestCase):
 
         chess_bot = Chess()
         chess_bot.games.append(game)
-        result, result_board = asyncio.run(chess_bot.resign(game))
+        result = asyncio.run(chess_bot.resign(game))
 
-        self.assertIn("abandonou a partida!", result)
-        self.assertIn('Result "1-0"', result)
-        self.assertIn(f"Id da partida: `{game.id}`", result)
         self.assertEqual(len(chess_bot.games), 0)
         self.assertEqual(self.db_session.query(ChessGame).filter_by(result=1).count(), 1)
-        with open(os.path.join('tests', 'support', 'make_move_legal_move.png'), 'rb') as f:
-            self.assertEqual(result_board.getvalue(), f.read())
 
     def test_save_games(self):
         chess_bot = Chess()
