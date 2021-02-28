@@ -44,7 +44,7 @@ WORKDIR /app
 ENV PATH=/root/.local/bin:$PATH
 
 # Runtime dependencies
-RUN apk add cairo libjpeg openjpeg tiff openblas postgresql-libs
+RUN apk add git cairo libjpeg openjpeg tiff openblas postgresql-libs
 
 # For some reason, Cairo requests libcairo.so.2 instead of installed libcairo.so
 RUN ln -s /usr/lib/libcairo.so.2 /usr/lib/libcairo.so

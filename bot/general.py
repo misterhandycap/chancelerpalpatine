@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import random
+import subprocess
 import time
 
 import discord
@@ -70,6 +71,15 @@ class GeneralCog(commands.Cog):
         except:
             logging.warning(f'{error.__class__}: {error}')
             await ctx.message.add_reaction('⚠️')
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if self.client.user.mentioned_in(message):
+            await message.reply(
+                content='Olá, segue abaixo algumas informações sobre mim 😊',
+                embed=await self._create_info_embed(),
+                mention_author=False
+            )
 
     @commands.command(aliases=['ajuda'])
     async def help(self, ctx, page_or_cmd='1'):
@@ -167,6 +177,37 @@ class GeneralCog(commands.Cog):
             timestamp=ctx.message.created_at
         )
         await ctx.send(embed=ping)
+
+    @commands.command()
+    async def info(self, ctx):
+        """
+        Mostra informações sobre o bot
+        """
+        embed = await self._create_info_embed()
+        await ctx.send(embed=embed)
+
+    async def _create_info_embed(self):
+        try:
+            current_version = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
+        except:
+            current_version = None
+        bot_prefix = self.client.command_prefix
+        bot_info = await self.client.application_info()
+        bot_owner = bot_info.team.owner
+
+        embed = discord.Embed(
+            title=bot_info.name,
+            description=bot_info.description,
+            colour=discord.Color.blurple(),
+            url=os.environ.get("BOT_HOMEPAGE")
+        )
+        embed.set_thumbnail(url=bot_info.icon_url)
+        embed.add_field(name='Dono', value=f'{bot_owner.name}#{bot_owner.discriminator}')
+        if current_version:
+            embed.add_field(name='Versão atual', value=current_version)
+        embed.add_field(name='Prefixo', value=bot_prefix)
+        embed.add_field(name='Ajuda', value=f'{bot_prefix}help')
+        return embed
 
     @commands.command(aliases=['limpar', 'clean'])
     @commands.has_permissions(manage_messages=True)
