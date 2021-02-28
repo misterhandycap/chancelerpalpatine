@@ -412,7 +412,7 @@ class TestChess(TestCase):
 
         self.assertIn("abandonou a partida!", result)
         self.assertIn('Result "1-0"', result)
-        self.assertIn(f"Game id: `{game.id}`", result)
+        self.assertIn(f"Id da partida: `{game.id}`", result)
         self.assertEqual(len(chess_bot.games), 0)
         self.assertEqual(self.db_session.query(ChessGame).filter_by(result=1).count(), 1)
         with open(os.path.join('tests', 'support', 'make_move_legal_move.png'), 'rb') as f:

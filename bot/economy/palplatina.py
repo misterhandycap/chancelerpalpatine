@@ -1,6 +1,4 @@
 from datetime import datetime
-from bot.i18n import _
-
 from bot.models.profile_item import ProfileItem
 from bot.models.user import User
 
@@ -46,16 +44,16 @@ class Palplatina():
         user = await User.get(user_id, preload_profile_items=True)
         profile_item = await ProfileItem.get_by_name(item_name)
         if not profile_item or not user:
-            return _('Item not found')
+            return 'Item not found'
 
         if user.currency < profile_item.price:
-            return _('Not enough credits')
+            return 'Not enough credits'
 
         user.profile_items.append(profile_item)
         user.currency -= profile_item.price
         try:
             await User.save(user)
-            return _('Item bought. Enjoy!')
+            return 'Item bought. Enjoy!'
         except:
-            return _('You already own this item')
+            return 'You already own this item'
             

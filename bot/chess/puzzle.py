@@ -1,5 +1,4 @@
 import json
-from bot.i18n import _
 from json.decoder import JSONDecodeError
 
 import urllib.request
@@ -77,11 +76,12 @@ class Puzzle():
         except ValueError:
             return False
         except (KeyError, IndexError):
-            return _("Puzzle not found")
+            return "Puzzle not found"
 
     def is_puzzle_over(self, puzzle_id):
         try:
             puzzle = self.puzzles[puzzle_id]
             return len(puzzle["correct_sequence"]) < 1
         except KeyError:
-            return _("Puzzle not found")
+            return "Puzzle not found"
+

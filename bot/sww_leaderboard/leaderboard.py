@@ -2,7 +2,6 @@ import json
 import logging
 import os
 from asyncio import as_completed
-from bot.i18n import _
 from io import BytesIO
 
 from aiohttp import ClientSession
@@ -35,7 +34,7 @@ class Leaderboard():
                 return json.loads(medals), json.loads(medals_points)
         except (json.JSONDecodeError, KeyError) as e:
             logging.warning(e, exc_info=True)
-            raise Exception(_("Error parsing content"))
+            raise Exception("Error parsing content")
         finally:
             if self.auto_close_session:
                 await self.main_session.close()
@@ -60,7 +59,7 @@ class Leaderboard():
             return sorted(leaderboard_users.items(), key=lambda x: x[1]['points'], reverse=True)
         except Exception as e:
             logging.warning(e, exc_info=True)
-            raise Exception(_('Invalid medals info'))
+            raise Exception('Invalid medals info')
 
     async def build_medals_info(self, medals_info, medals_points):
         medals = []
