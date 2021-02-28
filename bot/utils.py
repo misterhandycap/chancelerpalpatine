@@ -12,8 +12,11 @@ from bot.servers import cache
 server_configs = {}
 
 def i(ctx, text):
-    server_id = ctx.guild.id
-    lang = get_server_lang(server_id)
+    if ctx.guild:
+        server_id = ctx.guild.id
+        lang = get_server_lang(server_id)
+    else:
+        lang = get_lang_from_user(ctx.channel.recipient)
     return i18n(text, lang)
 
 def get_server_lang(server_id):
@@ -21,6 +24,13 @@ def get_server_lang(server_id):
     if not server_config:
         return 'en'
     return server_config.language
+
+def get_lang_from_user(user_id):
+    server_user_is_in = [guild for guild in cache.all_servers]
+    if not server_user_is_in:
+        return 'en'
+    server_langs = [get_server_lang(server.id) for server in server_user_is_in]
+    return max(set(server_langs), key=server_langs.count)
 
 def run_cpu_bound_task(func, *args, **kwargs):
     async def function_wrapper(*args, **kwargs):

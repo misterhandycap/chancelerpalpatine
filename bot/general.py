@@ -34,6 +34,7 @@ class GeneralCog(commands.Cog):
             activity=discord.Game(f'Planejando uma ordem surpresa')
         )
         await cache.load_configs()
+        cache.all_servers = self.client.guilds
         logging.info('Bot is ready')
 
     @commands.Cog.listener()

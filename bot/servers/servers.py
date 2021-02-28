@@ -5,6 +5,7 @@ class Servers():
 
     def __init__(self):
         self.server_configs = {}
+        self.all_servers = []
 
     async def load_configs(self):
         all_server_configs = await ServerConfig.all()
