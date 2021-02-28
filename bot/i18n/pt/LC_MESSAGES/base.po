@@ -252,6 +252,22 @@ msgstr "Argumentos"
 msgid "Category"
 msgstr "Categoria"
 
+#: bot/general.py:217
+msgid "Owner"
+msgstr "Dono"
+
+#: bot/general.py:219
+msgid "Current version"
+msgstr "Versão atual"
+
+#: bot/general.py:220
+msgid "Prefix"
+msgstr "Prefixo"
+
+#: bot/general.py:221
+msgid "Help cmd"
+msgstr "Ajuda"
+
 #: bot/general.py:220
 msgid "Could not find a cat picture 😢"
 msgstr "Não foi possível encontrar uma foto de gato 😢"
@@ -602,3 +618,5 @@ msgstr "Conta a tregédia de Darth Plagueis"
 msgid "cmd_xadrez_todos"
 msgstr "Veja todas as partidas que estão sendo jogadas agora"
 
+msgid "cmd_info"
+msgstr "Mostra informações sobre o bot"

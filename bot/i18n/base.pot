@@ -239,6 +239,22 @@ msgstr ""
 msgid "Category"
 msgstr ""
 
+#: bot/general.py:217
+msgid "Owner"
+msgstr ""
+
+#: bot/general.py:219
+msgid "Current version"
+msgstr ""
+
+#: bot/general.py:220
+msgid "Prefix"
+msgstr ""
+
+#: bot/general.py:221
+msgid "Help cmd"
+msgstr ""
+
 #: bot/general.py:220
 msgid "Could not find a cat picture 😢"
 msgstr ""
@@ -473,5 +489,8 @@ msgid "cmd_plagueis"
 msgstr ""
 
 msgid "cmd_xadrez_todos"
+msgstr ""
+
+msgid "cmd_info"
 msgstr ""
 

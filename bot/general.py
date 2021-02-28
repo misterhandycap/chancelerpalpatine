@@ -81,7 +81,7 @@ class GeneralCog(commands.Cog):
         if self.client.user.mentioned_in(message):
             await message.reply(
                 content='Olá, segue abaixo algumas informações sobre mim 😊',
-                embed=await self._create_info_embed(),
+                embed=await self._create_info_embed(message),
                 mention_author=False
             )
 
@@ -195,10 +195,10 @@ class GeneralCog(commands.Cog):
         """
         Mostra informações sobre o bot
         """
-        embed = await self._create_info_embed()
+        embed = await self._create_info_embed(ctx)
         await ctx.send(embed=embed)
 
-    async def _create_info_embed(self):
+    async def _create_info_embed(self, ctx):
         try:
             current_version = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
         except:
@@ -214,11 +214,11 @@ class GeneralCog(commands.Cog):
             url=os.environ.get("BOT_HOMEPAGE")
         )
         embed.set_thumbnail(url=bot_info.icon_url)
-        embed.add_field(name='Dono', value=f'{bot_owner.name}#{bot_owner.discriminator}')
+        embed.add_field(name=i(ctx, 'Owner'), value=f'{bot_owner.name}#{bot_owner.discriminator}')
         if current_version:
-            embed.add_field(name='Versão atual', value=current_version)
-        embed.add_field(name='Prefixo', value=bot_prefix)
-        embed.add_field(name='Ajuda', value=f'{bot_prefix}help')
+            embed.add_field(name=i(ctx, 'Current version'), value=current_version)
+        embed.add_field(name=i(ctx, 'Prefix'), value=bot_prefix)
+        embed.add_field(name=i(ctx, 'Help cmd'), value=f'{bot_prefix}help')
         return embed
 
     @commands.command(aliases=['limpar', 'clean'])
