@@ -203,6 +203,10 @@ msgstr "Você não tem as seguintes permissões necessárias para rodar esse com
 msgid "Help"
 msgstr "Ajuda"
 
+#: bot/general.py:118
+msgid "Commands"
+msgstr "Comandos"
+
 #: bot/general.py:123 bot/general.py:132
 msgid "No description available"
 msgstr "Sem descrição disponível"
@@ -340,3 +344,217 @@ msgstr "Informações sobre medalhas inválidas"
 
 msgid "Language updated to {lang}"
 msgstr "Idioma atualizado para {lang}"
+
+# Commands' help messages
+msgid "cmd_busca"
+msgstr ""
+"Faz uma busca pelo buscador definido\n"
+"\n"
+"Passe o nome do buscador como primeiro argumento e sua busca na sequência. Se nenhum buscador for definido, o Google será utilizado.\n"
+"\n"
+"Buscadores disponíveis: Google, Star Wars Wiki em Português, Wookieepedia, Avatar Wiki 🇧🇷\n"
+"\n"
+"Exemplo com buscador definido: `busca sww Sheev Palpatine`\n"
+"Exemplo sem buscador definido: `busca Sheev Palpatine`"
+
+msgid "cmd_xadrez_gif"
+msgstr ""
+"Exibe um GIF animado com uma variante fornecida para o jogo em questão, a partir do lance fornecido\n"
+"\n"
+"É necessário passar o jogo em questão, identificado com seu UUID, e o número do lance a partir do qual a sequência fornecida se inicia, que deve ser uma sequência de lances em UCI ou SAN separados por espaço.\n"
+"\n"
+"Exemplo de uso: `xgif f63e5e4f-dd94-4439-a283-33a1c1a065a0 11 Nxf5 Qxf5 Qxf5 gxf5`"
+
+msgid "cmd_profile"
+msgstr ""
+"Exibe o seu perfil ou de um usuário informado"
+
+msgid "cmd_daily"
+msgstr ""
+"Receba sua recompensa diária em Palplatinas 🤑"
+
+msgid "cmd_xadrez_puzzle"
+msgstr ""
+"Pratique um puzzle de xadrez\n"
+"\n"
+"Envie o comando sem argumentos para um novo puzzle. Para tentar uma jogada em um puzzle, envie o ID do puzzle como primeiro argumento e a jogada como segundo.\n"
+"\n"
+"Exemplo de novo puzzle: `xadrez_puzzle`\n"
+"Exemplo de jogada em puzzle existente: `xadrez_puzzle 557b7aa7e13823b82b9bc1e9 Qa2`"
+
+msgid "cmd_voto"
+msgstr ""
+"Cria uma votação para as demais pessoas participarem\n"
+"\n"
+"A pergunta e as opções devem ser separadas por `;`. Você pode criar votações com até dez opções.\n"
+"\n"
+"Exemplo: `voto Quem é o melhor lorde Sith?;Darth Sidious;Darth Vader;Darth Tyranus`"
+
+msgid "cmd_help"
+msgstr ""
+"Exibe essa mensagem\n"
+"\n"
+"Passe um comando para obter mais informações sobre ele.\n"
+"\n"
+"Parâmetros de comandos entre sinais de maior e menor (`<parametro>`) sinalizam parâmetros obrigatórios. Já parâmetros entre colchetes (`[parametro]`) sinalizam parâmetros opcionais. Valores padrões são sinalizados com um sinal de igual (`[parametro=valor_padrao]`)."
+
+msgid "cmd_banco"
+msgstr ""
+"Veja seu saldo de Palplatinas 💰"
+
+msgid "cmd_loja"
+msgstr ""
+"Veja os itens disponíveis para serem adquiridos"
+
+msgid "cmd_saimaluco"
+msgstr ""
+"Manda o meme sai maluco com o texto enviado"
+
+msgid "cmd_itens"
+msgstr ""
+"Veja os itens que você comprou"
+
+msgid "cmd_akinator_novo"
+msgstr ""
+"Novo jogo com Akinator\n"
+"\n"
+"Responda às perguntas do Akinator através de reações. Legenda:\n"
+"✅: Sim\n"
+"🇵: Provavelmente sim\n"
+"🤷: Não sei / talvez\n"
+"🇺: Provavelmente não\n"
+"🚫: Não"
+
+msgid "cmd_level"
+msgstr ""
+"Mostra o nível de usuário\n"
+"\n"
+"Passe um usuário para ver seu nível. Se não for passado nenhum usuário, o seu nível de usuário será retornado."
+
+msgid "cmd_aurebesh"
+msgstr ""
+"Gera uma imagem com o texto fornecido em Aurebesh"
+
+msgid "cmd_comprar"
+msgstr ""
+"Compre um item para seu perfil\n"
+"\n"
+"Informe o nome do item que deseja comprar. Para que possa fazê-lo, é necessário que tenha palplatinas suficientes."
+
+msgid "cmd_rank"
+msgstr ""
+"Mostra a tabela de niveis de usuários em ordem de maior pra menor"
+
+msgid "cmd_ping"
+msgstr ""
+"Confere se o bot está online e sua velocidade de resposta"
+
+msgid "cmd_clear"
+msgstr ""
+"Limpa as últimas mensagens do canal atual"
+
+msgid "cmd_anime_busca"
+msgstr ""
+"Faça uma pesquisa por um nome de anime"
+
+msgid "cmd_xadrez_novo"
+msgstr ""
+"Inicie uma nova partida de xadrez com alguém\n"
+"\n"
+"Passe o usuário contra o qual deseja jogar para começar uma partida. Se quiser personalizar as cores do tabuleiro, passe o nome da cor que deseja usar (opções válidas: `blue`, `purple`, `green`, `red`, `gray` e `wood`)."
+
+msgid "cmd_planetas"
+msgstr ""
+"Lista todos os planetas disponíveis da região fornecida"
+
+msgid "cmd_vision"
+msgstr ""
+"Faça uma pergunta ao Chanceler e ele irá lhe responder"
+
+msgid "cmd_anime"
+msgstr ""
+"Veja informações do anime buscado com MyAnimeList"
+
+msgid "cmd_xadrez_bot"
+msgstr ""
+"Inicie uma nova partida de xadrez contra o bot\n"
+"\n"
+"Passe o nível de dificuldade que desejar (de 0 a 20). Se quiser personalizar as cores do tabuleiro, passe o nome da cor que deseja usar (opções válidas: `blue`, `purple`, `green`, `red`, `gray` e `wood`)."
+
+msgid "cmd_sorte"
+msgstr ""
+"Cara ou coroa"
+
+msgid "cmd_xadrez_jogar"
+msgstr ""
+"Faça uma jogada em sua partida atual\n"
+"\n"
+"Use anotação SAN ou UCI. Movimentos inválidos ou ambíguos são rejeitados. Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo."
+
+msgid "cmd_gato"
+msgstr ""
+"Mostra uma foto aleatória de gato 🐈"
+
+msgid "cmd_mapa_astral"
+msgstr ""
+"Visualize ou crie via DM seu mapa astral\n"
+"\n"
+"Para criar seu mapa astral, envie esse comando em DM para o bot informando a data, hora e local de seu nascimento da seguinte forma: `YYYY/mm/dd HH:MM Nome da cidade`.\n"
+"\n"
+"Se já tiver criado seu mapa astral, envie esse comando sem argumentos para visualizá-lo em qualquer canal.\n"
+"\n"
+"Exemplo de uso para criação de mapa astral: `mapa_astral 2000/15/01 12:00 Brasília`\n"
+"Exemplo de uso para visualização de mapa criado: `mapa_astral`"
+
+msgid "cmd_xadrez_abandonar"
+msgstr ""
+"Abandone a partida atual\n"
+"\n"
+"Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo."
+
+msgid "cmd_leaderboard"
+msgstr ""
+"Exibe o leaderboard de medalhas da Star Wars Wiki"
+
+msgid "cmd_lang"
+msgstr ""
+"Muda o idioma do bot no servidor atual\n"
+"\n"
+"Passe um código válido de idioma. Consulte os códigos válidos nesse link: https://www.gnu.org/software/gettext/manual/html_node/Usual-Language-Codes.html"
+
+msgid "cmd_xadrez_pgn"
+msgstr ""
+"Gera o PGN da partida atual\n"
+"\n"
+"Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo."
+
+msgid "cmd_medal"
+msgstr ""
+"Exibe detalhes de uma medalha da Star Wars Wiki"
+
+msgid "cmd_rps"
+msgstr ""
+"Pedra, papel e tesoura com dinossauros\n"
+"\n"
+"Jogadas válidas: `Deus`, `Homem`, `Dinossauro`.\n"
+"\n"
+"Regras: Homem ganha de Deus, Dinossauro ganha de Homem, Deus ganha de Dinossauro e Mulher herda a Terra em caso de empate."
+
+msgid "cmd_xadrez_posicao"
+msgstr ""
+"Mostra a posição atual da partida em andamento\n"
+"\n"
+"Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo."
+
+msgid "cmd_medals"
+msgstr ""
+"Exibe as medalhas disponíveis da Star Wars Wiki"
+
+msgid "cmd_plagueis"
+msgstr ""
+"Conta a tregédia de Darth Plagueis"
+
+msgid "cmd_xadrez_todos"
+msgstr ""
+"Veja todas as partidas que estão sendo jogadas agora"
+

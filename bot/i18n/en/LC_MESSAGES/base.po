@@ -96,7 +96,7 @@ msgid "You are either not playing a game or it is not your turn anymore"
 msgstr ""
 
 #: bot/chess/chess.py:112
-msgid "You are currently playing {} games. Please provide your opponent to whom you whish to play this move."
+msgid "You are currently playing {} games. Please provide your opponent to whom you wish to play this move."
 msgstr ""
 
 #: bot/chess/chess.py:117 bot/chess_cmds.py:198
@@ -203,6 +203,10 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
+#: bot/general.py:118
+msgid "Commands"
+msgstr "Comandos"
+
 #: bot/general.py:123 bot/general.py:132
 msgid "No description available"
 msgstr ""
@@ -302,7 +306,7 @@ msgstr ""
 msgid "Operation canceled"
 msgstr ""
 
-#: bot/social/profile.py:56
+#: bot/social/profile.py:56 bot/sww_cmds.py:61
 msgid "Points"
 msgstr ""
 
@@ -330,10 +334,6 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: bot/sww_cmds.py:61
-msgid "Points"
-msgstr ""
-
 #: bot/sww_leaderboard/leaderboard.py:38
 msgid "Error parsing content"
 msgstr ""
@@ -344,3 +344,217 @@ msgstr ""
 
 msgid "Language updated to {lang}"
 msgstr ""
+
+# Commands' help messages
+msgid "cmd_busca"
+msgstr ""
+"Performs a search with the given search engine\n"
+"\n"
+"Pass the search engine as the first argument and the desired query following it. If not search engine is provided, Google will be used.\n"
+"\n"
+"Available search engines: Google, Star Wars Wiki em Português, Wookieepedia, Avatar Wiki 🇧🇷\n"
+"\n"
+"Exemple with defined search engine: `busca sww Sheev Palpatine`\n"
+"Exemple without defined search engine: `busca Sheev Palpatine`"
+
+msgid "cmd_xadrez_gif"
+msgstr ""
+"Creates an animated GIF showing a given variant for a given chess game, starting from a given move\n"
+"\n"
+"It is required to send a chess game's UUID and the ply that the given sequence starts from, which should be formed by UCI or SAN space-separated moves.\n"
+"\n"
+"Exemple: `xgif f63e5e4f-dd94-4439-a283-33a1c1a065a0 11 Nxf5 Qxf5 Qxf5 gxf5`"
+
+msgid "cmd_profile"
+msgstr ""
+"Shows your or the given user's profile"
+
+msgid "cmd_daily"
+msgstr ""
+"Get your daily reward of Palplatinas 🤑"
+
+msgid "cmd_xadrez_puzzle"
+msgstr ""
+"Play a chess puzzle\n"
+"\n"
+"Send this command without any arguments to get a new puzzle. In order to try a move for a puzzle, send its ID followed by your move.\n"
+"\n"
+"Exemple for new puzzle: `xadrez_puzzle`\n"
+"Exemple for trying a move in an existing puzzle: `xadrez_puzzle 557b7aa7e13823b82b9bc1e9 Qa2`"
+
+msgid "cmd_voto"
+msgstr ""
+"Creates a vote that other people can participate\n"
+"\n"
+"The question and its choices must be separated by `;`. You may create votes with at most ten options.\n"
+"\n"
+"Exemple: `voto Who's the best Sith Lord?;Darth Sidious;Darth Vader;Darth Tyranus`"
+
+msgid "cmd_help"
+msgstr ""
+"Shows this message\n"
+"\n"
+"Pass a command in order to get more details about it.\n"
+"\n"
+"Commands' parameters shown between greater than and less than signs (`<parameter>`) mean required parameters. Parameters shown between brackets (`[parameter]`) mean optional parameters. Their default values are indicated through an equal sign (`[parameter=default_value]`)."
+
+msgid "cmd_banco"
+msgstr ""
+"Check your Palplatinas balance 💰"
+
+msgid "cmd_loja"
+msgstr ""
+"Shows all available items that can be bought"
+
+msgid "cmd_saimaluco"
+msgstr ""
+"Generates sai maluco meme with the given text"
+
+msgid "cmd_itens"
+msgstr ""
+"Shows the items you have bought"
+
+msgid "cmd_akinator_novo"
+msgstr ""
+"New Akinator game\n"
+"\n"
+"Answer Akinator's questions through reactions. Legend:\n"
+"✅: Yes\n"
+"🇵: Probably\n"
+"🤷: I don't know / maybe\n"
+"🇺: Unlikely\n"
+"🚫: No"
+
+msgid "cmd_level"
+msgstr ""
+"Shows the given user's level\n"
+"\n"
+"Pass an user to check their level. If no user is given, then your user level will be returned."
+
+msgid "cmd_aurebesh"
+msgstr ""
+"Generates an image with the given text written in Aurebesh"
+
+msgid "cmd_comprar"
+msgstr ""
+"Buy an item for your profile\n"
+"\n"
+"Pass the item's name you wish to buy. In order to be able to do so, it is necessary to possess enough palplatinas."
+
+msgid "cmd_rank"
+msgstr ""
+"Shows the leaderboard of user's levels"
+
+msgid "cmd_ping"
+msgstr ""
+"Checks if the bot is online and its response time"
+
+msgid "cmd_clear"
+msgstr ""
+"Clears the last messages of the current channel"
+
+msgid "cmd_anime_busca"
+msgstr ""
+"Searches for an anime based on given name"
+
+msgid "cmd_xadrez_novo"
+msgstr ""
+"Start a new chess game against somebody\n"
+"\n"
+"Pass the usuário you wish to play against. If you wish to customize the board's color schema, inform the color name you wish to use (available colors: `blue`, `purple`, `green`, `red`, `gray` e `wood`)."
+
+msgid "cmd_planetas"
+msgstr ""
+"Lists all available planets for the given galactic region"
+
+msgid "cmd_vision"
+msgstr ""
+"Ask a question to the bot and it will answer you"
+
+msgid "cmd_anime"
+msgstr ""
+"Shows searched anime's information using MyAnimeList"
+
+msgid "cmd_xadrez_bot"
+msgstr ""
+"Start a new chess game against the bot\n"
+"\n"
+"Pass the desired difficulty level (from 0 to 20). If you wish to customize the board's color schema, inform the color name you wish to use (available colors: `blue`, `purple`, `green`, `red`, `gray` e `wood`)."
+
+msgid "cmd_sorte"
+msgstr ""
+"Heads or tails"
+
+msgid "cmd_xadrez_jogar"
+msgstr ""
+"Make a move on your current chess game\n"
+"\n"
+"Use SAN or UCI annotation. Invalid or ambiguous moves are rejected. Inform your opponent when you're playing multiple games at once."
+
+msgid "cmd_gato"
+msgstr ""
+"Shows a random picture of cats 🐈"
+
+msgid "cmd_mapa_astral"
+msgstr ""
+"Check or create via DM your astrology birth chart\n"
+"\n"
+"In order to create your astrology birth chart, send this command to the bot via DM informing your birth date, time and city on the following format: `YYYY/mm/dd HH:MM City name`.\n"
+"\n"
+"If you've already created your astrology chart, then send this command without parameters in any channel in order to view it.\n"
+"\n"
+"Example for astrology chart creation: `mapa_astral 2000/15/01 12:00 Brasília`\n"
+"Exemple of viewing created astrology chart: `mapa_astral`"
+
+msgid "cmd_xadrez_abandonar"
+msgstr ""
+"Resign your current chess game\n"
+"\n"
+"Inform your opponent when you're playing multiple games at once."
+
+msgid "cmd_leaderboard"
+msgstr ""
+"Shows Star Wars Wiki's medals leaderboard"
+
+msgid "cmd_lang"
+msgstr ""
+"Changes the bot's language for the current server\n"
+"\n"
+"Please, provide a valid language code. You can check all possible valid language codes here: https://www.gnu.org/software/gettext/manual/html_node/Usual-Language-Codes.html"
+
+msgid "cmd_xadrez_pgn"
+msgstr ""
+"Builds your current chess game's PGN\n"
+"\n"
+"Inform your opponent when you're playing multiple games at once."
+
+msgid "cmd_medal"
+msgstr ""
+"Shows given Star Wars Wiki medal's details"
+
+msgid "cmd_rps"
+msgstr ""
+"Rock, paper and scissors with dinosaurs\n"
+"\n"
+"Valid plays: `Deus`, `Homem`, `Dinossauro`.\n"
+"\n"
+"Rules: Homem beats Deus, Dinossauro beats Homem, Deus beats Dinossauro and Mulher inherits the Earth in case of draws."
+
+msgid "cmd_xadrez_posicao"
+msgstr ""
+"Shows the current position of your ongoing chess game\n"
+"\n"
+"Inform your opponent when you're playing multiple games at once."
+
+msgid "cmd_medals"
+msgstr ""
+"Shows all available Star Wars Wiki's medals"
+
+msgid "cmd_plagueis"
+msgstr ""
+"Tells the tragedy of Darth Plagueis"
+
+msgid "cmd_xadrez_todos"
+msgstr ""
+"Shows all ongoing chess games"
+

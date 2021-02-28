@@ -129,18 +129,26 @@ class GeneralCog(commands.Cog):
             colour=discord.Color.blurple()
         )
         for cmd in paginated_commands:
+            cmd_short_description = i(original_message, f'cmd_{cmd.name}').split("\n")[0]
+            if cmd_short_description == f'cmd_{cmd.name}':
+                cmd_short_description = 'No description available'
+            
             help_embed.add_field(
                 name=f'{bot_prefix}{cmd.name}',
-                value=cmd.short_doc or i(original_message, 'No description available')
+                value=cmd_short_description
             )
         self.help_cmd_manager.last_page = last_page
 
         return help_embed
 
     def _create_cmd_help_embed(self, cmd, ctx):
+        cmd_description = i(ctx, f'cmd_{cmd.name}')
+        if cmd_description == f'cmd_{cmd.name}':
+            cmd_description = 'No description available'
+        
         help_embed = discord.Embed(
             title=f'{i(ctx, "Help")} - {cmd.name}',
-            description=cmd.help or i(ctx, 'No description available'),
+            description=cmd_description,
             colour=discord.Color.blurple()
         )
         help_embed.add_field(
