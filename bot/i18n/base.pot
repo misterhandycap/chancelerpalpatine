@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-02-27 15:41-0300\n"
+"POT-Creation-Date: 2021-02-27 14:53-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -13,7 +13,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
-
 
 #: bot/across_the_stars_cmds.py:29 bot/palplatina_cmds.py:82
 msgid "Arnaldo's Emporium"
@@ -56,11 +55,15 @@ msgid "Invalid datetime. Expected format:"
 msgstr ""
 
 #: bot/astrology_cmds.py:39
-msgid "You have not yet created your astrology chart. In order to do so, send this command to my DM 😁"
+msgid ""
+"You have not yet created your astrology chart. In order to do so, send this "
+"command to my DM 😁"
 msgstr ""
 
 #: bot/astrology_cmds.py:51
-msgid "There has been a momentary failure. Please try again in a few moments. If this error persists, then this might be a bug 😬"
+msgid ""
+"There has been a momentary failure. Please try again in a few moments. If "
+"this error persists, then this might be a bug 😬"
 msgstr ""
 
 #: bot/astrology_cmds.py:61
@@ -96,7 +99,9 @@ msgid "You are either not playing a game or it is not your turn anymore"
 msgstr ""
 
 #: bot/chess/chess.py:112
-msgid "You are currently playing {} games. Please provide your opponent to whom you whish to play this move."
+msgid ""
+"You are currently playing {} games. Please provide your opponent to whom you "
+"whish to play this move."
 msgstr ""
 
 #: bot/chess/chess.py:117 bot/chess_cmds.py:198
@@ -128,7 +133,8 @@ msgid "Identify your opponent in case you are playing multiple games at once."
 msgstr ""
 
 #: bot/chess_cmds.py:86
-msgid "In order to play a game against the bot, use the command `{prefix}xadrez_bot`"
+msgid ""
+"In order to play a game against the bot, use the command `{prefix}xadrez_bot`"
 msgstr ""
 
 #: bot/chess_cmds.py:126
@@ -144,7 +150,9 @@ msgid "Good, {username}, good!"
 msgstr ""
 
 #: bot/chess_cmds.py:179
-msgid "No game is being played currently... ☹️ Start a new one with `{prefix}!xadrez_novo`"
+msgid ""
+"No game is being played currently... ☹️ Start a new one with `{prefix}!"
+"xadrez_novo`"
 msgstr ""
 
 #: bot/chess_cmds.py:201
@@ -188,11 +196,15 @@ msgid "Invalid parameter. "
 msgstr ""
 
 #: bot/general.py:49 bot/general.py:62
-msgid "Take a look at the command's documentation below for information about its correct usage:"
+msgid ""
+"Take a look at the command's documentation below for information about its "
+"correct usage:"
 msgstr ""
 
 #: bot/general.py:60
-msgid "This command requires an argument (`{command_name}`) that has not been provided. "
+msgid ""
+"This command requires an argument (`{command_name}`) that has not been "
+"provided. "
 msgstr ""
 
 #: bot/general.py:68
@@ -253,7 +265,8 @@ msgstr ""
 
 #: bot/general.py:348
 msgid ""
-"I love democracy! {username} has summoned a vote! The proposition is **{question}**, and its options are:\n"
+"I love democracy! {username} has summoned a vote! The proposition is "
+"**{question}**, and its options are:\n"
 "{options}"
 msgstr ""
 
@@ -271,7 +284,9 @@ msgid "You have received 300 palplatinas, enjoy!"
 msgstr ""
 
 #: bot/palplatina_cmds.py:40
-msgid "You have alredy collected your daily today. Ambition leads to the dark side of the Force, I like it."
+msgid ""
+"You have alredy collected your daily today. Ambition leads to the dark side "
+"of the Force, I like it."
 msgstr ""
 
 #: bot/palplatina_cmds.py:56
