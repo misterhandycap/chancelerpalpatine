@@ -150,3 +150,6 @@ tests/cassettes/*
 # Fonts files
 *.otf
 *.ttf
+
+# Keep base.pot
+!base.pot
