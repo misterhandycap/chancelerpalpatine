@@ -12,6 +12,7 @@ from discord.ext import commands
 from bot.across_the_stars.vote import Vote
 from bot.aurebesh import text_to_aurebesh_img
 from bot.meme import meme_saimaluco_image, random_cat
+from bot.servers import cache
 from bot.social.profile import Profile
 from bot.utils import i, paginate, PaginatedEmbedManager
 
@@ -32,6 +33,7 @@ class GeneralCog(commands.Cog):
             status=discord.Status.online,
             activity=discord.Game(f'Planejando uma ordem surpresa')
         )
+        await cache.load_configs()
         logging.info('Bot is ready')
 
     @commands.Cog.listener()
@@ -263,10 +265,16 @@ class GeneralCog(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def lang(self, ctx, lang):
-        with open('lang.txt', 'w') as f:
-            f.write(lang)
-        return await ctx.send(i(ctx, 'Language updated to {lang}').format(lang=lang))
+    @commands.has_permissions(administrator=True)
+    async def lang(self, ctx, language_code):
+        """
+        Muda o idioma do bot no servidor atual
+
+        Passe um código válido de idioma. Consulte os códigos válidos nesse link: \
+            https://www.gnu.org/software/gettext/manual/html_node/Usual-Language-Codes.html
+        """
+        await cache.update_config(ctx.guild.id, language=language_code)
+        return await ctx.send(i(ctx, 'Language updated to {lang}').format(lang=language_code))
 
     @commands.command(aliases=['pedrapapeltesoura', 'ppt', 'dino'])
     async def rps(self, ctx, player_choice_str):

@@ -7,6 +7,9 @@ from functools import partial
 
 from bot.chess.player import Player
 from bot.i18n import i18n
+from bot.servers import cache
+
+server_configs = {}
 
 def i(ctx, text):
     server_id = ctx.guild.id
@@ -14,8 +17,10 @@ def i(ctx, text):
     return i18n(text, lang)
 
 def get_server_lang(server_id):
-    with open('lang.txt') as f:
-        return f.read()
+    server_config = cache.get_config(server_id)
+    if not server_config:
+        return 'en'
+    return server_config.language
 
 def run_cpu_bound_task(func, *args, **kwargs):
     async def function_wrapper(*args, **kwargs):
