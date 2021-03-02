@@ -80,7 +80,7 @@ class AstrologyChart():
                 user_agent='chancelerpalpatine', adapter_factory=AioHTTPAdapter) as geolocator:
             location = await geolocator.geocode(city_name)
             if not location:
-                raise AstrologyInvalidInput('Cidade não existe')
+                raise AstrologyInvalidInput('City does not exist')
 
             return location.latitude, location.longitude
 
@@ -91,7 +91,7 @@ class AstrologyChart():
             return pytz.timezone(timezone_name).localize(
                 datetime.strptime(dt, '%Y/%m/%d %H:%M')).strftime('%Z')
         except ValueError:
-            raise AstrologyInvalidInput('Data e/ou hora inválida(s). Formato esperado: `%Y/%m/%d %H:%M`')
+            raise AstrologyInvalidInput('Invalid datetime. Expected format: `%Y/%m/%d %H:%M`')
 
     def _remove_user_s_charts(self, user_id):
         self.charts = [uc for uc in self.charts if uc.user_id != str(user_id)]

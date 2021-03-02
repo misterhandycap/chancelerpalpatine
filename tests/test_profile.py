@@ -47,7 +47,7 @@ class TestProfile(TestCase):
         with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
             user_avatar_bytes = f.read()
 
-        result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes))
+        result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes, lang='pt'))
 
         with open(os.path.join('tests', 'support', 'get_user_profile_all_fields.png'), 'rb') as f:
             self.assertEqual(result.getvalue(), f.read())
@@ -75,7 +75,7 @@ class TestProfile(TestCase):
         with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
             user_avatar_bytes = f.read()
 
-        result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes))
+        result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes, lang='pt'))
 
         with open(os.path.join('tests', 'support', 'get_user_profile_with_badges.png'), 'rb') as f:
             self.assertEqual(result.getvalue(), f.read())
@@ -87,7 +87,7 @@ class TestProfile(TestCase):
         with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
             user_avatar_bytes = f.read()
 
-        result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes))
+        result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes, lang='pt'))
 
         with open(os.path.join('tests', 'support', 'get_user_profile_no_info.png'), 'rb') as f:
             self.assertEqual(result.getvalue(), f.read())
@@ -96,6 +96,6 @@ class TestProfile(TestCase):
         with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
             user_avatar_bytes = f.read()
 
-        result = asyncio.run(Profile().get_user_profile(14, user_avatar_bytes))
+        result = asyncio.run(Profile().get_user_profile(14, user_avatar_bytes, lang='pt'))
 
         self.assertIsNone(result)

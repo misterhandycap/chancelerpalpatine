@@ -5,6 +5,7 @@ from unittest import TestCase
 
 from dotenv import load_dotenv
 
+from bot.economy.exceptions import AlreadyOwnsItem, ItemNotFound, NotEnoughCredits
 from bot.economy.palplatina import Palplatina
 from bot.models.profile_item import ProfileItem
 from bot.models.user import User
@@ -93,7 +94,10 @@ class TestPalplatina(TestCase):
 
         result = asyncio.run(Palplatina().buy_item(user.id, profile_item.name))
 
-        self.assertEqual(result, 'Item bought. Enjoy!')
+        self.assertIsInstance(result, User)
+        self.assertEqual(result.currency, 50)
+        self.assertEqual(result.profile_items[0].id, profile_item.id)
+
         persisted_user = Session().query(User).get(user.id)
         persisted_user_profile_items = persisted_user.profile_items
         self.assertEqual(persisted_user.currency, 50)
@@ -114,9 +118,9 @@ class TestPalplatina(TestCase):
         self.db_session.add(profile_item)
         self.db_session.commit()
 
-        result = asyncio.run(Palplatina().buy_item(user.id, profile_item.name))
+        with self.assertRaises(NotEnoughCredits):
+            asyncio.run(Palplatina().buy_item(user.id, profile_item.name))
 
-        self.assertEqual(result, 'Not enough credits')
         persisted_user = Session().query(User).get(user.id)
         persisted_user_profile_items = persisted_user.profile_items
         self.assertEqual(persisted_user.currency, 150)
@@ -137,9 +141,9 @@ class TestPalplatina(TestCase):
         self.db_session.add(user)
         self.db_session.commit()
 
-        result = asyncio.run(Palplatina().buy_item(user.id, profile_item.name))
+        with self.assertRaises(AlreadyOwnsItem):
+            asyncio.run(Palplatina().buy_item(user.id, profile_item.name))
 
-        self.assertEqual(result, 'You already own this item')
         persisted_user = Session().query(User).get(user.id)
         persisted_user_profile_items = persisted_user.profile_items
         self.assertEqual(persisted_user.currency, 150)
@@ -154,18 +158,17 @@ class TestPalplatina(TestCase):
         self.db_session.add(user)
         self.db_session.commit()
 
-        result = asyncio.run(Palplatina().buy_item(user.id, 'random'))
+        with self.assertRaises(ItemNotFound):
+            asyncio.run(Palplatina().buy_item(user.id, 'random'))
 
-        self.assertEqual(result, 'Item not found')
         persisted_user = Session().query(User).get(user.id)
         persisted_user_profile_items = persisted_user.profile_items
         self.assertEqual(persisted_user.currency, 150)
         self.assertEqual(len(persisted_user_profile_items), 0)
 
     def test_buy_item_user_not_found(self):
-        result = asyncio.run(Palplatina().buy_item(14, 'random'))
-
-        self.assertEqual(result, 'Item not found')
+        with self.assertRaises(ItemNotFound):
+            asyncio.run(Palplatina().buy_item(14, 'random'))
 
     def test_get_available_items(self):
         for i in range(12):

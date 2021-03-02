@@ -12,8 +12,9 @@ from discord.ext import commands
 from bot.across_the_stars.vote import Vote
 from bot.aurebesh import text_to_aurebesh_img
 from bot.meme import meme_saimaluco_image, random_cat
+from bot.servers import cache
 from bot.social.profile import Profile
-from bot.utils import paginate, PaginatedEmbedManager
+from bot.utils import i, paginate, PaginatedEmbedManager
 
 
 class GeneralCog(commands.Cog):
@@ -32,7 +33,9 @@ class GeneralCog(commands.Cog):
             status=discord.Status.online,
             activity=discord.Game(f'Planejando uma ordem surpresa')
         )
-        logging.info('É bom te ver, mestre Jedi.')
+        await cache.load_configs()
+        cache.all_servers = self.client.guilds
+        logging.info('Bot is ready')
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -40,14 +43,14 @@ class GeneralCog(commands.Cog):
             raise error
         except (commands.UserNotFound, commands.MemberNotFound):
             await ctx.reply(
-                content='Mestre quem?',
+                content=i(ctx, 'Master who?'),
                 mention_author=False
             )
         except commands.BadArgument:
             await ctx.reply(
-                content=('Parâmetro inválido. '
-                'Consulte a descrição do comando abaixo para informações sobre sua correta utilização:'),
-                embed=self._create_cmd_help_embed(ctx.command),
+                content=(i(ctx, 'Invalid parameter. ') +
+                i(ctx, 'Take a look at the command\'s documentation below for information about its correct usage:')),
+                embed=self._create_cmd_help_embed(ctx.command, ctx),
                 mention_author=False
             )
         except commands.CommandNotFound:
@@ -57,14 +60,15 @@ class GeneralCog(commands.Cog):
             )
         except commands.MissingRequiredArgument:
             await ctx.reply(
-                content=f"Esse comando requer um argumento (`{error.param.name}`) que não foi passado. "\
-                "Consulte a descrição do comando abaixo para informações sobre sua correta utilização:",
-                embed=self._create_cmd_help_embed(ctx.command),
+                content=i(ctx, "This command requires an argument (`{command_name}`) that has not been provided. ")
+                .format(command_name=error.param.name)+
+                i(ctx, 'Take a look at the command\'s documentation below for information about its correct usage:'),
+                embed=self._create_cmd_help_embed(ctx.command, ctx),
                 mention_author=False
             )
         except commands.MissingPermissions:
             await ctx.reply(
-                "Você não tem as seguintes permissões necessárias para rodar esse comando: "
+                i(ctx, "You do not have the required permissions to run this command: ") +
                 f"`{'`, `'.join(error.missing_perms)}`",
                 mention_author=False
             )
@@ -77,7 +81,7 @@ class GeneralCog(commands.Cog):
         if self.client.user.mentioned_in(message):
             await message.reply(
                 content='Olá, segue abaixo algumas informações sobre mim 😊',
-                embed=await self._create_info_embed(),
+                embed=await self._create_info_embed(message),
                 mention_author=False
             )
 
@@ -104,48 +108,56 @@ class GeneralCog(commands.Cog):
         bot_commands = sorted(self.client.commands, key=lambda x: x.name)
         
         if page_number:
-            help_embed = await self._create_paginated_help_embed(page_number)
+            help_embed = await self._create_paginated_help_embed(page_number, ctx)
             await self.help_cmd_manager.send_embed(help_embed, page_number, ctx)
         else:
             try:
                 cmd = [x for x in bot_commands if cmd_name in [x.name] + x.aliases][0]
             except IndexError:
-                return await ctx.send(f"Comando não encontrado. Veja todos os comandos disponíveis com `{bot_prefix}ajuda`")
-            help_embed = self._create_cmd_help_embed(cmd)
+                return await ctx.send(f'{i(ctx, "Command not found. Check all available commands with")} `{bot_prefix}ajuda`')
+            help_embed = self._create_cmd_help_embed(cmd, ctx)
             await ctx.send(embed=help_embed)
 
-    async def _create_paginated_help_embed(self, page_number):
+    async def _create_paginated_help_embed(self, page_number, original_message):
         max_itens_per_page = 9
         bot_prefix = os.environ.get("BOT_PREFIX", 'cp!')
         bot_commands = sorted(self.client.commands, key=lambda x: x.name)
         
         paginated_commands, last_page = paginate(bot_commands, page_number, max_itens_per_page)
         help_embed = discord.Embed(
-            title='Ajuda',
-            description=f'Comandos ({min(max(page_number, 1), last_page)}/{last_page}):',
+            title=i(original_message, 'Help'),
+            description=f'{i(original_message, "Commands")} ({min(max(page_number, 1), last_page)}/{last_page}):',
             colour=discord.Color.blurple()
         )
         for cmd in paginated_commands:
+            cmd_short_description = i(original_message, f'cmd_{cmd.name}').split("\n")[0]
+            if cmd_short_description == f'cmd_{cmd.name}':
+                cmd_short_description = 'No description available'
+            
             help_embed.add_field(
                 name=f'{bot_prefix}{cmd.name}',
-                value=cmd.short_doc or 'Sem descrição disponível'
+                value=cmd_short_description
             )
         self.help_cmd_manager.last_page = last_page
 
         return help_embed
 
-    def _create_cmd_help_embed(self, cmd):
+    def _create_cmd_help_embed(self, cmd, ctx):
+        cmd_description = i(ctx, f'cmd_{cmd.name}')
+        if cmd_description == f'cmd_{cmd.name}':
+            cmd_description = 'No description available'
+        
         help_embed = discord.Embed(
-            title=f'Ajuda - {cmd.name}',
-            description=cmd.help or 'Sem descrição disponível',
+            title=f'{i(ctx, "Help")} - {cmd.name}',
+            description=cmd_description,
             colour=discord.Color.blurple()
         )
         help_embed.add_field(
-            name='Nomes alternativos', value='\n'.join(cmd.aliases) or 'Nenhum')
-        help_embed.add_field(name='Parâmetros', value=cmd.signature or 'Nenhum')
+            name=i(ctx, 'Aliases'), value='\n'.join(cmd.aliases) or i(ctx, 'None'))
+        help_embed.add_field(name=i(ctx, 'Arguments'), value=cmd.signature or i(ctx, 'None'))
         help_embed.add_field(
-            name='Categoria',
-            value=cmd.cog.description if cmd.cog and cmd.cog.description else 'Nenhuma'
+            name=i(ctx, 'Category'),
+            value=cmd.cog.description if cmd.cog and cmd.cog.description else i(ctx, 'None')
         )
         return help_embed
 
@@ -183,10 +195,10 @@ class GeneralCog(commands.Cog):
         """
         Mostra informações sobre o bot
         """
-        embed = await self._create_info_embed()
+        embed = await self._create_info_embed(ctx)
         await ctx.send(embed=embed)
 
-    async def _create_info_embed(self):
+    async def _create_info_embed(self, ctx):
         try:
             current_version = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
         except:
@@ -202,11 +214,11 @@ class GeneralCog(commands.Cog):
             url=os.environ.get("BOT_HOMEPAGE")
         )
         embed.set_thumbnail(url=bot_info.icon_url)
-        embed.add_field(name='Dono', value=f'{bot_owner.name}#{bot_owner.discriminator}')
+        embed.add_field(name=i(ctx, 'Owner'), value=f'{bot_owner.name}#{bot_owner.discriminator}')
         if current_version:
-            embed.add_field(name='Versão atual', value=current_version)
-        embed.add_field(name='Prefixo', value=bot_prefix)
-        embed.add_field(name='Ajuda', value=f'{bot_prefix}help')
+            embed.add_field(name=i(ctx, 'Current version'), value=current_version)
+        embed.add_field(name=i(ctx, 'Prefix'), value=bot_prefix)
+        embed.add_field(name=i(ctx, 'Help cmd'), value=f'{bot_prefix}help')
         return embed
 
     @commands.command(aliases=['limpar', 'clean'])
@@ -256,10 +268,22 @@ class GeneralCog(commands.Cog):
         await ctx.trigger_typing()
         image_url = await random_cat()
         if not image_url:
-            return await ctx.send("Não consegui encontrar um gato 😢")
+            return await ctx.send(i(ctx, "Could not find a cat picture 😢"))
         embed = discord.Embed(title="Gato")
         embed.set_image(url=image_url)
         await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def lang(self, ctx, language_code):
+        """
+        Muda o idioma do bot no servidor atual
+
+        Passe um código válido de idioma. Consulte os códigos válidos nesse link: \
+            https://www.gnu.org/software/gettext/manual/html_node/Usual-Language-Codes.html
+        """
+        await cache.update_config(ctx.guild.id, language=language_code)
+        return await ctx.send(i(ctx, 'Language updated to {lang}').format(lang=language_code))
 
     @commands.command(aliases=['pedrapapeltesoura', 'ppt', 'dino'])
     async def rps(self, ctx, player_choice_str):
@@ -274,7 +298,7 @@ class GeneralCog(commands.Cog):
         player_choice_str = player_choice_str.title()
         available_options = ['Deus', 'Homem', 'Dinossauro']
         if player_choice_str not in available_options:
-            return await ctx.send("Opção inválida")
+            return await ctx.send(i(ctx, "Invalid option"))
 
         player_choice = available_options.index(player_choice_str)
         bot_choice = random.randint(0,2)
@@ -355,7 +379,7 @@ class GeneralCog(commands.Cog):
             size=128, static_format='png').read()
         image = await self.profile_bot.get_user_profile(selected_user.id, user_avatar)
         if not image:
-            return await ctx.send('Quem é você?')
+            return await ctx.send(i(ctx, 'Who are you?'))
         await ctx.send(file=discord.File(image, 'perfil.png'))
 
     @commands.command(aliases=['votar', 'vote', 'poll'])
@@ -377,17 +401,17 @@ class GeneralCog(commands.Cog):
         choices = options[1:choices_limit]
         
         embed = discord.Embed(
-            title='Voto',
-            description='Vote na proposta de um colega!',
+            title=i(ctx, 'Vote'),
+            description=i(ctx, 'Vote on your colleague\'s proposition!'),
             colour=discord.Color.red()
         )
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png")
         embed.add_field(  
-            name='Democracia!',
-            value='Eu amo democracia! {} convocou uma votação! A proposta é **{}**, e as opções são:\n{}'.format(
-                ctx.message.author.mention,
-                question,
-                ''.join([f'\n{emoji} - {choice}' for emoji, choice in zip(emoji_answers_vote, choices)])
+            name=i(ctx, 'Democracy!'),
+            value=i(ctx, 'I love democracy! {username} has summoned a vote! The proposition is **{question}**, and its options are:\n{options}').format(
+                username=ctx.message.author.mention,
+                question=question,
+                options=''.join([f'\n{emoji} - {choice}' for emoji, choice in zip(emoji_answers_vote, choices)])
             )
         )
 

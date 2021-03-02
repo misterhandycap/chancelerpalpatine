@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from bot.akinator.akinator_game import AkinatorGame
+from bot.utils import i, get_server_lang
 
 
 class AkinatorCog(commands.Cog):
@@ -34,8 +35,9 @@ class AkinatorCog(commands.Cog):
         🚫: Não
         """
         async with ctx.channel.typing():
-            game, question = await self.akinator_bot.new_game(ctx.author)
-        await ctx.send("Jogo iniciado. Responda reagindo às perguntas do bot.")
+            lang = get_server_lang(ctx.guild.id)
+            game, question = await self.akinator_bot.new_game(ctx.author, lang)
+        await ctx.send(i(ctx, "Game started. Answer by reaction to the bot's questions."))
         await self.send_embed(question, ctx.author, ctx)
 
     @commands.Cog.listener()
@@ -58,7 +60,8 @@ class AkinatorCog(commands.Cog):
             await self.send_embed(result, user, reaction.message.channel)
         else:
             embed = discord.Embed(
-                title=f'{user.name} pensou em {result.get("name")}',
+                title=i(reaction.message, "{username} thought of {name}").format(
+                    username=user.name, name=result.get("name")),
                 description=result.get('description'),
                 colour=discord.Color.blurple()
             )
@@ -76,4 +79,4 @@ class AkinatorCog(commands.Cog):
             await message.add_reaction(emoji)
 
     async def cog_command_error(self, ctx, error):
-        await ctx.send("Houve um erro com o Akinator.")
+        await ctx.send(i(ctx, "There has been an error with Akinator."))

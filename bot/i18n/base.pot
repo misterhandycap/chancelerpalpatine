@@ -1,0 +1,496 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2021-02-27 14:53-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+#: bot/across_the_stars_cmds.py:29 bot/palplatina_cmds.py:82
+msgid "Arnaldo's Emporium"
+msgstr ""
+
+#: bot/across_the_stars_cmds.py:30
+msgid "Become a planet's senator"
+msgstr ""
+
+#: bot/akinator/akinator_game.py:34
+msgid "Invalid answer. Valid answers are:"
+msgstr ""
+
+#: bot/akinator_cmds.py:40
+msgid "Game started. Answer by reaction to the bot's questions."
+msgstr ""
+
+#: bot/akinator_cmds.py:63
+msgid "{username} thought of {name}"
+msgstr ""
+
+#: bot/akinator_cmds.py:82
+msgid "There has been an error with Akinator."
+msgstr ""
+
+#: bot/anime_cmds.py:31
+msgid "Results for {}"
+msgstr ""
+
+#: bot/anime_cmds.py:53
+msgid "Something went wrong when searching for your anime"
+msgstr ""
+
+#: bot/astrology/astrology_chart.py:84
+msgid "City does not exist"
+msgstr ""
+
+#: bot/astrology/astrology_chart.py:96
+msgid "Invalid datetime. Expected format:"
+msgstr ""
+
+#: bot/astrology_cmds.py:39
+msgid ""
+"You have not yet created your astrology chart. In order to do so, send this "
+"command to my DM 😁"
+msgstr ""
+
+#: bot/astrology_cmds.py:51
+msgid ""
+"There has been a momentary failure. Please try again in a few moments. If "
+"this error persists, then this might be a bug 😬"
+msgstr ""
+
+#: bot/astrology_cmds.py:61
+msgid "Your astrology chart"
+msgstr ""
+
+#: bot/astrology_cmds.py:62
+msgid "Your astrology triad"
+msgstr ""
+
+#: bot/astrology_cmds.py:66
+msgid "Solar sign"
+msgstr ""
+
+#: bot/astrology_cmds.py:67
+msgid "Ascending sign"
+msgstr ""
+
+#: bot/astrology_cmds.py:68
+msgid "Moon sign"
+msgstr ""
+
+#: bot/chess/chess.py:79
+msgid "Game already in progress"
+msgstr ""
+
+#: bot/chess/chess.py:91
+msgid "Game started! {}, play your move"
+msgstr ""
+
+#: bot/chess/chess.py:109
+msgid "You are either not playing a game or it is not your turn anymore"
+msgstr ""
+
+#: bot/chess/chess.py:112
+msgid ""
+"You are currently playing {} games. Please provide your opponent to whom you "
+"whish to play this move."
+msgstr ""
+
+#: bot/chess/chess.py:117 bot/chess_cmds.py:198
+msgid "Game not found"
+msgstr ""
+
+#: bot/chess/chess.py:133
+msgid "Invalid move"
+msgstr ""
+
+#: bot/chess/chess.py:149
+msgid "Game over!"
+msgstr ""
+
+#: bot/chess/chess.py:151
+msgid "That's your turn now, {}"
+msgstr ""
+
+#: bot/chess/chess.py:167
+msgid "{} has abandoned the game!"
+msgstr ""
+
+#: bot/chess/puzzle.py:80 bot/chess/puzzle.py:87
+msgid "Puzzle not found"
+msgstr ""
+
+#: bot/chess_cmds.py:52
+msgid "Identify your opponent in case you are playing multiple games at once."
+msgstr ""
+
+#: bot/chess_cmds.py:86
+msgid ""
+"In order to play a game against the bot, use the command `{prefix}xadrez_bot`"
+msgstr ""
+
+#: bot/chess_cmds.py:126
+msgid "DEW IT!"
+msgstr ""
+
+#: bot/chess_cmds.py:127
+msgid "Kill him! Kill him now!"
+msgstr ""
+
+#: bot/chess_cmds.py:128
+msgid "Good, {username}, good!"
+msgstr ""
+
+#: bot/chess_cmds.py:179
+msgid ""
+"No game is being played currently... ☹️ Start a new one with `{prefix}!"
+"xadrez_novo`"
+msgstr ""
+
+#: bot/chess_cmds.py:201
+msgid "Invalid move for the given sequence"
+msgstr ""
+
+#: bot/chess_cmds.py:233
+msgid "Good job, puzzle solved 👍"
+msgstr ""
+
+#: bot/chess_cmds.py:238
+msgid "Wrong answer"
+msgstr ""
+
+#: bot/economy/palplatina.py:49 bot/palplatina_cmds.py:123
+msgid "Item not found"
+msgstr ""
+
+#: bot/economy/palplatina.py:52
+msgid "Not enough credits"
+msgstr ""
+
+#: bot/economy/palplatina.py:58
+msgid "Item bought. Enjoy!"
+msgstr ""
+
+#: bot/economy/palplatina.py:60
+msgid "You already own this item"
+msgstr ""
+
+#: bot/general.py:33
+msgid "Planning a surprise order"
+msgstr ""
+
+#: bot/general.py:43
+msgid "Master who?"
+msgstr ""
+
+#: bot/general.py:48
+msgid "Invalid parameter. "
+msgstr ""
+
+#: bot/general.py:49 bot/general.py:62
+msgid ""
+"Take a look at the command's documentation below for information about its "
+"correct usage:"
+msgstr ""
+
+#: bot/general.py:60
+msgid ""
+"This command requires an argument (`{command_name}`) that has not been "
+"provided. "
+msgstr ""
+
+#: bot/general.py:68
+msgid "You do not have the required permissions to run this command: "
+msgstr ""
+
+#: bot/general.py:116
+msgid "Help"
+msgstr ""
+
+#: bot/general.py:118
+msgid "Commands"
+msgstr ""
+
+#: bot/general.py:123 bot/general.py:132
+msgid "No description available"
+msgstr ""
+
+#: bot/general.py:136
+msgid "Aliases"
+msgstr ""
+
+#: bot/general.py:136 bot/general.py:137 bot/general.py:140
+msgid "None"
+msgstr ""
+
+#: bot/general.py:137
+msgid "Arguments"
+msgstr ""
+
+#: bot/general.py:139
+msgid "Category"
+msgstr ""
+
+#: bot/general.py:217
+msgid "Owner"
+msgstr ""
+
+#: bot/general.py:219
+msgid "Current version"
+msgstr ""
+
+#: bot/general.py:220
+msgid "Prefix"
+msgstr ""
+
+#: bot/general.py:221
+msgid "Help cmd"
+msgstr ""
+
+#: bot/general.py:220
+msgid "Could not find a cat picture 😢"
+msgstr ""
+
+#: bot/general.py:238
+msgid "Invalid option"
+msgstr ""
+
+#: bot/general.py:319
+msgid "Who are you?"
+msgstr ""
+
+#: bot/general.py:341
+msgid "Vote"
+msgstr ""
+
+#: bot/general.py:342
+msgid "Vote on your colleague's proposition!"
+msgstr ""
+
+#: bot/general.py:347
+msgid "Democracy!"
+msgstr ""
+
+#: bot/general.py:348
+msgid ""
+"I love democracy! {username} has summoned a vote! The proposition is "
+"**{question}**, and its options are:\n"
+"{options}"
+msgstr ""
+
+#: bot/level.py:34
+msgid "Did you ever hear the tragedy of Darth Plagueis, the Wise?"
+msgstr ""
+
+#: bot/palplatina_cmds.py:32 bot/palplatina_cmds.py:39
+#: bot/palplatina_cmds.py:55
+msgid "Daily!"
+msgstr ""
+
+#: bot/palplatina_cmds.py:33
+msgid "You have received 300 palplatinas, enjoy!"
+msgstr ""
+
+#: bot/palplatina_cmds.py:40
+msgid ""
+"You have alredy collected your daily today. Ambition leads to the dark side "
+"of the Force, I like it."
+msgstr ""
+
+#: bot/palplatina_cmds.py:56
+msgid "{username} has {currency} palplatinas."
+msgstr ""
+
+#: bot/palplatina_cmds.py:83
+msgid "Browse through all available items"
+msgstr ""
+
+#: bot/palplatina_cmds.py:102
+msgid "Your acquired items"
+msgstr ""
+
+#: bot/palplatina_cmds.py:103
+msgid "Browse through all your acquired items"
+msgstr ""
+
+#: bot/palplatina_cmds.py:126 bot/palplatina_cmds.py:149
+msgid "Buy item"
+msgstr ""
+
+#: bot/palplatina_cmds.py:134
+msgid "Price"
+msgstr ""
+
+#: bot/palplatina_cmds.py:135
+msgid "Your palplatinas"
+msgstr ""
+
+#: bot/palplatina_cmds.py:159
+msgid "Operation canceled"
+msgstr ""
+
+#: bot/social/profile.py:56 bot/sww_cmds.py:61
+msgid "Points"
+msgstr ""
+
+#: bot/social/profile.py:57
+msgid "Chess wins"
+msgstr ""
+
+#: bot/social/profile.py:58
+msgid "Sign"
+msgstr ""
+
+#: bot/sww_cmds.py:36 bot/sww_cmds.py:65 bot/sww_cmds.py:78
+msgid "Something went wrong when trying to fetch Star Wars Wiki's leaderboard"
+msgstr ""
+
+#: bot/sww_cmds.py:50
+msgid "Medal not found"
+msgstr ""
+
+#: bot/sww_cmds.py:54 bot/sww_cmds.py:87
+msgid "Star Wars Wiki's medals"
+msgstr ""
+
+#: bot/sww_cmds.py:60
+msgid "Description"
+msgstr ""
+
+#: bot/sww_leaderboard/leaderboard.py:38
+msgid "Error parsing content"
+msgstr ""
+
+#: bot/sww_leaderboard/leaderboard.py:63
+msgid "Invalid medals info"
+msgstr ""
+
+msgid "Language updated to {lang}"
+msgstr ""
+
+# Commands' help messages
+msgid "cmd_busca"
+msgstr ""
+
+msgid "cmd_xadrez_gif"
+msgstr ""
+
+msgid "cmd_profile"
+msgstr ""
+
+msgid "cmd_daily"
+msgstr ""
+
+msgid "cmd_xadrez_puzzle"
+msgstr ""
+
+msgid "cmd_voto"
+msgstr ""
+
+msgid "cmd_help"
+msgstr ""
+
+msgid "cmd_banco"
+msgstr ""
+
+msgid "cmd_loja"
+msgstr ""
+
+msgid "cmd_saimaluco"
+msgstr ""
+
+msgid "cmd_itens"
+msgstr ""
+
+msgid "cmd_akinator_novo"
+msgstr ""
+
+msgid "cmd_level"
+msgstr ""
+
+msgid "cmd_aurebesh"
+msgstr ""
+
+msgid "cmd_comprar"
+msgstr ""
+
+msgid "cmd_rank"
+msgstr ""
+
+msgid "cmd_ping"
+msgstr ""
+
+msgid "cmd_clear"
+msgstr ""
+
+msgid "cmd_anime_busca"
+msgstr ""
+
+msgid "cmd_xadrez_novo"
+msgstr ""
+
+msgid "cmd_planetas"
+msgstr ""
+
+msgid "cmd_vision"
+msgstr ""
+
+msgid "cmd_anime"
+msgstr ""
+
+msgid "cmd_xadrez_bot"
+msgstr ""
+
+msgid "cmd_sorte"
+msgstr ""
+
+msgid "cmd_xadrez_jogar"
+msgstr ""
+
+msgid "cmd_gato"
+msgstr ""
+
+msgid "cmd_mapa_astral"
+msgstr ""
+
+msgid "cmd_xadrez_abandonar"
+msgstr ""
+
+msgid "cmd_leaderboard"
+msgstr ""
+
+msgid "cmd_lang"
+msgstr ""
+
+msgid "cmd_xadrez_pgn"
+msgstr ""
+
+msgid "cmd_medal"
+msgstr ""
+
+msgid "cmd_rps"
+msgstr ""
+
+msgid "cmd_xadrez_posicao"
+msgstr ""
+
+msgid "cmd_medals"
+msgstr ""
+
+msgid "cmd_plagueis"
+msgstr ""
+
+msgid "cmd_xadrez_todos"
+msgstr ""
+
+msgid "cmd_info"
+msgstr ""
+

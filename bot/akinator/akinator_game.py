@@ -13,10 +13,10 @@ class AkinatorGame():
     def __init__(self):
         self.games = {}
 
-    async def new_game(self, user):
+    async def new_game(self, user, lang):
         player: Player = convert_users_to_players(user)[0]
         game = Akinator()
-        first_question = await game.start_game(language='pt')
+        first_question = await game.start_game(language=lang)
         self.games[player.id] = game
         return game, first_question
 
@@ -27,7 +27,4 @@ class AkinatorGame():
     async def answer_question(self, game: Akinator, answer: str):
         if game.progression > 80:
             return await game.win()
-        try:
-            return await game.answer(answer)
-        except InvalidAnswerError:
-            return "Resposta inválida. Respostas válidas são: `y`, `n`, `idk`, `p`, `pn`."
+        return await game.answer(answer)

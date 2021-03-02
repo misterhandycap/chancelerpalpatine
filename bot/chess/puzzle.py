@@ -7,6 +7,7 @@ from urllib.request import Request
 from urllib.error import HTTPError
 
 from bot.chess.game import Game
+from bot.chess.exceptions import PuzzleNotFound
 from bot.utils import run_cpu_bound_task
 
 
@@ -76,12 +77,11 @@ class Puzzle():
         except ValueError:
             return False
         except (KeyError, IndexError):
-            return "Puzzle not found"
+            raise PuzzleNotFound()
 
     def is_puzzle_over(self, puzzle_id):
         try:
             puzzle = self.puzzles[puzzle_id]
             return len(puzzle["correct_sequence"]) < 1
         except KeyError:
-            return "Puzzle not found"
-
+            raise PuzzleNotFound()

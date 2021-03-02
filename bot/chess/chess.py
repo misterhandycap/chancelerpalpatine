@@ -13,6 +13,8 @@ import chess.engine
 import chess.svg
 from chess.pgn import Game as ChessGame
 
+from bot.chess.exceptions import (GameAlreadyInProgress, GameNotFound, 
+                                InvalidMove, MultipleGamesAtOnce, NoGamesWithPlayer)
 from bot.chess.game import Game
 from bot.chess.player import Player
 from bot.models.chess_game import ChessGame as ChessGameModel
@@ -75,7 +77,7 @@ class Chess():
         given_players_pairs = [player1, player2]
 
         if given_players_pairs in current_players_pairs:
-            return 'Partida em andamento'
+            raise GameAlreadyInProgress()
 
         game = Game()
         game.board = chess.Board()
@@ -87,7 +89,7 @@ class Chess():
         game.cpu_level = cpu_level
 
         self.games.append(game)
-        return f'Partida iniciada! {player1.name}, faça seu movimento'
+        return game
 
     def find_current_game(self, user, other_user=None):
         """
@@ -100,21 +102,23 @@ class Chess():
         :type other_user: discord.User
         :return: Current game
         :rtype: Game
-        :raises Exception: Game not found or invalid parameters
+        :raises NoGamesWithPlayer: Game not found when other_user is not given
+        :raises MultipleGamesAtOnce: Given user is playing multiple games currently
+        :raises GameNotFound: No game with given user and other_user was found
         """
         player, other_player = convert_users_to_players(user, other_user)
         game = [g for g in self.games if g.current_player == player]
         if game == []:
-            raise Exception('Você ou não está na partida atual ou não é mais seu turno.')
+            raise NoGamesWithPlayer()
         if len(game) > 1:
             if not other_player:
-                raise Exception(f'Atualmente está jogando {len(game)} partidas. Informe contra qual jogador é este movimento.')
+                raise MultipleGamesAtOnce(number_of_games=len(game))
             game = [g for g in game if set([player.id, other_player.id]) == set([g.player1.id, g.player2.id])]
             if game == []:
-                raise Exception('Partida não encontrada.')
+                raise GameNotFound()
         return game[0]
 
-    async def make_move(self, game: Game, move: str):
+    async def make_move(self, game: Game, move: str) -> Game:
         """
         Makes a move in given game, if valid
 
@@ -122,46 +126,53 @@ class Chess():
         :type game: Game
         :param move: Chess move in SAN or UCI notation
         :type move: str
-        :return: Bot message and PNG board
-        :rtype: Tuple[str, BytesIO]
+        :return: Updated game
+        :rtype: Game
         """
         chess_move = self._parse_str_move(game, move)
         if not chess_move:
-            return 'Movimento inválido', None
+            raise InvalidMove()
         game.board.push(chess_move)
 
         game.current_player = game.player1 if game.current_player == game.player2 else game.player2
 
-        if self.is_pve_game(game) and not game.board.is_game_over(claim_draw=True):
+        if self.is_pve_game(game) and not self.is_game_over(game):
             stockfish_result = await self._play_move(game)
             game.board.push(stockfish_result.move)
             game.current_player = game.player1
         
-        board_png_bytes = self.build_png_board(game)
-        if game.board.is_game_over(claim_draw=True):
+        if self.is_game_over(game):
             game.result = game.board.result()
-            pgn = self.generate_pgn(game)
-            await game.save()
             self.games.remove(game)
-            return f'Fim de jogo!\n\n{pgn}', board_png_bytes
+            
+        await game.save()
+        return game
 
-        return f'Seu turno é agora, {game.current_player.name}', board_png_bytes
+    def is_game_over(self, game: Game) -> bool:
+        """
+        Checks whether given game is over
 
-    async def resign(self, game: Game):
+        :param game: Game to be checked
+        :type game: Game
+        :return: True if game is over and False otherwise
+        :rtype: Bool
+        """
+        return game.board.is_game_over(claim_draw=True)
+    
+    async def resign(self, game: Game) -> Game:
         """
         Resigns the given game. Only the next player to move can resign their game.
 
         :param game: Game to be resigned
         :type game: Game
-        :return: Bot message
-        :rtype: str
+        :return: Updated game
+        :rtype: Game
         """
         board_png_bytes = self.build_png_board(game)
         game.result = '0-1' if game.board.turn == chess.WHITE else '1-0'
         await game.save()
-        pgn = self.generate_pgn(game)
         self.games.remove(game)
-        return f'{game.current_player.name} abandonou a partida!\n{pgn}', board_png_bytes
+        return game
 
     async def save_games(self):
         """
@@ -189,7 +200,7 @@ class Chess():
 
         result = f"```\n{str(chess_game)}\n```"
         if game.id:
-            result += f'Id da partida: `{game.id}`'
+            result += f'Game id: `{game.id}`'
         return result
 
     @run_cpu_bound_task

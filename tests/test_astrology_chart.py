@@ -44,7 +44,7 @@ class TestAstrologyChart(VCRTestCase):
         with self.assertRaises(AstrologyInvalidInput) as e:
             asyncio.run(astrology_chart.calc_chart(user_id, date, time, city_name))
         
-        self.assertEqual(e.exception.message, 'Cidade não existe')
+        self.assertEqual(e.exception.message, 'City does not exist')
 
     def test_calc_chart_invalid_date(self):
         astrology_chart = AstrologyChart()
@@ -56,7 +56,7 @@ class TestAstrologyChart(VCRTestCase):
         with self.assertRaises(AstrologyInvalidInput) as e:
             asyncio.run(astrology_chart.calc_chart(user_id, date, time, city_name))
         
-        self.assertIn('Data e/ou hora inválida', e.exception.message)
+        self.assertIn('Invalid datetime', e.exception.message)
 
     def test_calc_chart_invalid_time(self):
         astrology_chart = AstrologyChart()
@@ -68,7 +68,7 @@ class TestAstrologyChart(VCRTestCase):
         with self.assertRaises(AstrologyInvalidInput) as e:
             asyncio.run(astrology_chart.calc_chart(user_id, date, time, city_name))
         
-        self.assertIn('Data e/ou hora inválida', e.exception.message)
+        self.assertIn('Invalid datetime', e.exception.message)
 
     def test_get_user_chart_user_chart_exists(self):
         user_id = 14
