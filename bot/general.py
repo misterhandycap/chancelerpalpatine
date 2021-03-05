@@ -14,7 +14,7 @@ from bot.aurebesh import text_to_aurebesh_img
 from bot.meme import meme_saimaluco_image, random_cat
 from bot.servers import cache
 from bot.social.profile import Profile
-from bot.utils import i, paginate, PaginatedEmbedManager
+from bot.utils import get_server_lang, i, paginate, PaginatedEmbedManager
 
 
 class GeneralCog(commands.Cog):
@@ -377,7 +377,8 @@ class GeneralCog(commands.Cog):
         selected_user = user if user else ctx.message.author
         user_avatar = await selected_user.avatar_url_as(
             size=128, static_format='png').read()
-        image = await self.profile_bot.get_user_profile(selected_user.id, user_avatar)
+        image = await self.profile_bot.get_user_profile(
+            selected_user.id, user_avatar, get_server_lang(ctx.message.guild.id))
         if not image:
             return await ctx.send(i(ctx, 'Who are you?'))
         await ctx.send(file=discord.File(image, 'perfil.png'))
