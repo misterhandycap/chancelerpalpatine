@@ -4,6 +4,7 @@ from unittest import TestCase
 
 from bot.across_the_stars.planets import Planets
 from bot.models.planets import Planet
+from tests.factories.planet_factory import PlanetFactory
 from tests.support.db_connection import clear_data, Session
 
 class TestPlanets(TestCase):
@@ -17,15 +18,10 @@ class TestPlanets(TestCase):
     
     def test_list_of_planets_region_exists(self):
         for i in range(6):
-            planet = Planet()
-            planet.name = 'Planeta esperado' if i%2 else 'Planeta não esperado'
-            planet.happines_base = 50
-            planet.importance_base = 30
-            planet.price = 75000
-            planet.region = 'Orla Exterior' if i%2 else 'Núcleo'
-            planet.climate = 'Desértico'
-            planet.circuference = 100000
-            self.db_session.add(planet)
+            PlanetFactory(
+                name='Planeta esperado' if i%2 else 'Planeta não esperado',
+                region='Orla Exterior' if i%2 else 'Núcleo'
+            )
         self.db_session.commit()
 
         result = asyncio.run(Planets().list_of_planets(region='Orla Exterior'))
@@ -37,15 +33,7 @@ class TestPlanets(TestCase):
 
     def test_list_of_planets_region_does_not_exist(self):
         for i in range(6):
-            planet = Planet()
-            planet.name = 'Planeta esperado' if i%2 else 'Planeta não esperado'
-            planet.happines_base = 50
-            planet.importance_base = 30
-            planet.price = 75000
-            planet.region = 'Orla Exterior' if i%2 else 'Núcleo'
-            planet.climate = 'Desértico'
-            planet.circuference = 100000
-            self.db_session.add(planet)
+            PlanetFactory(region='Orla Exterior' if i%2 else 'Núcleo')
         self.db_session.commit()
 
         result = asyncio.run(Planets().list_of_planets(region='Orla Média'))
@@ -54,15 +42,7 @@ class TestPlanets(TestCase):
 
     def test_list_of_planets_no_filters(self):
         for i in range(6):
-            planet = Planet()
-            planet.name = 'Planeta esperado' if i%2 else 'Planeta não esperado'
-            planet.happines_base = 50
-            planet.importance_base = 30
-            planet.price = 75000
-            planet.region = 'Orla Exterior' if i%2 else 'Núcleo'
-            planet.climate = 'Desértico'
-            planet.circuference = 100000
-            self.db_session.add(planet)
+            PlanetFactory()
         self.db_session.commit()
 
         result = asyncio.run(Planets().list_of_planets())

@@ -7,6 +7,7 @@ from vcr_unittest import VCRTestCase
 from bot.astrology.astrology_chart import AstrologyChart
 from bot.astrology.exception import AstrologyInvalidInput
 from bot.models.astrology_chart import AstrologyChart as AstrologyChartModel
+from tests.factories.astrology_chart_factory import AstrologyChartFactory
 from tests.support.db_connection import clear_data, Session
 
 class TestAstrologyChart(VCRTestCase):
@@ -71,8 +72,8 @@ class TestAstrologyChart(VCRTestCase):
         self.assertIn('Invalid datetime', e.exception.message)
 
     def test_get_user_chart_user_chart_exists(self):
-        user_id = 14
         astrology_chart = AstrologyChart()
+        user_id = 14
         datetime = ('1997/08/10', '07:17', '-03:00')
         geopos = (-23.5506507, -46.6333824)
         chart = astrology_chart.calc_chart_raw(datetime, geopos)
@@ -84,12 +85,8 @@ class TestAstrologyChart(VCRTestCase):
         self.assertEqual(str(chart.pos), str(result.pos))
 
     def test_get_user_chart_user_chart_does_not_exist(self):
-        user_id = 14
         astrology_chart = AstrologyChart()
-        datetime = ('1997/08/10', '07:17', '-03:00')
-        geopos = (-23.5506507, -46.6333824)
-        chart = astrology_chart.calc_chart_raw(datetime, geopos)
-        asyncio.run(astrology_chart.save_chart(user_id, chart))
+        AstrologyChartFactory()
 
         result = asyncio.run(astrology_chart.get_user_chart(98))
 

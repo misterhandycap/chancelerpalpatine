@@ -14,6 +14,8 @@ cryptography==3.1
 cssselect2==0.3.0
 defusedxml==0.6.0
 discord.py==1.6.0
+factory-boy==3.2.0
+Faker==6.5.0
 flatlib==0.2.1
 geographiclib==1.50
 geopy==2.0.0
@@ -38,6 +40,7 @@ requests==2.24.0
 six==1.15.0
 soupsieve==2.0.1
 SQLAlchemy==1.4.0b1
+text-unidecode==1.3
 timezonefinder==4.4.1
 tinycss2==1.0.2
 urllib3==1.25.10

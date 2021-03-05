@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from bot.models.server_config import ServerConfig
 from bot.servers import cache
 from bot.servers.servers import Servers
+from tests.factories.server_config_factory import ServerConfigFactory
 from tests.support.db_connection import clear_data, Session
 
 
@@ -24,12 +25,9 @@ class TestServers(TestCase):
         self.test_session.close()
     
     def test_load_configs(self):
-        server_config_1 = ServerConfig(id=14, language='en')
-        server_config_2 = ServerConfig(id=15, language='jp')
-        server_config_3 = ServerConfig(id=16, language='pt')
-        self.test_session.add(server_config_1)
-        self.test_session.add(server_config_2)
-        self.test_session.add(server_config_3)
+        server_config_1 = ServerConfigFactory(language='en')
+        server_config_2 = ServerConfigFactory(language='jp')
+        server_config_3 = ServerConfigFactory(language='pt')
         self.test_session.commit()
 
         self.assertEqual(cache.server_configs, {})
@@ -46,9 +44,9 @@ class TestServers(TestCase):
         self.assertEqual(cache.server_configs.get(server_config_3.id).id, server_config_3.id)
 
     def test_get_config_server_config_exists(self):
-        server_config_1 = ServerConfig(id=14, language='en')
+        server_config_1 = ServerConfigFactory()
         cache.server_configs = {
-            14: server_config_1
+            server_config_1.id: server_config_1
         }
 
         result = cache.get_config(server_config_1.id)
@@ -74,18 +72,17 @@ class TestServers(TestCase):
         self.assertEqual(fetched_server_config.language, server_language)
 
     def test_update_config_updates_existing_server_config(self):
-        server_config = ServerConfig(id=14, language='en')
-        self.test_session.add(server_config)
+        server_config = ServerConfigFactory(language='en')
         self.test_session.commit()
 
         new_server_language = 'pt'
         result = asyncio.run(cache.update_config(server_config.id, language=new_server_language))
+        Session.remove()
 
         self.assertIsInstance(result, ServerConfig)
         self.assertEqual(result.id, server_config.id)
         self.assertEqual(result.language, new_server_language)
         
-        self.test_session.refresh(server_config)
         fetched_server_config = self.test_session.query(ServerConfig).get(server_config.id)
         self.assertEqual(fetched_server_config.id, server_config.id)
         self.assertEqual(fetched_server_config.language, new_server_language)
