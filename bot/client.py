@@ -18,11 +18,14 @@ load_dotenv()
 
 logging.basicConfig(level=logging.DEBUG if os.environ.get("DEBUG") else logging.WARNING)
 
-client = discord.Client()
+intents = discord.Intents.default()
+intents.members = True
+intents.presences = True
 
 client = commands.Bot(
     command_prefix=os.environ.get("BOT_PREFIX", 'cp!'),
-    help_command=None
+    help_command=None,
+    intents=intents
 )
 
 client.add_cog(GeneralCog(client))

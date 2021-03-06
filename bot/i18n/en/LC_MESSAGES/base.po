@@ -177,7 +177,7 @@ msgid "Not enough credits"
 msgstr ""
 
 #: bot/economy/palplatina.py:58
-msgid "Item bought. Enjoy!"
+msgid "Item bought. You now have {currency} palplatinas"
 msgstr ""
 
 #: bot/economy/palplatina.py:60
