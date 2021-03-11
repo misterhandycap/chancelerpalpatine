@@ -60,7 +60,6 @@ class Profile():
             image_user_avatar = Image.open(BytesIO(user_avatar))
 
             image_draw = ImageDraw.Draw(image_final)
-            user_name_width, _ = image_draw.textsize(user.name[:15], font=image_font_title)
             user_name_width = 390
             image_frame_draw.rectangle([(0, 0), (user_name_width + 120, 107)], fill=frame_color + (255,))
             image_final.alpha_composite(image_frame)
