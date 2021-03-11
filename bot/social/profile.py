@@ -68,7 +68,11 @@ class Profile():
             image_draw.text((30, 635), f'{i18n("Points", lang)}: {user_total_points}', fill="#FFF", font=image_font_description)
             image_draw.text((400, 620), f'{i18n("Chess wins", lang)}: {user_chess_victories}', fill="#FFF", font=image_font_subtitle)
             image_draw.text((400, 580), f'{i18n("Sign", lang)}: {user_sign}', fill="#FFF", font=image_font_subtitle)
-            image_final.paste(image_user_avatar.resize((108, 108)), (0, 0))
+            if image_user_avatar.mode == 'RGBA':
+                user_avatar_mask = image_user_avatar.resize((108, 108))
+            else:
+                user_avatar_mask = None
+            image_final.paste(image_user_avatar.resize((108, 108)), (0, 0), mask=user_avatar_mask)
             image_final = self._draw_user_badges(image_final, user_profile_badges)
 
         bytesio = BytesIO()
