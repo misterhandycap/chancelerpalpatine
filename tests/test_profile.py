@@ -74,6 +74,24 @@ class TestProfile(TestCase):
         with open(os.path.join('tests', 'support', 'get_user_profile_with_badges.png'), 'rb') as f:
             self.assertEqual(result.getvalue(), f.read())
 
+    def test_get_user_profile_user_has_wallpaper(self):
+        user_1 = UserFactory(name='Name')
+        profile_badge = ProfileItemFactory(
+            type='wallpaper',
+            file_path=os.path.join("tests", "support", "wallpaper.png")
+        )
+        user_1.profile_items = [
+            UserProfileItemFactory(profile_item=profile_badge),
+        ]
+        self.test_session.commit()
+        with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
+            user_avatar_bytes = f.read()
+
+        result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes, lang='pt'))
+
+        with open(os.path.join('tests', 'support', 'get_user_profile_with_wallpaper.png'), 'rb') as f:
+            self.assertEqual(result.getvalue(), f.read())
+
     def test_get_user_profile_user_exists_no_info(self):
         user_1 = UserFactory(name='Name')
         self.test_session.commit()
