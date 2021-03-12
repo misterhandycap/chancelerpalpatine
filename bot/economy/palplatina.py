@@ -3,6 +3,7 @@ from datetime import datetime
 from bot.economy.exceptions import AlreadyOwnsItem, ItemNotFound, NotEnoughCredits
 from bot.models.profile_item import ProfileItem
 from bot.models.user import User
+from bot.models.user_profile_item import UserProfileItem
 
 class Palplatina():
     
@@ -51,11 +52,32 @@ class Palplatina():
         if user.currency < profile_item.price:
             raise NotEnoughCredits()
 
-        user.profile_items.append(profile_item)
+        user.profile_items.append(
+            UserProfileItem(profile_item=profile_item))
         user.currency -= profile_item.price
         try:
             await User.save(user)
             return user
         except:
             raise AlreadyOwnsItem()
+
+    async def equip_item(self, user_id, item_name):
+        user_profile_item = await self._get_user_item_from_name(user_id, item_name)
+        user_profile_item.equipped = True
+        await UserProfileItem.save(user_profile_item)
+        return user_profile_item
+
+    async def unequip_item(self, user_id, item_name):
+        user_profile_item = await self._get_user_item_from_name(user_id, item_name)
+        user_profile_item.equipped = False
+        await UserProfileItem.save(user_profile_item)
+        return user_profile_item
+
+    async def _get_user_item_from_name(self, user_id, item_name):
+        user = await User.get(user_id, preload_profile_items=True) or User(id=user_id)
+        user_profile_item = next(
+            (upi for upi in user.profile_items if upi.profile_item.name == item_name), None)
+        if not user_profile_item:
+            raise ItemNotFound()
+        return user_profile_item
             

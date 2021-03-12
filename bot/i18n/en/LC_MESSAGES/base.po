@@ -322,6 +322,14 @@ msgstr ""
 msgid "Browse through all your acquired items"
 msgstr ""
 
+#: bot/palplatina_cmds.py:109
+msgid "Equipped"
+msgstr ""
+
+#: bot/palplatina_cmds.py:109
+msgid "Not equipped"
+msgstr ""
+
 #: bot/palplatina_cmds.py:126 bot/palplatina_cmds.py:149
 msgid "Buy item"
 msgstr ""
@@ -597,3 +605,17 @@ msgstr "Shows all ongoing chess games"
 
 msgid "cmd_info"
 msgstr "Shows information about this bot"
+
+msgid "cmd_equipar"
+msgstr ""
+"Equips the given item\n"
+"\n"
+"Note that you must already own the item. If you wish to buy an item, "
+"it is necessary to do it with the `buy` command."
+
+msgid "cmd_desequipar"
+msgstr ""
+"Unequips the given item\n"
+"\n"
+"Note that you must already own the item. If you wish to buy an item, "
+"it is necessary to do it with the `buy` command."

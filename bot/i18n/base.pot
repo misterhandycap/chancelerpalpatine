@@ -321,6 +321,14 @@ msgstr ""
 msgid "Browse through all your acquired items"
 msgstr ""
 
+#: bot/palplatina_cmds.py:109
+msgid "Equipped"
+msgstr ""
+
+#: bot/palplatina_cmds.py:109
+msgid "Not equipped"
+msgstr ""
+
 #: bot/palplatina_cmds.py:126 bot/palplatina_cmds.py:149
 msgid "Buy item"
 msgstr ""
@@ -494,3 +502,8 @@ msgstr ""
 msgid "cmd_info"
 msgstr ""
 
+msgid "cmd_equipar"
+msgstr ""
+
+msgid "cmd_desequipar"
+msgstr ""

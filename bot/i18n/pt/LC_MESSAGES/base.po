@@ -339,6 +339,14 @@ msgstr "Seus itens comprados"
 msgid "Browse through all your acquired items"
 msgstr "Navegue por todos os seus itens comprados"
 
+#: bot/palplatina_cmds.py:109
+msgid "Equipped"
+msgstr "Equipado"
+
+#: bot/palplatina_cmds.py:109
+msgid "Not equipped"
+msgstr "Não equipado"
+
 #: bot/palplatina_cmds.py:126 bot/palplatina_cmds.py:149
 msgid "Buy item"
 msgstr "Comprar item"
@@ -620,3 +628,17 @@ msgstr "Veja todas as partidas que estão sendo jogadas agora"
 
 msgid "cmd_info"
 msgstr "Mostra informações sobre o bot"
+
+msgid "cmd_equipar"
+msgstr ""
+"Equipa o item fornecido\n"
+"\n"
+"Note que você deve já ter o item fornecido. Se você ainda não o tem, "
+"compre-o com o comando `comprar`."
+
+msgid "cmd_desequipar"
+msgstr ""
+"Desequipa o item fornecido\n"
+"\n"
+"Note que você deve já ter o item fornecido. Se você ainda não o tem, "
+"compre-o com o comando `comprar`."

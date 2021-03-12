@@ -9,6 +9,7 @@ from bot.social.profile import Profile
 from tests.factories.chess_game_factory import ChessGameFactory
 from tests.factories.profile_item_factory import ProfileItemFactory
 from tests.factories.user_factory import UserFactory
+from tests.factories.user_profile_item_factory import UserProfileItemFactory
 from tests.factories.xp_point_factory import XpPointFactory
 from tests.support.db_connection import clear_data, Session
 
@@ -55,7 +56,15 @@ class TestProfile(TestCase):
         profile_badge_3 = ProfileItemFactory(
             file_path=os.path.join("tests", "support", "badge3.png")
         )
-        user_1.profile_items = [profile_badge_1, profile_badge_2, profile_badge_3]
+        profile_badge_4 = ProfileItemFactory(
+            file_path=os.path.join("tests", "support", "badge1.png")
+        )
+        user_1.profile_items = [
+            UserProfileItemFactory(profile_item=profile_badge_1),
+            UserProfileItemFactory(profile_item=profile_badge_2),
+            UserProfileItemFactory(profile_item=profile_badge_3),
+            UserProfileItemFactory(profile_item=profile_badge_4, equipped=False),
+        ]
         self.test_session.commit()
         with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
             user_avatar_bytes = f.read()

@@ -35,7 +35,10 @@ class Profile():
         user = await User.get(user_id, preload_profile_items=True)
         if not user:
             return
-        user_profile_badges = [item for item in user.profile_items if item.type == ProfileItemType.badge]
+        user_profile_badges = [item.profile_item
+            for item in user.profile_items
+            if item.equipped and item.profile_item.type == ProfileItemType.badge
+        ]
         user_chart = await self.astrology_bot.get_user_chart(user_id)
         user_sign = None
         if user_chart:
