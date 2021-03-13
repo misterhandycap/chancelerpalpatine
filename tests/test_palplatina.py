@@ -8,8 +8,10 @@ from dotenv import load_dotenv
 from bot.economy.exceptions import AlreadyOwnsItem, ItemNotFound, NotEnoughCredits
 from bot.economy.palplatina import Palplatina
 from bot.models.user import User
+from bot.models.user_profile_item import UserProfileItem
 from tests.factories.profile_item_factory import ProfileItemFactory
 from tests.factories.user_factory import UserFactory
+from tests.factories.user_profile_item_factory import UserProfileItemFactory
 from tests.support.db_connection import clear_data, Session
 
 
@@ -86,13 +88,13 @@ class TestPalplatina(TestCase):
 
         self.assertIsInstance(result, User)
         self.assertEqual(result.currency, 50)
-        self.assertEqual(result.profile_items[0].id, profile_item.id)
+        self.assertEqual(result.profile_items[0].profile_item.id, profile_item.id)
 
         persisted_user = self.db_session.query(User).get(user.id)
         persisted_user_profile_items = persisted_user.profile_items
         self.assertEqual(persisted_user.currency, 50)
         self.assertEqual(len(persisted_user_profile_items), 1)
-        self.assertEqual(persisted_user_profile_items[0].id, profile_item.id)
+        self.assertEqual(persisted_user_profile_items[0].profile_item.id, profile_item.id)
 
     def test_buy_item_not_enough_currency(self):
         user = UserFactory(currency=150)
@@ -111,7 +113,7 @@ class TestPalplatina(TestCase):
     def test_buy_item_item_already_bought(self):
         profile_item = ProfileItemFactory()
         user = UserFactory(currency=150)
-        user.profile_items = [profile_item]
+        user.profile_items = [UserProfileItemFactory(profile_item=profile_item)]
         self.db_session.commit()
 
         with self.assertRaises(AlreadyOwnsItem):
@@ -121,7 +123,7 @@ class TestPalplatina(TestCase):
         persisted_user_profile_items = persisted_user.profile_items
         self.assertEqual(persisted_user.currency, 150)
         self.assertEqual(len(persisted_user_profile_items), 1)
-        self.assertEqual(persisted_user_profile_items[0].id, profile_item.id)
+        self.assertEqual(persisted_user_profile_items[0].profile_item.id, profile_item.id)
 
     def test_buy_item_item_not_found(self):
         user = UserFactory(currency=150)
@@ -162,14 +164,14 @@ class TestPalplatina(TestCase):
         ProfileItemFactory.reset_sequence()
         for i in range(2):
             profile_item = ProfileItemFactory()
-            user.profile_items.append(profile_item)
+            user.profile_items.append(UserProfileItemFactory(profile_item=profile_item))
         another_profile_item = ProfileItemFactory()
         self.db_session.commit()
 
         result = asyncio.run(Palplatina().get_user_items(user.id))
 
         self.assertEqual(len(result), 2)
-        fetched_items_names = [item.name for item in result]
+        fetched_items_names = [item.profile_item.name for item in result]
         self.assertIn('Profile item 0', fetched_items_names)
         self.assertIn('Profile item 1', fetched_items_names)
         self.assertNotIn(another_profile_item.name, fetched_items_names)
@@ -199,3 +201,57 @@ class TestPalplatina(TestCase):
         result = asyncio.run(Palplatina().get_item("item"))
 
         self.assertIsNone(result)
+
+    def test_equip_item_user_has_item(self):
+        user = UserFactory()
+        profile_item = ProfileItemFactory()
+        user.profile_items = [UserProfileItemFactory(
+            equipped=False, profile_item=profile_item)]
+        self.db_session.commit()
+
+        result = asyncio.run(Palplatina().equip_item(user.id, profile_item.name))
+
+        self.assertTrue(result.equipped)
+        
+        Session.remove()
+        fetched_user_profile_item = self.db_session.query(UserProfileItem).get((user.id, profile_item.id))
+        self.assertTrue(fetched_user_profile_item.equipped)
+
+    def test_equip_item_user_does_not_have_item(self):
+        user = UserFactory()
+        self.db_session.commit()
+
+        with self.assertRaises(ItemNotFound):
+            asyncio.run(Palplatina().equip_item(user.id, 'some item'))
+
+
+    def test_equip_item_user_does_not_exist(self):
+        with self.assertRaises(ItemNotFound):
+            asyncio.run(Palplatina().equip_item(140, 'some item'))
+
+    def test_unequip_item_user_has_item(self):
+        user = UserFactory()
+        profile_item = ProfileItemFactory()
+        user.profile_items = [UserProfileItemFactory(
+            equipped=True, profile_item=profile_item)]
+        self.db_session.commit()
+
+        result = asyncio.run(Palplatina().unequip_item(user.id, profile_item.name))
+
+        self.assertFalse(result.equipped)
+        
+        Session.remove()
+        fetched_user_profile_item = self.db_session.query(UserProfileItem).get((user.id, profile_item.id))
+        self.assertFalse(fetched_user_profile_item.equipped)
+
+    def test_unequip_item_user_does_not_have_item(self):
+        user = UserFactory()
+        self.db_session.commit()
+
+        with self.assertRaises(ItemNotFound):
+            asyncio.run(Palplatina().unequip_item(user.id, 'some item'))
+
+
+    def test_unequip_item_user_does_not_exist(self):
+        with self.assertRaises(ItemNotFound):
+            asyncio.run(Palplatina().unequip_item(140, 'some item'))

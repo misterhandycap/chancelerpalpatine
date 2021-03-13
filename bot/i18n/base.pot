@@ -286,6 +286,14 @@ msgid ""
 "{options}"
 msgstr ""
 
+#: bot/general.py:390
+msgid "Profile color updated to {color}"
+msgstr ""
+
+#: bot/general.py:392
+msgid "Invalid color"
+msgstr ""
+
 #: bot/level.py:34
 msgid "Did you ever hear the tragedy of Darth Plagueis, the Wise?"
 msgstr ""
@@ -319,6 +327,14 @@ msgstr ""
 
 #: bot/palplatina_cmds.py:103
 msgid "Browse through all your acquired items"
+msgstr ""
+
+#: bot/palplatina_cmds.py:109
+msgid "Equipped"
+msgstr ""
+
+#: bot/palplatina_cmds.py:109
+msgid "Not equipped"
 msgstr ""
 
 #: bot/palplatina_cmds.py:126 bot/palplatina_cmds.py:149
@@ -494,3 +510,11 @@ msgstr ""
 msgid "cmd_info"
 msgstr ""
 
+msgid "cmd_equipar"
+msgstr ""
+
+msgid "cmd_desequipar"
+msgstr ""
+
+msgid "cmd_profile_frame_color"
+msgstr ""

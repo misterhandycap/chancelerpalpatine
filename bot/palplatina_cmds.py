@@ -97,18 +97,34 @@ class PalplatinaCmds(commands.Cog):
         """
         Veja os itens que você comprou
         """
-        profile_items = await self.palplatina.get_user_items(ctx.message.author.id)
+        user_profile_items = await self.palplatina.get_user_items(ctx.message.author.id)
         embed = discord.Embed(
             title=i(ctx, 'Your acquired items'),
             description=i(ctx, 'Browse through all your acquired items'),
             colour=discord.Color.green()
         )
-        for profile_item in profile_items:
+        for user_profile_item in user_profile_items:
             embed.add_field(
-                name=profile_item.name,
-                value=profile_item.type.name.capitalize()
+                name=user_profile_item.profile_item.name,
+                value=i(ctx, 'Equipped') if user_profile_item.equipped else i(ctx, 'Not equipped')
             )
         await ctx.send(embed=embed)
+
+    @commands.command(aliases=['equip'])
+    async def equipar(self, ctx, *, profile_item_name):
+        try:
+            await self.palplatina.equip_item(ctx.author.id, profile_item_name)
+            return await ctx.send(i(ctx, 'Equipped'))
+        except EconomyException as e:
+            result = i(ctx, e.message)
+
+    @commands.command(aliases=['unequip'])
+    async def desequipar(self, ctx, *, profile_item_name):
+        try:
+            await self.palplatina.unequip_item(ctx.author.id, profile_item_name)
+            return await ctx.send(i(ctx, 'Not equipped'))
+        except EconomyException as e:
+            result = i(ctx, e.message)
 
     @commands.command(aliases=['buy'])
     async def comprar(self, ctx, *, profile_item_name):
