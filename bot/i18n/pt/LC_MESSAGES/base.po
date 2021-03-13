@@ -302,6 +302,14 @@ msgstr ""
 "**{question}**, e suas opções são:\n"
 "{options}"
 
+#: bot/general.py:390
+msgid "Profile color updated to {color}"
+msgstr "Cor do perfil atualizada para {color}"
+
+#: bot/general.py:392
+msgid "Invalid color"
+msgstr "Cor inválida"
+
 #: bot/level.py:34
 msgid "Did you ever hear the tragedy of Darth Plagueis, the Wise?"
 msgstr "Você já ouviu a história de Darth Plaguies, o Sábio?"
@@ -633,12 +641,20 @@ msgid "cmd_equipar"
 msgstr ""
 "Equipa o item fornecido\n"
 "\n"
-"Note que você deve já ter o item fornecido. Se você ainda não o tem, "
-"compre-o com o comando `comprar`."
+"Note que você deve já ter o item fornecido. Se você ainda não o tem, compre-"
+"o com o comando `comprar`."
 
 msgid "cmd_desequipar"
 msgstr ""
 "Desequipa o item fornecido\n"
 "\n"
-"Note que você deve já ter o item fornecido. Se você ainda não o tem, "
-"compre-o com o comando `comprar`."
+"Note que você deve já ter o item fornecido. Se você ainda não o tem, compre-"
+"o com o comando `comprar`."
+
+msgid "cmd_profile_frame_color"
+msgstr ""
+"Atualiza a cor das bordas de seu perfil\n"
+"\n"
+"Informe a cor que deseja em valor hex.\n"
+"\n"
+"Examplo: `profile_frame_color #2393cf`"

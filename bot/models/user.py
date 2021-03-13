@@ -14,6 +14,7 @@ class User(Base):
     currency = Column(Integer, default=0)
     daily_last_collected_at = Column(DateTime, nullable=True)
     profile_items = relationship(UserProfileItem)
+    profile_frame_color = Column(String(length=7), nullable=True)
 
     @classmethod
     async def get(cls, user_id, preload_profile_items=False):

@@ -383,6 +383,14 @@ class GeneralCog(commands.Cog):
             return await ctx.send(i(ctx, 'Who are you?'))
         await ctx.send(file=discord.File(image, 'perfil.png'))
 
+    @commands.command(aliases=['cor_perfil', 'perfil_cor'])
+    async def profile_frame_color(self, ctx, color):
+        try:
+            await self.profile_bot.set_user_profile_frame_color(ctx.message.author.id, color)
+            return await ctx.send(i(ctx, 'Profile color updated to {color}').format(color=color))
+        except ValueError:
+            return await ctx.send(i(ctx, 'Invalid color'))
+
     @commands.command(aliases=['votar', 'vote', 'poll'])
     async def voto(self, ctx, *, args):
         """

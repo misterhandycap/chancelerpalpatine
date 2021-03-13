@@ -5,6 +5,7 @@ from unittest import TestCase
 from dotenv import load_dotenv
 
 from bot.astrology.astrology_chart import AstrologyChart
+from bot.models.user import User
 from bot.social.profile import Profile
 from tests.factories.chess_game_factory import ChessGameFactory
 from tests.factories.profile_item_factory import ProfileItemFactory
@@ -92,6 +93,17 @@ class TestProfile(TestCase):
         with open(os.path.join('tests', 'support', 'get_user_profile_with_wallpaper.png'), 'rb') as f:
             self.assertEqual(result.getvalue(), f.read())
 
+    def test_get_user_profile_user_has_profile_frame_color(self):
+        user_1 = UserFactory(name='Name', profile_frame_color='#cccccc')
+        self.test_session.commit()
+        with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
+            user_avatar_bytes = f.read()
+
+        result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes, lang='pt'))
+
+        with open(os.path.join('tests', 'support', 'get_user_profile_with_frame_color.png'), 'rb') as f:
+            self.assertEqual(result.getvalue(), f.read())
+
     def test_get_user_profile_user_exists_no_info(self):
         user_1 = UserFactory(name='Name')
         self.test_session.commit()
@@ -110,3 +122,39 @@ class TestProfile(TestCase):
         result = asyncio.run(Profile().get_user_profile(14, user_avatar_bytes, lang='pt'))
 
         self.assertIsNone(result)
+
+    def test_set_user_profile_frame_color_valid_color(self):
+        user = UserFactory()
+        self.test_session.commit()
+        color = '#f7b1d8'
+
+        result = asyncio.run(Profile().set_user_profile_frame_color(user.id, color))
+
+        self.assertEqual(result.id, user.id)
+        self.assertEqual(result.profile_frame_color, color)
+
+        Session.remove()
+        self.assertEqual(self.test_session.query(User).get(user.id).profile_frame_color, color)
+
+    def test_set_user_profile_frame_color_invalid_color(self):
+        user = UserFactory()
+        self.test_session.commit()
+        color = 'invalid color'
+
+        with self.assertRaises(ValueError):
+            asyncio.run(Profile().set_user_profile_frame_color(user.id, color))
+
+        Session.remove()
+        self.assertEqual(self.test_session.query(User).get(user.id).profile_frame_color, None)
+
+    def test_set_user_profile_frame_color_user_does_not_exist(self):
+        user_id = 140
+        color = '#f7b1d8'
+
+        result = asyncio.run(Profile().set_user_profile_frame_color(user_id, color))
+
+        self.assertEqual(result.id, user_id)
+        self.assertEqual(result.profile_frame_color, color)
+
+        Session.remove()
+        self.assertEqual(self.test_session.query(User).get(user_id).profile_frame_color, color)

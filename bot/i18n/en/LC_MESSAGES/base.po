@@ -287,6 +287,14 @@ msgid ""
 "{options}"
 msgstr ""
 
+#: bot/general.py:390
+msgid "Profile color updated to {color}"
+msgstr ""
+
+#: bot/general.py:392
+msgid "Invalid color"
+msgstr ""
+
 #: bot/level.py:34
 msgid "Did you ever hear the tragedy of Darth Plagueis, the Wise?"
 msgstr ""
@@ -610,12 +618,20 @@ msgid "cmd_equipar"
 msgstr ""
 "Equips the given item\n"
 "\n"
-"Note that you must already own the item. If you wish to buy an item, "
-"it is necessary to do it with the `buy` command."
+"Note that you must already own the item. If you wish to buy an item, it is "
+"necessary to do it with the `buy` command."
 
 msgid "cmd_desequipar"
 msgstr ""
 "Unequips the given item\n"
 "\n"
-"Note that you must already own the item. If you wish to buy an item, "
-"it is necessary to do it with the `buy` command."
+"Note that you must already own the item. If you wish to buy an item, it is "
+"necessary to do it with the `buy` command."
+
+msgid "cmd_profile_frame_color"
+msgstr ""
+"Updates your profile's frame color\n"
+"\n"
+"Inform the color to which your profile's frame should be in hex value.\n"
+"\n"
+"Example: `profile_frame_color #2393cf`"

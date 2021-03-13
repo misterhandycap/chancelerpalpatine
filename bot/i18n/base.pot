@@ -286,6 +286,14 @@ msgid ""
 "{options}"
 msgstr ""
 
+#: bot/general.py:390
+msgid "Profile color updated to {color}"
+msgstr ""
+
+#: bot/general.py:392
+msgid "Invalid color"
+msgstr ""
+
 #: bot/level.py:34
 msgid "Did you ever hear the tragedy of Darth Plagueis, the Wise?"
 msgstr ""
@@ -506,4 +514,7 @@ msgid "cmd_equipar"
 msgstr ""
 
 msgid "cmd_desequipar"
+msgstr ""
+
+msgid "cmd_profile_frame_color"
 msgstr ""

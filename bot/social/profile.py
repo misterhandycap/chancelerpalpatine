@@ -15,6 +15,27 @@ class Profile():
 
     def __init__(self):
         self.astrology_bot = AstrologyChart()
+
+    async def set_user_profile_frame_color(self, user_id: int, color: str):
+        """
+        Updates given user's profile frame color
+
+        :param user_id: User id
+        :type user_id: int
+        :param color: Color in hex code
+        :type color: str
+        :return: Updated user
+        :rtype: User
+        :raises ValueError: Given color is invalid
+        """
+        user = await User.get(user_id) or User(id=user_id)
+        try:
+            ImageColor.getcolor(color, 'RGB')
+        except ValueError:
+            raise
+        user.profile_frame_color = color
+        await User.save(user)
+        return user
     
     async def get_user_profile(self, user_id: int, user_avatar: bytes, lang='en'):
         """
@@ -30,7 +51,7 @@ class Profile():
         :rtype: BytesIO
         """
         text_max_width = 10
-        color = '#ca2222'
+        default_color = '#ca2222'
         
         user = await User.get(user_id, preload_profile_items=True)
         if not user:
@@ -55,7 +76,7 @@ class Profile():
         with open(os.path.join('bot', 'images', 'profile_frame.png'), 'rb') as f:
             image_frame = Image.open(f).convert('RGBA')
             image_frame_draw = ImageDraw.Draw(image_frame)
-            frame_color = ImageColor.getcolor(color, 'RGB')
+            frame_color = ImageColor.getcolor(user.profile_frame_color or default_color, 'RGB')
             image_frame_draw.bitmap((0, 0), image_frame, fill=frame_color + (175,))
 
         image_final = self._draw_wallpaper(image_frame, user_profile_wallpaper)
