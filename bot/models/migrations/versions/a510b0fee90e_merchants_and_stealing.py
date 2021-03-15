@@ -8,6 +8,7 @@ Create Date: 2021-03-14 01:00:17.634777
 from alembic import op
 import sqlalchemy as sa
 
+from bot.models.guid import GUID
 
 # revision identifiers, used by Alembic.
 revision = 'a510b0fee90e'

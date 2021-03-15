@@ -24,6 +24,9 @@ class Theft():
             user_new_amount = user_amount + merchant_new_amount
             return
         if theft_success == False:
+            user_lost_amount = user_amount - random.randint(1, merchant_amount * 0.10)
+            merchant_new_amount = merchant_amount + user_lost_amount
+            user_new_amount = user_amount - user_lost_amount
             return
 
         await User.save(user)
