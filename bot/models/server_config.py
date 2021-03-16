@@ -1,19 +1,22 @@
 from sqlalchemy import BigInteger, Column, select, String
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import relationship, subqueryload
 
 from bot.models import engine, Base
+from bot.models.server_config_autoreply import ServerConfigAutoreply
 
 
 class ServerConfig(Base):
     __tablename__ = 'server_config'
     id = Column(BigInteger, primary_key=True, nullable=False)
     language = Column(String, default='en')
+    autoreply_configs = relationship(ServerConfigAutoreply)
 
     @classmethod
     async def all(cls):
         async with AsyncSession(engine) as session:
             return (await session.execute(
-                select(ServerConfig)
+                select(ServerConfig).options(subqueryload(ServerConfig.autoreply_configs))
             )).scalars().fetchall()
     
     @classmethod

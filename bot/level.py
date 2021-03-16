@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from bot.models.user import User
 from bot.models.xp_point import XpPoint
+from bot.servers import cache
 from bot.utils import i, paginate
 
 
@@ -34,40 +35,8 @@ class LevelCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.content.lower().startswith('odeio'):
-            await message.channel.send('Sim, deixe o ódio fluir por você... <:sheev:735473486046298173>')
-
-        if message.content.lower().startswith('ban'):
-            await message.channel.send('Mate-o, mate-o agora...')
-
-        if message.content.lower().startswith('i shouldnt'):
-            await message.channel.send('DEW IT!')
-            
-        if message.content.lower().startswith('não devia'):
-            await message.channel.send('DEW IT!')
-
-        if message.content.lower().startswith('i shouldn\'t'):
-            await message.channel.send('DEW IT!')
-
-        if message.content.lower().startswith('-poll'):
-            await message.channel.send('Eu amo democracia!')
-
-        if message.content.lower().startswith('votação'):
-            await message.channel.send('Eu amo democracia!')
-
-        if message.content.lower().startswith('voto'):
-            await message.channel.send('Eu amo democracia!')
-
-        if message.content.lower().startswith('democracia'):
-            await message.channel.send('Eu amo democracia!')
-
-        if message.content.lower().startswith('estou muito fraco'):
-            await message.channel.send('PODER ILIMITADOOOOOO!')
+        await self._send_autoreply(message)
         
-        if message.content.lower().startswith('sequels'):
-            await message.channel.send(file=discord.File(
-                os.path.join('bot', 'images', 'sequels-meme.png')))
-
         if (message.content.lower().startswith('você é muito sábi') or 
                 message.content.lower().startswith('tão sábi') or 
                 message.content.lower().startswith('sábi')):
@@ -82,6 +51,21 @@ class LevelCog(commands.Cog):
         await self.level_up(xp_points, message)
         await XpPoint.save(xp_points)
 
+    async def _send_autoreply(self, message):
+        autoreply_config = cache.get_autoreply_to_message(
+            message.guild.id, message.content.lower())
+        if not autoreply_config:
+            return
+        
+        if autoreply_config.reply:
+            await message.channel.send(autoreply_config.reply)
+        if autoreply_config.reaction:
+            try:
+                await message.add_reaction(autoreply_config.reaction)
+            except:
+                pass
+        if autoreply_config.image_url:
+            await message.channel.send(autoreply_config.image_url)
 
     async def update_data(self, user, server_id):
         xp_points = await XpPoint.get_by_user_and_server(user.id, server_id)
