@@ -10,7 +10,7 @@ class ServerConfig(Base):
     __tablename__ = 'server_config'
     id = Column(BigInteger, primary_key=True, nullable=False)
     language = Column(String, default='en')
-    autoreply_configs = relationship(ServerConfigAutoreply)
+    autoreply_configs = relationship(ServerConfigAutoreply, lazy='subquery')
 
     @classmethod
     async def all(cls):

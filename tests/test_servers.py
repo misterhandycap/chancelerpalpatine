@@ -72,6 +72,7 @@ class TestServers(TestCase):
         self.assertIsInstance(result, ServerConfig)
         self.assertEqual(result.id, server_id)
         self.assertEqual(result.language, server_language)
+        self.assertEqual(result.autoreply_configs, [])
         
         fetched_server_config = self.test_session.query(ServerConfig).first()
         self.assertEqual(fetched_server_config.id, server_id)
