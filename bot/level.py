@@ -35,8 +35,6 @@ class LevelCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        await self._send_autoreply(message)
-        
         if (message.content.lower().startswith('você é muito sábi') or 
                 message.content.lower().startswith('tão sábi') or 
                 message.content.lower().startswith('sábi')):
@@ -44,6 +42,8 @@ class LevelCog(commands.Cog):
 
         if message.author.bot or not message.guild:
             return
+        
+        await self._send_autoreply(message)
         
         xp_points = await self.update_data(message.author, message.guild.id)
         exp = random.randint(5, 15)

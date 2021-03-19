@@ -56,6 +56,7 @@ class Profile():
         user = await User.get(user_id, preload_profile_items=True)
         if not user:
             return
+        user_name = user.name if user.name else ''
         user_profile_badges = [item.profile_item
             for item in user.profile_items
             if item.equipped and item.profile_item.type == ProfileItemType.badge
@@ -91,7 +92,7 @@ class Profile():
         image_frame_draw.rectangle([(0, 0), (user_name_width + 120, 107)], fill=frame_color + (255,))
         image_final.alpha_composite(image_frame)
 
-        image_draw.text((120, 25), user.name[:15], fill="#FFF", font=image_font_title)
+        image_draw.text((120, 25), user_name[:15], fill="#FFF", font=image_font_title)
         image_draw.text((30, 635), f'{i18n("Points", lang)}: {user_total_points}', fill="#FFF", font=image_font_description)
         image_draw.text((400, 620), f'{i18n("Chess wins", lang)}: {user_chess_victories}', fill="#FFF", font=image_font_subtitle)
         image_draw.text((400, 580), f'{i18n("Sign", lang)}: {user_sign}', fill="#FFF", font=image_font_subtitle)
