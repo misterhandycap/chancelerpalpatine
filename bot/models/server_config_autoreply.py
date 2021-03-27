@@ -1,3 +1,4 @@
+import re
 from uuid import uuid4
 
 from sqlalchemy import BigInteger, Column, ForeignKey, String
@@ -15,3 +16,7 @@ class ServerConfigAutoreply(Base):
     reply = Column(String, nullable=True)
     reaction = Column(String, nullable=True)
     image_url = Column(String, nullable=True)
+
+    def get_reply(self, message):
+        case_insensitive_pattern = re.compile(self.message_regex, re.I)
+        return re.sub(case_insensitive_pattern, self.reply, message)
