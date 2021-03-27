@@ -42,7 +42,7 @@ class LevelCog(commands.Cog):
 
         if message.author.bot or not message.guild:
             return
-        
+
         await self._send_autoreply(message)
         
         xp_points = await self.update_data(message.author, message.guild.id)
@@ -50,6 +50,7 @@ class LevelCog(commands.Cog):
         await self.add_xp(xp_points, exp)
         await self.level_up(xp_points, message)
         await XpPoint.save(xp_points)
+        await self._update_user_name(message.author)
 
     async def _send_autoreply(self, message):
         autoreply_config = cache.get_autoreply_to_message(
@@ -95,6 +96,13 @@ class LevelCog(commands.Cog):
                     '{} subiu ao nível {}! Assistiremos sua carreira com grande interesse.'.format(
                         message.author.mention, level_end))
             xp_points.level = level_end
+
+    async def _update_user_name(self, author):
+        user = await User.get(author.id) or User(id=author.id, name=author.name)
+        if user.name != author.name:
+            user.name = author.name
+            await User.save(user)
+        return user
 
     @commands.command(aliases=['nivel'])
     async def level(self, ctx, user: discord.User=None):
