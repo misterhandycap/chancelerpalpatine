@@ -186,8 +186,8 @@ msgid "Not enough credits"
 msgstr "Não pussi créditos suficientes"
 
 #: bot/economy/palplatina.py:58
-msgid "Item bought. Enjoy!"
-msgstr "Item comprado. Aproveite!"
+msgid "Item bought. You now have {currency} palplatinas"
+msgstr "Item comprado. Você agora tem {currency} palplatinas."
 
 #: bot/economy/palplatina.py:60
 msgid "You already own this item"
