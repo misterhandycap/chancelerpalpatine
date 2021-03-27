@@ -180,3 +180,16 @@ class TestServers(TestCase):
         result = cache.get_autoreply_to_message(server_config.id, 'nopee')
 
         self.assertIsNone(result)
+
+    def test_get_reply(self):
+        server_config = ServerConfigFactory()
+        server_config_autoreply = ServerConfigAutoreplyFactory(
+            message_regex='tão sábi(\\w) (.*)', reply='Já ouviu a história de Darth \\2, \\1 sábi\\1?')
+        server_config.autoreply_configs = [
+            server_config_autoreply
+        ]
+        message = 'Tão sábia Lele'
+        
+        result = server_config_autoreply.get_reply(message)
+        
+        self.assertEqual(result, 'Já ouviu a história de Darth Lele, a sábia?')

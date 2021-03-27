@@ -21,25 +21,8 @@ class LevelCog(commands.Cog):
     def __init__(self, client):
         self.client = client
     
-    def sabio(self, ctx, msg):
-        if 'b' in msg:
-            start = msg.index('b') + 2
-    
-            msg = msg[start:]
-            if len(msg)>4:
-                gender = msg[0]
-                name = msg[2:]
-                
-                return f"Já ouviu a história de Darth {name}, {gender} sábi{gender}?"
-            return i(ctx, "Did you ever hear the tragedy of Darth Plagueis, the Wise?")
-
     @commands.Cog.listener()
     async def on_message(self, message):
-        if (message.content.lower().startswith('você é muito sábi') or 
-                message.content.lower().startswith('tão sábi') or 
-                message.content.lower().startswith('sábi')):
-            await message.channel.send(self.sabio(message, message.content))
-
         if message.author.bot or not message.guild:
             return
 
@@ -59,7 +42,7 @@ class LevelCog(commands.Cog):
             return
         
         if autoreply_config.reply:
-            await message.channel.send(autoreply_config.reply)
+            await message.channel.send(autoreply_config.get_reply(message.content))
         if autoreply_config.reaction:
             try:
                 await message.add_reaction(autoreply_config.reaction)
