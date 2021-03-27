@@ -16,7 +16,7 @@ from bot.sww_cmds import StarWarsWikiCog
 
 load_dotenv()
 
-logging.basicConfig(level=logging.DEBUG if os.environ.get("DEBUG") else logging.WARNING)
+logging.basicConfig(level=logging.DEBUG if os.environ.get("DEBUG") else logging.INFO)
 
 intents = discord.Intents.default()
 intents.members = True
