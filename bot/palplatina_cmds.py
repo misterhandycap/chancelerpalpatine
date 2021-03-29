@@ -65,19 +65,23 @@ class PalplatinaCmds(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=['shop', 'lojinha'])
-    async def loja(self, ctx, page_number=1):
+    async def loja(self, ctx, *, search_query=''):
         """
         Veja os itens disponíveis para serem adquiridos
         """
+        page_number = 1
         discord_file = discord.File(
             os.path.join('bot', 'images', 'arnaldo-o-hutt.gif'), 'hutt.gif')
+        shop_embed = await self._build_shop_embed(page_number, ctx, search_query=search_query)
         await self.shop_paginated_embed_manager.send_embed(
-            await self._build_shop_embed(page_number, ctx), page_number,
-            ctx, discord_file
+            shop_embed, page_number, ctx,
+            discord_file=discord_file, content=i(ctx, 'Results for: {}').format(search_query)
         )
 
-    async def _build_shop_embed(self, page_number, original_message):
-        profile_items, last_page = await self.palplatina.get_available_items(page_number-1)
+    async def _build_shop_embed(self, page_number, original_message, search_query=None):
+        if search_query is None:
+            search_query = ': '.join(original_message.content.split(': ')[1:])
+        profile_items, last_page = await self.palplatina.get_available_items(search_query, page_number-1)
         embed = discord.Embed(
             title=i(original_message, "Arnaldo's Emporium"),
             description=i(original_message, 'Browse through all available items'),

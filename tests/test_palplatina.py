@@ -146,9 +146,12 @@ class TestPalplatina(TestCase):
         ProfileItemFactory.reset_sequence()
         for i in range(12):
             ProfileItemFactory()
+        for i in range(12):
+            ProfileItemFactory(name=f'No match {i}')
         self.db_session.commit()
 
-        result = asyncio.run(Palplatina().get_available_items(page=0))
+        result = asyncio.run(Palplatina().get_available_items(
+            'Profile item', page=0))
 
         self.assertEqual(len(result), 2)
         self.assertEqual(len(result[0]), 9)
