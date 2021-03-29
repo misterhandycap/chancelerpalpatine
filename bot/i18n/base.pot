@@ -317,6 +317,10 @@ msgstr ""
 msgid "{username} has {currency} palplatinas."
 msgstr ""
 
+#: bot/palplatina_cmds.py:78
+msgid "Results for: {}"
+msgstr ""
+
 #: bot/palplatina_cmds.py:83
 msgid "Browse through all available items"
 msgstr ""

@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 
@@ -94,7 +95,7 @@ class PaginatedEmbedManager():
         self.callback = embed_func
         client.add_listener(self._on_reaction_add, 'on_reaction_add')
 
-    async def send_embed(self, embed, page_number, ctx, discord_file=None):
+    async def send_embed(self, embed, page_number, ctx, discord_file=None, content=None):
         """
         Prepares and sends given paginated embed. Also reacts with navigation emojis
 
@@ -109,7 +110,7 @@ class PaginatedEmbedManager():
         """
         self.embed_title = embed.title
         embed = self._prepare_embed(embed, ctx.author, page_number)
-        message = await ctx.send(embed=embed, file=discord_file)
+        message = await ctx.send(embed=embed, file=discord_file, content=content)
         await message.add_reaction(self.BACKWARD_EMOJI)
         await message.add_reaction(self.FORWARD_EMOJI)
         return message
@@ -149,6 +150,7 @@ class PaginatedEmbedManager():
             embed = self._prepare_embed(
                 await self.callback(page_number, original_message), str(user), page_number)
             await original_message.edit(embed=embed)
-        except:
+        except Exception as e:
+            logging.warning(f'{e.__class__}: {e}')
             return await original_message.add_reaction('⚠️')
         await original_message.remove_reaction(emoji, user)

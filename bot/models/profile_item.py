@@ -39,11 +39,16 @@ class ProfileItem(Base):
                 select(ProfileItem).where(ProfileItem.name == item_name))).scalars().first()
 
     @classmethod
-    async def all(cls, page=0, page_size=9):
+    async def all(cls, search=None, page=0, page_size=9):
         async with AsyncSession(engine) as session:
-            page_content = (await session.execute(
-                select(ProfileItem).offset(page*page_size).limit(page_size))).scalars().fetchall()
-            total_entries = (await session.execute(func.count(ProfileItem.id))).scalar()
+            query = select(ProfileItem).offset(page*page_size).limit(page_size)
+            total_query = select(func.count(ProfileItem.id))
+            if search:
+                query = query.filter(ProfileItem.name.contains(search))
+                total_query = total_query.filter(ProfileItem.name.contains(search))
+                
+            page_content = (await session.execute(query)).scalars().fetchall()
+            total_entries = (await session.execute(total_query)).scalar()
             last_page = int(total_entries // page_size) + (total_entries % page_size > 0)
             return page_content, last_page
 
