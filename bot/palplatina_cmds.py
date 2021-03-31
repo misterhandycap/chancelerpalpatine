@@ -29,10 +29,10 @@ class PalplatinaCmds(commands.Cog):
             ctx.message.author.id, ctx.message.author.name)
         if received_daily:
             palplatinas_embed = discord.Embed(
-                title = i(ctx, 'Daily!'),
-                description = i(ctx, 'You have received 300 palplatinas, enjoy!'),
-                colour = discord.Color.greyple(),
-                timestamp = ctx.message.created_at
+                title=i(ctx, 'Daily!'),
+                description=i(ctx, 'You have received 300 palplatinas, enjoy!'),
+                colour=discord.Color.greyple(),
+                timestamp=ctx.message.created_at
             )
         else:
             palplatinas_embed = discord.Embed(
@@ -42,6 +42,7 @@ class PalplatinaCmds(commands.Cog):
                 timestamp=user.daily_last_collected_at
             )
         palplatinas_embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')    
+        palplatinas_embed.set_author(name=ctx.message.author)
         await ctx.send(embed=palplatinas_embed)
 
     @commands.command(aliases=['conta', 'atm', 'palplatina'])
@@ -163,7 +164,7 @@ class PalplatinaCmds(commands.Cog):
         confirm_emoji = '✅'
         cancel_emoji = '🚫'
         valid_emojis = [confirm_emoji, cancel_emoji]
-        if not reaction.message.embeds:
+        if not reaction.message.embeds or reaction.message.author.id != self.client.user.id:
             return
         embed = reaction.message.embeds[0]
         if not (embed.title == i(reaction.message, 'Buy item') and str(user) == embed.author.name):
