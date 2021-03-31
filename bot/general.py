@@ -78,7 +78,7 @@ class GeneralCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if self.client.user.mentioned_in(message):
+        if message.content.strip() == f'<@!{self.client.user.id}>':
             await message.reply(
                 content='Olá, segue abaixo algumas informações sobre mim 😊',
                 embed=await self._create_info_embed(message),

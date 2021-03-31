@@ -93,6 +93,7 @@ class PaginatedEmbedManager():
         self.last_page = None
         self.embed_title = None
         self.callback = embed_func
+        self.client = client
         client.add_listener(self._on_reaction_add, 'on_reaction_add')
 
     async def send_embed(self, embed, page_number, ctx, discord_file=None, content=None):
@@ -123,7 +124,7 @@ class PaginatedEmbedManager():
     async def _on_reaction_add(self, reaction, user):
         valid_emojis = [self.BACKWARD_EMOJI, self.FORWARD_EMOJI]
         original_message = reaction.message
-        if not original_message.embeds:
+        if not original_message.embeds or original_message.author.id != self.client.user.id:
             return
         embed = original_message.embeds[0]
         if not (embed.title == self.embed_title and str(user) == embed.author.name):
