@@ -5,6 +5,7 @@ from uuid import uuid4
 from unittest import TestCase
 
 import chess
+from chess.engine import Cp, Mate
 from dotenv import load_dotenv
 
 from bot.chess.chess import Chess
@@ -639,7 +640,7 @@ class TestChess(TestCase):
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
-        game.last_eval = 0
+        game.last_eval = Cp(0)
 
         chess_bot = Chess()
         chess_bot.games.append(game)
@@ -661,7 +662,7 @@ class TestChess(TestCase):
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
-        game.last_eval = 0
+        game.last_eval = Cp(0)
 
         chess_bot = Chess()
         chess_bot.games.append(game)
@@ -682,7 +683,7 @@ class TestChess(TestCase):
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
-        game.last_eval = 0
+        game.last_eval = Cp(0)
 
         chess_bot = Chess()
         chess_bot.games.append(game)
@@ -703,7 +704,7 @@ class TestChess(TestCase):
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
-        game.last_eval = 1500
+        game.last_eval = Mate(2)
 
         chess_bot = Chess()
         chess_bot.games.append(game)
@@ -723,7 +724,7 @@ class TestChess(TestCase):
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
-        game.last_eval = 1500
+        game.last_eval = Mate(2)
 
         chess_bot = Chess()
         chess_bot.games.append(game)
@@ -734,6 +735,27 @@ class TestChess(TestCase):
         if chess_bot.is_stockfish_enabled():
             self.assertEqual(result["mate_in"], -2)
         else:
+            self.assertIsNone(result["mate_in"])
+
+    def test_eval_last_move_lost_position_blunders_mate(self):
+        board = chess.Board("Q1kr4/1p6/1P3ppp/1Kp1r3/4p2b/1B3P2/2P2q2/8 b - - 5 43")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player1
+        game.last_eval = Cp(1000)
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+
+        result = asyncio.run(chess_bot.eval_last_move(game))
+
+        if chess_bot.is_stockfish_enabled():
+            self.assertTrue(result["blunder"])
+            self.assertEqual(result["mate_in"], -2)
+        else:
+            self.assertFalse(result["blunder"])
             self.assertIsNone(result["mate_in"])
 
     def test_build_animated_sequence_gif_valid_params(self):

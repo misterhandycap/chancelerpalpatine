@@ -2,7 +2,7 @@ import logging
 import os
 import pickle
 from io import BytesIO
-from math import floor, pow, sqrt
+from math import exp, floor, log, pow, sqrt
 
 import asyncssh
 from cairosvg import svg2png
@@ -368,9 +368,27 @@ class Chess():
             return None
     
     def _is_last_move_blunder(self, game: Game, analysis: dict):
+        mate_score = 100000
         last_eval = game.last_eval
-        game.last_eval = analysis["score"].white().score(mate_score=1500)
-        return abs(game.last_eval - last_eval) > 200
+        game.last_eval = analysis["score"].white()
+
+        if last_eval.__class__ != game.last_eval.__class__:
+            return True
+
+        last_eval_score = last_eval.score(mate_score=mate_score)
+        current_eval_score = game.last_eval.score(mate_score=mate_score)
+        return abs(
+            self._evaluation_normalizer(current_eval_score) - self._evaluation_normalizer(last_eval_score)
+        ) > 2
+
+    def _evaluation_normalizer(self, evaluation_cents):
+        evaluation = evaluation_cents / 100
+        positive_normalizer = lambda x: + 7 - exp(log(7) - 0.2 * x)
+        negative_normalizer = lambda x: - 7 + exp(log(7) + 0.2 * x)
+
+        if evaluation > 0:
+            return positive_normalizer(evaluation)
+        return negative_normalizer(evaluation)
     
     async def _eval_game(self, game: Game):
         limit = chess.engine.Limit(**self.stockfish_limit)

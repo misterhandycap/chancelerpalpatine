@@ -1,6 +1,7 @@
 from io import StringIO
 
 from chess import Board, WHITE
+from chess.engine import Cp
 from chess.pgn import Game as PGN
 from chess.pgn import read_game
 
@@ -18,7 +19,7 @@ class Game():
         self.current_player = None
         self.result = '*'
         self.color_schema = None
-        self.last_eval = 0
+        self.last_eval = Cp(0)
         self.cpu_level = None
 
     def __eq__(self, value):
