@@ -2,7 +2,7 @@ import logging
 import os
 import pickle
 from io import BytesIO
-from math import exp, floor, log, pow, sqrt
+from math import copysign, exp, floor, log, pow, sqrt
 
 import asyncssh
 from cairosvg import svg2png
@@ -383,12 +383,9 @@ class Chess():
 
     def _evaluation_normalizer(self, evaluation_cents):
         evaluation = evaluation_cents / 100
-        positive_normalizer = lambda x: + 7 - exp(log(7) - 0.2 * x)
-        negative_normalizer = lambda x: - 7 + exp(log(7) + 0.2 * x)
+        normalizer = lambda x: (7 - exp(log(7) - 0.2 * abs(x))) * copysign(1, x)
 
-        if evaluation > 0:
-            return positive_normalizer(evaluation)
-        return negative_normalizer(evaluation)
+        return normalizer(evaluation)
     
     async def _eval_game(self, game: Game):
         limit = chess.engine.Limit(**self.stockfish_limit)
