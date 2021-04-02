@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import subprocess
 
 from asyncio import get_running_loop, new_event_loop
 from concurrent.futures.thread import ThreadPoolExecutor
@@ -11,6 +12,11 @@ from bot.i18n import i18n
 from bot.servers import cache
 
 server_configs = {}
+
+try:
+    current_bot_version = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
+except:
+    current_bot_version = None
 
 def i(ctx, text):
     if ctx.guild:
