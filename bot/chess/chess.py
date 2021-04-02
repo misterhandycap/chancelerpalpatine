@@ -157,7 +157,9 @@ class Chess():
         :return: True if game is over and False otherwise
         :rtype: Bool
         """
-        return game.board.is_game_over(claim_draw=True)
+        return (game.board.is_game_over(claim_draw=False) or 
+            game.board.halfmove_clock >= 100 or 
+            game.board.is_repetition(3))
     
     async def resign(self, game: Game) -> Game:
         """
