@@ -13,7 +13,7 @@ class MusicCog(commands.Cog):
         self.client = client
 
     @commands.command()
-    async def join(self, ctx, *, channel: discord.VoiceChannel):
+    async def join(self, ctx, *, channel: discord.StageChannel):
         """
         Conecta o bot ao canal de voz fornecido
         """
@@ -28,6 +28,7 @@ class MusicCog(commands.Cog):
         """
         Toca a música teste
         """
+        await ctx.guild.me.edit(suppress=False)
         source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(os.environ.get("SONG_PATH")))
         ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
 

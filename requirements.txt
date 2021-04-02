@@ -13,7 +13,7 @@ chardet==3.0.4
 cryptography==3.1
 cssselect2==0.3.0
 defusedxml==0.6.0
-discord.py==1.6.0
+discord.py @ git+https://github.com/NCPlayz/discord.py.git@b34ca2c628322ff06197cadaf4fa2d6ef6e5c60c
 factory-boy==3.2.0
 Faker==6.5.0
 flatlib==0.2.1
