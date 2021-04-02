@@ -142,7 +142,7 @@ class Chess():
             game.current_player = game.player1
         
         if self.is_game_over(game):
-            game.result = game.board.result()
+            game.result = game.board.result(claim_draw=True)
             self.games.remove(game)
             
         await game.save()
@@ -384,6 +384,7 @@ class Chess():
     def _evaluation_normalizer(self, evaluation_cents):
         evaluation = evaluation_cents / 100
         normalizer = lambda x: (7 - exp(log(7) - 0.2 * abs(x))) * copysign(1, x)
+        # normilizer = lambda x: 7 * atan(0.3 * x) / 0.5 * pi
 
         return normalizer(evaluation)
     

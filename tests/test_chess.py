@@ -320,6 +320,7 @@ class TestChess(TestCase):
         self.assertEqual(len(chess_bot.games), 0)
         self.assertEqual(self.db_session.query(ChessGame).filter_by(result=-1).count(), 1)
         self.assertTrue(chess_bot.is_game_over(result))
+        self.assertEqual(result.result, '0-1')
 
     def test_make_move_legal_move_pve(self):
         board = chess.Board('rn2kb1r/pp1qpppp/2ppbn2/1B6/3PP3/2N2N2/PPP2PPP/R1BQK2R w KQkq - 0 6')
@@ -365,6 +366,7 @@ class TestChess(TestCase):
             self.assertEqual(len(chess_bot.games), 0)
             self.assertEqual(self.db_session.query(ChessGame).filter_by(result=-1).count(), 1)
             self.assertTrue(chess_bot.is_game_over(result))
+            self.assertEqual(result.result, '0-1')
 
     def test_make_move_finish_game_pve_player_wins(self):
         board = chess.Board()
@@ -387,6 +389,7 @@ class TestChess(TestCase):
         self.assertEqual(len(chess_bot.games), 0)
         self.assertEqual(self.db_session.query(ChessGame).filter_by(result=1).count(), 1)
         self.assertTrue(chess_bot.is_game_over(result))
+        self.assertEqual(result.result, '1-0')
 
     def test_make_move_illegal_move_in_players_turn(self):
         board = chess.Board()
@@ -406,6 +409,34 @@ class TestChess(TestCase):
 
         self.assertEqual(len(game.board.move_stack), 2)
         self.assertEqual(game.current_player, game.player1)
+
+    def test_make_move_draw_by_threefold_repetition(self):
+        board = chess.Board()
+        board.push_san("Nf3")
+        board.push_san("Nf6")
+        board.push_san("Ng1")
+        board.push_san("Ng8")
+        board.push_san("Nf3")
+        board.push_san("Nf6")
+        board.push_san("Ng1")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player2
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+
+        self.assertFalse(chess_bot.is_game_over(game))
+
+        result = asyncio.run(chess_bot.make_move(game, 'Ng8'))
+
+        self.assertIsInstance(result, Game)
+        self.assertEqual(len(chess_bot.games), 0)
+        self.assertEqual(self.db_session.query(ChessGame).filter_by(result=0).count(), 1)
+        self.assertTrue(chess_bot.is_game_over(result))
+        self.assertEqual(result.result, '1/2-1/2')
 
     def test_resign_game_found(self):
         board = chess.Board()
