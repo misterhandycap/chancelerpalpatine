@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import random
-import subprocess
 import time
 
 import discord
@@ -14,7 +13,7 @@ from bot.aurebesh import text_to_aurebesh_img
 from bot.meme import meme_saimaluco_image, random_cat
 from bot.servers import cache
 from bot.social.profile import Profile
-from bot.utils import get_server_lang, i, paginate, PaginatedEmbedManager
+from bot.utils import current_bot_version, get_server_lang, i, paginate, PaginatedEmbedManager
 
 
 class GeneralCog(commands.Cog):
@@ -199,10 +198,6 @@ class GeneralCog(commands.Cog):
         await ctx.send(embed=embed)
 
     async def _create_info_embed(self, ctx):
-        try:
-            current_version = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
-        except:
-            current_version = None
         bot_prefix = self.client.command_prefix
         bot_info = await self.client.application_info()
         bot_owner = bot_info.team.owner
@@ -215,8 +210,8 @@ class GeneralCog(commands.Cog):
         )
         embed.set_thumbnail(url=bot_info.icon_url)
         embed.add_field(name=i(ctx, 'Owner'), value=f'{bot_owner.name}#{bot_owner.discriminator}')
-        if current_version:
-            embed.add_field(name=i(ctx, 'Current version'), value=current_version)
+        if current_bot_version:
+            embed.add_field(name=i(ctx, 'Current version'), value=current_bot_version)
         embed.add_field(name=i(ctx, 'Prefix'), value=bot_prefix)
         embed.add_field(name=i(ctx, 'Help cmd'), value=f'{bot_prefix}help')
         return embed

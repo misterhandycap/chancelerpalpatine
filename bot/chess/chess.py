@@ -2,7 +2,7 @@ import logging
 import os
 import pickle
 from io import BytesIO
-from math import floor, pow, sqrt
+from math import copysign, exp, floor, log, pow, sqrt
 
 import asyncssh
 from cairosvg import svg2png
@@ -142,7 +142,7 @@ class Chess():
             game.current_player = game.player1
         
         if self.is_game_over(game):
-            game.result = game.board.result()
+            game.result = game.board.result(claim_draw=True)
             self.games.remove(game)
             
         await game.save()
@@ -157,7 +157,9 @@ class Chess():
         :return: True if game is over and False otherwise
         :rtype: Bool
         """
-        return game.board.is_game_over(claim_draw=True)
+        return (game.board.is_game_over(claim_draw=False) or 
+            game.board.halfmove_clock >= 100 or 
+            game.board.is_repetition(3))
     
     async def resign(self, game: Game) -> Game:
         """
@@ -366,9 +368,25 @@ class Chess():
             return None
     
     def _is_last_move_blunder(self, game: Game, analysis: dict):
+        mate_score = 100000
         last_eval = game.last_eval
-        game.last_eval = analysis["score"].white().score(mate_score=1500)
-        return abs(game.last_eval - last_eval) > 200
+        game.last_eval = analysis["score"].white()
+
+        if last_eval.__class__ != game.last_eval.__class__:
+            return True
+
+        last_eval_score = last_eval.score(mate_score=mate_score)
+        current_eval_score = game.last_eval.score(mate_score=mate_score)
+        return abs(
+            self._evaluation_normalizer(current_eval_score) - self._evaluation_normalizer(last_eval_score)
+        ) > 2
+
+    def _evaluation_normalizer(self, evaluation_cents):
+        evaluation = evaluation_cents / 100
+        normalizer = lambda x: (7 - exp(log(7) - 0.2 * abs(x))) * copysign(1, x)
+        # normilizer = lambda x: 7 * atan(0.3 * x) / 0.5 * pi
+
+        return normalizer(evaluation)
     
     async def _eval_game(self, game: Game):
         limit = chess.engine.Limit(**self.stockfish_limit)

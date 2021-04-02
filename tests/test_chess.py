@@ -5,6 +5,7 @@ from uuid import uuid4
 from unittest import TestCase
 
 import chess
+from chess.engine import Cp, Mate
 from dotenv import load_dotenv
 
 from bot.chess.chess import Chess
@@ -319,6 +320,7 @@ class TestChess(TestCase):
         self.assertEqual(len(chess_bot.games), 0)
         self.assertEqual(self.db_session.query(ChessGame).filter_by(result=-1).count(), 1)
         self.assertTrue(chess_bot.is_game_over(result))
+        self.assertEqual(result.result, '0-1')
 
     def test_make_move_legal_move_pve(self):
         board = chess.Board('rn2kb1r/pp1qpppp/2ppbn2/1B6/3PP3/2N2N2/PPP2PPP/R1BQK2R w KQkq - 0 6')
@@ -364,6 +366,7 @@ class TestChess(TestCase):
             self.assertEqual(len(chess_bot.games), 0)
             self.assertEqual(self.db_session.query(ChessGame).filter_by(result=-1).count(), 1)
             self.assertTrue(chess_bot.is_game_over(result))
+            self.assertEqual(result.result, '0-1')
 
     def test_make_move_finish_game_pve_player_wins(self):
         board = chess.Board()
@@ -386,6 +389,7 @@ class TestChess(TestCase):
         self.assertEqual(len(chess_bot.games), 0)
         self.assertEqual(self.db_session.query(ChessGame).filter_by(result=1).count(), 1)
         self.assertTrue(chess_bot.is_game_over(result))
+        self.assertEqual(result.result, '1-0')
 
     def test_make_move_illegal_move_in_players_turn(self):
         board = chess.Board()
@@ -405,6 +409,34 @@ class TestChess(TestCase):
 
         self.assertEqual(len(game.board.move_stack), 2)
         self.assertEqual(game.current_player, game.player1)
+
+    def test_make_move_draw_by_threefold_repetition(self):
+        board = chess.Board()
+        board.push_san("Nf3")
+        board.push_san("Nf6")
+        board.push_san("Ng1")
+        board.push_san("Ng8")
+        board.push_san("Nf3")
+        board.push_san("Nf6")
+        board.push_san("Ng1")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player2
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+
+        self.assertFalse(chess_bot.is_game_over(game))
+
+        result = asyncio.run(chess_bot.make_move(game, 'Ng8'))
+
+        self.assertIsInstance(result, Game)
+        self.assertEqual(len(chess_bot.games), 0)
+        self.assertEqual(self.db_session.query(ChessGame).filter_by(result=0).count(), 1)
+        self.assertTrue(chess_bot.is_game_over(result))
+        self.assertEqual(result.result, '1/2-1/2')
 
     def test_resign_game_found(self):
         board = chess.Board()
@@ -639,7 +671,7 @@ class TestChess(TestCase):
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
-        game.last_eval = 0
+        game.last_eval = Cp(0)
 
         chess_bot = Chess()
         chess_bot.games.append(game)
@@ -661,7 +693,7 @@ class TestChess(TestCase):
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
-        game.last_eval = 0
+        game.last_eval = Cp(0)
 
         chess_bot = Chess()
         chess_bot.games.append(game)
@@ -682,7 +714,7 @@ class TestChess(TestCase):
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
-        game.last_eval = 0
+        game.last_eval = Cp(0)
 
         chess_bot = Chess()
         chess_bot.games.append(game)
@@ -703,7 +735,7 @@ class TestChess(TestCase):
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
-        game.last_eval = 1500
+        game.last_eval = Mate(2)
 
         chess_bot = Chess()
         chess_bot.games.append(game)
@@ -723,7 +755,7 @@ class TestChess(TestCase):
         game.player1 = FakeDiscordUser(id=1)
         game.player2 = FakeDiscordUser(id=2)
         game.current_player = game.player1
-        game.last_eval = 1500
+        game.last_eval = Mate(2)
 
         chess_bot = Chess()
         chess_bot.games.append(game)
@@ -734,6 +766,27 @@ class TestChess(TestCase):
         if chess_bot.is_stockfish_enabled():
             self.assertEqual(result["mate_in"], -2)
         else:
+            self.assertIsNone(result["mate_in"])
+
+    def test_eval_last_move_lost_position_blunders_mate(self):
+        board = chess.Board("Q1kr4/1p6/1P3ppp/1Kp1r3/4p2b/1B3P2/2P2q2/8 b - - 5 43")
+        game = Game()
+        game.board = board
+        game.player1 = FakeDiscordUser(id=1)
+        game.player2 = FakeDiscordUser(id=2)
+        game.current_player = game.player1
+        game.last_eval = Cp(1000)
+
+        chess_bot = Chess()
+        chess_bot.games.append(game)
+
+        result = asyncio.run(chess_bot.eval_last_move(game))
+
+        if chess_bot.is_stockfish_enabled():
+            self.assertTrue(result["blunder"])
+            self.assertEqual(result["mate_in"], -2)
+        else:
+            self.assertFalse(result["blunder"])
             self.assertIsNone(result["mate_in"])
 
     def test_build_animated_sequence_gif_valid_params(self):
