@@ -5,8 +5,10 @@ from uuid import uuid4
 
 from sqlalchemy import Column, DateTime, Enum, func, Integer, select, String
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import validates
 
 from bot.models import Base, engine
+from bot.models.exceptions import ProfileItemException
 from bot.models.guid import GUID
 
 
@@ -22,6 +24,18 @@ class ProfileItem(Base):
     name = Column(String, nullable=False, unique=True)
     price = Column(Integer, nullable=False)
     file_path = Column(String, nullable=False)
+
+    @validates('type')
+    def validate_type(self, key, value):
+        if value not in ProfileItemType.__members__.keys():
+            raise ProfileItemException('Invalid profile item type')
+        return value
+
+    @validates('price')
+    def validate_price(self, key, value):
+        if not(isinstance(value, int) and value > 0):
+            raise ProfileItemException('Profile item price must be greater than zero')
+        return value
 
     @classmethod
     async def get(cls, item_id):
@@ -51,6 +65,13 @@ class ProfileItem(Base):
             total_entries = (await session.execute(total_query)).scalar()
             last_page = int(total_entries // page_size) + (total_entries % page_size > 0)
             return page_content, last_page
+
+    @classmethod
+    async def save(cls, profile_item):
+        async with AsyncSession(engine) as session:
+            session.add(profile_item)
+            await session.commit()
+            return profile_item.id
 
     def get_file_contents(self):
         try:

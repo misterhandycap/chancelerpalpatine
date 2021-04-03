@@ -367,6 +367,10 @@ msgstr "Comprar item"
 msgid "Price"
 msgstr "Preço"
 
+#: bot/palplatina_cmds.py:134
+msgid "Type"
+msgstr "Tipo"
+
 #: bot/palplatina_cmds.py:135
 msgid "Your palplatinas"
 msgstr "Suas palplatinas"
@@ -374,6 +378,30 @@ msgstr "Suas palplatinas"
 #: bot/palplatina_cmds.py:159
 msgid "Operation canceled"
 msgstr "Operação cancelada"
+
+#: bot/palplatina_cmds.py:201
+msgid "Invalid profile item type"
+msgstr "Tipo de item de perfil inválido"
+
+#: bot/palplatina_cmds.py:201
+msgid "Profile item price must be greater than zero"
+msgstr "Preço do item de perfil deve ser maior do que zero"
+
+#: bot/palplatina_cmds.py:204
+msgid "Missing file attachment"
+msgstr "Faltou o envio da imagem"
+
+#: bot/palplatina_cmds.py:207
+msgid "New item suggestion"
+msgstr "Nova sugestão de item"
+
+#: bot/palplatina_cmds.py:242
+msgid "New item added to the shop!"
+msgstr "Novo item adicionado à loja!"
+
+#: bot/palplatina_cmds.py:248
+msgid "Could not find original message 😣"
+msgstr "Não consegui encontrar a mensagem original 😣"
 
 #: bot/social/profile.py:56 bot/sww_cmds.py:61
 msgid "Points"
@@ -662,3 +690,10 @@ msgstr ""
 "Informe a cor que deseja em valor hex.\n"
 "\n"
 "Examplo: `profile_frame_color #2393cf`"
+
+msgid "cmd_novo_item"
+msgstr ""
+"Abre uma nova sugestão de item de perfil para a loja do bot\n"
+"\n"
+"Envie junto com a mensagem desse comando a imagem para o item.\n"
+"Exemplo: `novo_item badge 750 Novo item badge`"
