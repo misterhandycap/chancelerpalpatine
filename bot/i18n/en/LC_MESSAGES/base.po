@@ -350,12 +350,40 @@ msgstr ""
 msgid "Price"
 msgstr ""
 
+#: bot/palplatina_cmds.py:134
+msgid "Type"
+msgstr ""
+
 #: bot/palplatina_cmds.py:135
 msgid "Your palplatinas"
 msgstr ""
 
 #: bot/palplatina_cmds.py:159
 msgid "Operation canceled"
+msgstr ""
+
+#: bot/palplatina_cmds.py:201
+msgid "Invalid profile item type"
+msgstr ""
+
+#: bot/palplatina_cmds.py:201
+msgid "Profile item price must be greater than zero"
+msgstr ""
+
+#: bot/palplatina_cmds.py:204
+msgid "Missing file attachment"
+msgstr ""
+
+#: bot/palplatina_cmds.py:207
+msgid "New item suggestion"
+msgstr ""
+
+#: bot/palplatina_cmds.py:242
+msgid "New item added to the shop!"
+msgstr ""
+
+#: bot/palplatina_cmds.py:248
+msgid "Could not find original message 😣"
 msgstr ""
 
 #: bot/social/profile.py:56 bot/sww_cmds.py:61
@@ -639,3 +667,11 @@ msgstr ""
 "Inform the color to which your profile's frame should be in hex value.\n"
 "\n"
 "Example: `profile_frame_color #2393cf`"
+
+msgid "cmd_novo_item"
+msgstr ""
+"Opens a suggestion for a new item to be added to the bot'shop\n"
+"\n"
+"Along with the command message, send the image file as an attachment.\n"
+"\n"
+"Example: `novo_item badge 750 New item name bagde`"

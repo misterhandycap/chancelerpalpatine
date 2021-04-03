@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime
 
@@ -5,7 +6,9 @@ import discord
 from discord.ext import commands
 
 from bot.economy.exceptions import EconomyException
+from bot.economy.item import Item
 from bot.economy.palplatina import Palplatina
+from bot.models.exceptions import ProfileItemException
 from bot.utils import i, PaginatedEmbedManager
 
 
@@ -17,6 +20,7 @@ class PalplatinaCmds(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.palplatina = Palplatina()
+        self.item_bot = Item()
         self.shop_paginated_embed_manager = PaginatedEmbedManager(
             self.client, self._build_shop_embed)
 
@@ -159,8 +163,7 @@ class PalplatinaCmds(commands.Cog):
         await message.add_reaction('✅')
         await message.add_reaction('🚫')
 
-    @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    async def _purchase_confirmation_listener(self, reaction, user):
         confirm_emoji = '✅'
         cancel_emoji = '🚫'
         valid_emojis = [confirm_emoji, cancel_emoji]
@@ -186,3 +189,73 @@ class PalplatinaCmds(commands.Cog):
             result = i(reaction.message, 'Operation canceled')
         
         await reaction.message.channel.send(content=f'{embed.author.name}: {result}')
+
+    @commands.command(aliases=['new_item', 'sugerir_item'])
+    async def novo_item(self, ctx, item_type, price: int, *, name):
+        """
+        Sugira um novo item a ser adicionado à loja do bot
+        """
+        try:
+            profile_item = self.item_bot.build_profile_item(type=item_type, price=price, name=name)
+        except ProfileItemException as e:
+            return await ctx.send(i(ctx, e.message))
+
+        if not ctx.message.attachments:
+            return await ctx.send(i(ctx, i(ctx, 'Missing file attachment')))
+
+        embed = discord.Embed(
+            title=i(ctx, 'New item suggestion'),
+            description=profile_item.name
+        )
+        embed.add_field(name=i(ctx, 'Type'), value=profile_item.type)
+        embed.add_field(name=i(ctx, 'Price'), value=profile_item.price)
+        embed.set_author(name=ctx.author)
+        embed.set_image(url=ctx.message.attachments[0].url)
+        result_message = await ctx.reply(embed=embed, mention_author=False)
+        await result_message.add_reaction('✅')
+        await result_message.add_reaction('🚫')
+
+    async def _new_item_confirmation_listener(self, reaction, user):
+        confirm_emoji = '✅'
+        cancel_emoji = '🚫'
+        valid_emojis = [confirm_emoji, cancel_emoji]
+        moderators_ids = os.environ.get('MODERATORS_IDS', '').split(',')
+        if not reaction.message.embeds or reaction.message.author.id != self.client.user.id:
+            return
+        embed = reaction.message.embeds[0]
+        if not (embed.title == i(reaction.message, 'New item suggestion') and str(user.id) in moderators_ids):
+            return
+
+        emoji = str(reaction)
+        if emoji not in valid_emojis:
+            return
+
+        if emoji == confirm_emoji:
+            profile_item = self.item_bot.build_profile_item(
+                name=embed.description,
+                price=next(int(field.value) for field in embed.fields if field.name == i(reaction.message, 'Price')),
+                type=next(field.value for field in embed.fields if field.name == i(reaction.message, 'Type'))
+            )
+            try:
+                original_message = reaction.message.reference.cached_message
+                if not original_message:
+                    original_message = await reaction.message.channel.fetch_message(
+                        reaction.message.reference.message_id)
+                original_image = original_message.attachments[0]
+                await self.item_bot.save_profile_item(profile_item, original_image.filename, await original_image.read())
+                result = i(reaction.message, 'New item added to the shop!')
+            except discord.HTTPException:
+                result = i(reaction.message, 'Could not find original message 😣')
+        else:
+            result = i(reaction.message, 'Operation canceled')
+        
+        await reaction.message.channel.send(content=f'{embed.author.name}: {result}')
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        try:
+            await self._purchase_confirmation_listener(reaction, user)
+            await self._new_item_confirmation_listener(reaction, user)
+        except Exception as e:
+            logging.warning(f'{e.__class__}: {e}')
+            await reaction.message.add_reaction('⚠️')

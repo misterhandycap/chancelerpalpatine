@@ -349,12 +349,40 @@ msgstr ""
 msgid "Price"
 msgstr ""
 
+#: bot/palplatina_cmds.py:134
+msgid "Type"
+msgstr ""
+
 #: bot/palplatina_cmds.py:135
 msgid "Your palplatinas"
 msgstr ""
 
 #: bot/palplatina_cmds.py:159
 msgid "Operation canceled"
+msgstr ""
+
+#: bot/palplatina_cmds.py:201
+msgid "Invalid profile item type"
+msgstr ""
+
+#: bot/palplatina_cmds.py:201
+msgid "Profile item price must be greater than zero"
+msgstr ""
+
+#: bot/palplatina_cmds.py:204
+msgid "Missing file attachment"
+msgstr ""
+
+#: bot/palplatina_cmds.py:207
+msgid "New item suggestion"
+msgstr ""
+
+#: bot/palplatina_cmds.py:242
+msgid "New item added to the shop!"
+msgstr ""
+
+#: bot/palplatina_cmds.py:248
+msgid "Could not find original message 😣"
 msgstr ""
 
 #: bot/social/profile.py:56 bot/sww_cmds.py:61
@@ -521,4 +549,7 @@ msgid "cmd_desequipar"
 msgstr ""
 
 msgid "cmd_profile_frame_color"
+msgstr ""
+
+msgid "cmd_novo_item"
 msgstr ""
