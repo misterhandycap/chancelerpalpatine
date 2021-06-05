@@ -23,6 +23,10 @@ class AkinatorGame():
     def get_user_game(self, user):
         player: Player = convert_users_to_players(user)[0]
         return self.games.get(player.id)
+
+    def remove_user_game(self, user):
+        player: Player = convert_users_to_players(user)[0]
+        self.games[player.id] = None
     
     async def answer_question(self, game: Akinator, answer: str):
         if game.progression > 80:

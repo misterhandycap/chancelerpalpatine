@@ -43,10 +43,11 @@ class AkinatorCog(commands.Cog):
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         game = self.akinator_bot.get_user_game(user)
-        if not game or not reaction.message.embeds:
+        message = reaction.message
+        if not game or not message.embeds or message.author.id != self.client.user.id:
             return
-        embed = reaction.message.embeds[0]
-        if 'Akinator' not in embed.title:
+        embed = message.embeds[0]
+        if 'Akinator' not in embed.title or game.question != embed.description:
             return
 
         emoji = str(reaction)
@@ -54,19 +55,20 @@ class AkinatorCog(commands.Cog):
             return
         
         answer = [k for k, v in self.emoji_answers.items() if v == emoji][0]
-        async with reaction.message.channel.typing():
+        async with message.channel.typing():
             result = await self.akinator_bot.answer_question(game, answer)
         if isinstance(result, str):
-            await self.send_embed(result, user, reaction.message.channel)
+            await self.send_embed(result, user, message.channel)
         else:
+            self.akinator_bot.remove_user_game(user)
             embed = discord.Embed(
-                title=i(reaction.message, "{username} thought of {name}").format(
+                title=i(message, "{username} thought of {name}").format(
                     username=user.name, name=result.get("name")),
                 description=result.get('description'),
                 colour=discord.Color.blurple()
             )
             embed.set_thumbnail(url=result.get('absolute_picture_path'))
-            await reaction.message.channel.send(embed=embed)
+            await message.channel.send(embed=embed)
 
     async def send_embed(self, result, user, channel):
         embed = discord.Embed(
