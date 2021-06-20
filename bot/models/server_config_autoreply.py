@@ -18,5 +18,5 @@ class ServerConfigAutoreply(Base):
     image_url = Column(String, nullable=True)
 
     def get_reply(self, message):
-        case_insensitive_pattern = re.compile(self.message_regex, re.I)
+        case_insensitive_pattern = re.compile(self.message_regex, re.I | re.DOTALL)
         return re.sub(case_insensitive_pattern, self.reply, message)
