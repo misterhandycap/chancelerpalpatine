@@ -15,12 +15,12 @@ class TestAkinatorGame(VCRTestCase):
 
     def _get_vcr(self, **kwargs):
         return super()._get_vcr(match_on=('method', 'scheme', 'host', 'port', 'path'), **kwargs)
-    
+
     def test_new_game(self):
         akinator_bot = AkinatorGame()
         user = FakeDiscordUser(id=14)
 
-        actual = asyncio.run(akinator_bot.new_game(user, lang='pt'))
+        actual = asyncio.run(self._new_game(akinator_bot, user))
 
         self.assertEqual(len(actual), 2)
         self.assertIsInstance(actual[0], Akinator)
@@ -47,9 +47,8 @@ class TestAkinatorGame(VCRTestCase):
         akinator_bot = AkinatorGame()
         user = FakeDiscordUser(id=14)
         akinator_bot.games[user.id] = Akinator()
-        asyncio.run(akinator_bot.games[user.id].start_game())
 
-        actual = asyncio.run(akinator_bot.answer_question(akinator_bot.games[user.id], 'y'))
+        actual = asyncio.run(self._start_game_and_answer_question(akinator_bot, user.id))
 
         self.assertIn('?', actual)
 
@@ -57,20 +56,34 @@ class TestAkinatorGame(VCRTestCase):
         akinator_bot = AkinatorGame()
         user = FakeDiscordUser(id=14)
         akinator_bot.games[user.id] = Akinator()
-        asyncio.run(akinator_bot.games[user.id].start_game())
 
         with self.assertRaises(Exception):
-            asyncio.run(akinator_bot.answer_question(akinator_bot.games[user.id], 'invalid'))
+            asyncio.run(self._start_game_and_answer_question(
+                akinator_bot, user.id, answer='invalid'))
 
     def test_answer_question_game_over(self):
         akinator_bot = AkinatorGame()
         user = FakeDiscordUser(id=14)
         akinator_bot.games[user.id] = Akinator()
-        asyncio.run(akinator_bot.games[user.id].start_game())
-        akinator_bot.games[user.id].progression = 85
 
-        actual = asyncio.run(akinator_bot.answer_question(akinator_bot.games[user.id], 'y'))
+        actual = asyncio.run(self._start_game_and_answer_question(
+            akinator_bot, user.id, progression=85))
 
         self.assertIn('name', actual)
         self.assertIn('description', actual)
 
+    async def _new_game(self, akinator_bot, user):
+        try:
+            return await akinator_bot.new_game(user, lang='pt')
+        finally:
+            await akinator_bot.games[user.id].close()
+    
+    async def _start_game_and_answer_question(self, akinator_bot, user_id, *, progression=None, answer='y'):
+        try:
+            await akinator_bot.games[user_id].start_game()
+            if progression:
+                akinator_bot.games[user_id].progression = progression
+            
+            return await akinator_bot.answer_question(akinator_bot.games[user_id], answer)
+        finally:
+            await akinator_bot.games[user_id].close()
