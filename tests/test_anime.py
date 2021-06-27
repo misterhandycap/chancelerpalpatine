@@ -13,7 +13,7 @@ class TestAnime(VCRTestCase):
         self.assertEqual(actual.title, "Clannad: After Story")
         self.assertEqual(actual.title_english, "Clannad ~After Story~")
         self.assertEqual(actual.title_japanese, "CLANNAD〜AFTER STORY〜 クラナド アフターストーリー")
-        self.assertEqual(actual.image_url, "https://cdn.myanimelist.net/images/anime/13/24647.jpg")
+        self.assertEqual(actual.image_url, "https://cdn.myanimelist.net/images/anime/1299/110774.jpg")
         self.assertEqual(actual.rating, "PG-13 - Teens 13 or older")
         self.assertEqual(actual.genres, ["Slice of Life", "Comedy", "Supernatural", "Drama", "Romance"])
         self.assertIn(int(actual.score), range(0, 10))
