@@ -1,5 +1,5 @@
 aiohttp==3.6.2
-akinator.py==4.0.1
+akinator.py==5.0.0
 alembic==1.4.3
 async-timeout==3.0.1
 asyncssh==2.4.2
