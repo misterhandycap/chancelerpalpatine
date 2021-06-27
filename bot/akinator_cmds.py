@@ -60,7 +60,7 @@ class AkinatorCog(commands.Cog):
         if isinstance(result, str):
             await self.send_embed(result, user, message.channel)
         else:
-            self.akinator_bot.remove_user_game(user)
+            await self.akinator_bot.remove_user_game(user)
             embed = discord.Embed(
                 title=i(message, "{username} thought of {name}").format(
                     username=user.name, name=result.get("name")),
