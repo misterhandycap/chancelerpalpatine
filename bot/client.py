@@ -3,6 +3,7 @@ import os
 
 import discord
 from discord.ext import commands
+from discord_slash import SlashCommand
 from dotenv import load_dotenv
 
 from bot.across_the_stars_cmds import AcrossTheStarsCmds
@@ -27,6 +28,8 @@ client = commands.Bot(
     help_command=None,
     intents=intents
 )
+
+SlashCommand(client, sync_commands=True)
 
 client.add_cog(GeneralCog(client))
 client.add_cog(LevelCog(client))
