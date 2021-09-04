@@ -3,6 +3,8 @@ import logging
 
 import discord
 from discord.ext import commands
+from discord_slash import cog_ext
+from discord_slash.utils.manage_commands import create_option
 
 from bot.chess.chess import Chess
 from bot.chess.exceptions import ChessException, MultipleGamesAtOnce
@@ -28,23 +30,26 @@ def get_current_game(func):
     key. As such, in order to properly document this changed behaviour, simply incluse
     `{user2_doc}` into the function's doc where appropriate.
     """
-    async def function_wrapper(this, ctx, *args, user2, **kwargs):
+    async def function_wrapper(this, ctx, *args, **kwargs):
         try:
-            game = this.chess_bot.find_current_game(ctx.author, user2)
+            user = args[-1] if args else kwargs.get("user", None)
+            game = this.chess_bot.find_current_game(ctx.author, user)
         except MultipleGamesAtOnce as e:
             return await ctx.send(i(ctx, e.message).format(number_of_games=e.number_of_games))
         except ChessException as e:
             return await ctx.send(i(ctx, e.message))
         
         func_args = [this, ctx] + list(args)
+        if 'user' in kwargs:
+            del kwargs["user"]
         await func(*func_args, game=game, **kwargs)
     
     command_signature = inspect.signature(func)
     command_signature_parameters = command_signature.parameters.copy()
     del command_signature_parameters['game']
-    command_signature_parameters.update({'user2': inspect.Parameter(
-        'user2',
-        inspect.Parameter.KEYWORD_ONLY,
+    command_signature_parameters.update({'user': inspect.Parameter(
+        'user',
+        inspect.Parameter.POSITIONAL_OR_KEYWORD,
         default=None,
         annotation=discord.User
     )})
@@ -73,8 +78,22 @@ class ChessCog(commands.Cog):
         await self.chess_bot.load_games()
         logging.info(f'Successfully loaded {len(self.chess_bot.games)} active chess games')
     
-    @commands.command(aliases=['xn'])
-    async def xadrez_novo(self, ctx, user2: discord.User, color_schema=None):
+    @cog_ext.cog_slash(
+        name="xadrez_novo",
+        description="Inicie uma nova partida de xadrez com alguém",
+        options=[
+            create_option(name="user", description="Usuário contra quem quer jogar", option_type=6, required=True),
+            create_option(
+                name="color_schema",
+                description="Cores do tabuleiro",
+                option_type=3,
+                required=False,
+                choices=["blue", "purple", "green", "red", "gray", "wood"]
+            ),
+        ],
+        guild_ids=[297129074692980737]
+    )
+    async def new_game_pvp(self, ctx, user: discord.User, color_schema=None):
         """
         Inicie uma nova partida de xadrez com alguém
 
@@ -83,19 +102,33 @@ class ChessCog(commands.Cog):
         (opções válidas: `blue`, `purple`, `green`, `red`, `gray` e `wood`).
         """
         bot_info = await self.client.application_info()
-        if user2.id == bot_info.id:
+        if user.id == bot_info.id:
             return await ctx.send(
                 i(ctx, "In order to play a game against the bot, use the command `{prefix}xadrez_bot`")
                 .format(prefix=self.client.command_prefix)
             )
         try:
-            game = self.chess_bot.new_game(ctx.author, user2, color_schema=color_schema)
+            game = self.chess_bot.new_game(ctx.author, user, color_schema=color_schema)
             await ctx.send(i(ctx, 'Game started! {}, play your move').format(game.player1.name))
         except ChessException as e:
             await ctx.send(i(ctx, e.message))
 
-    @commands.command(aliases=['xpve', 'xcpu', 'xb'])
-    async def xadrez_bot(self, ctx, cpu_level: int, color_schema=None):
+    @cog_ext.cog_slash(
+        name="xadrez_bot",
+        description="Inicie uma nova partida de xadrez contra o bot",
+        options=[
+            create_option(name="cpu_level", description="Nível de dificuldade", option_type=4, required=True),
+            create_option(
+                name="color_schema",
+                description="Cores do tabuleiro",
+                option_type=3,
+                required=False,
+                choices=["blue", "purple", "green", "red", "gray", "wood"]
+            ),
+        ],
+        guild_ids=[297129074692980737]
+    )
+    async def new_game_pve(self, ctx, cpu_level: int, color_schema=None):
         """
         Inicie uma nova partida de xadrez contra o bot
 
@@ -111,14 +144,28 @@ class ChessCog(commands.Cog):
         except ChessException as e:
             await ctx.send(i(ctx, e.message))
 
-    @commands.command(aliases=['xj'])
+    @cog_ext.cog_slash(
+        name="xadrez_jogar",
+        description="Faça uma jogada em sua partida atual",
+        options=[
+            create_option(name="move", description="Use anotação SAN ou UCI", option_type=3, required=True),
+            create_option(
+                name="user",
+                description="Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo",
+                option_type=6,
+                required=False
+            ),
+        ],
+        guild_ids=[297129074692980737]
+    )
     @get_current_game
-    async def xadrez_jogar(self, ctx, move, *, game):
+    async def play_move(self, ctx, move, *, game):
         """
         Faça uma jogada em sua partida atual
 
         Use anotação SAN ou UCI. Movimentos inválidos ou ambíguos são rejeitados. {user2_doc}
         """
+        await ctx.defer()
         async with ctx.channel.typing():
             try:
                 game = await self.chess_bot.make_move(game, move)
@@ -148,14 +195,27 @@ class ChessCog(commands.Cog):
             ]
             await ctx.send(sheev_msgs[evaluation["mate_in"] - 1])
 
-    @commands.command(aliases=['xa'])
+    @cog_ext.cog_slash(
+        name="xadrez_abandonar",
+        description="Abandone a partida atual",
+        options=[
+            create_option(
+                name="user",
+                description="Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo",
+                option_type=6,
+                required=False
+            ),
+        ],
+        guild_ids=[297129074692980737]
+    )
     @get_current_game
-    async def xadrez_abandonar(self, ctx, *, game):
+    async def resign(self, ctx, *, game):
         """
         Abandone a partida atual
 
         {user2_doc}
         """
+        await ctx.defer()
         async with ctx.channel.typing():
             game = await self.chess_bot.resign(game)
             pgn = self.chess_bot.generate_pgn(game)
@@ -165,35 +225,69 @@ class ChessCog(commands.Cog):
                 file=discord.File(board_png_bytes, 'board.png')
             )
 
-    @commands.command(aliases=['xpgn'])
+    @cog_ext.cog_slash(
+        name="xadrez_pgn",
+        description="Gera o PGN da partida atual",
+        options=[
+            create_option(
+                name="user",
+                description="Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo",
+                option_type=6,
+                required=False
+            ),
+        ],
+        guild_ids=[297129074692980737]
+    )
     @get_current_game
-    async def xadrez_pgn(self, ctx, *, user2: discord.User=None, game):
+    async def get_game_pgn(self, ctx, *, game):
         """
         Gera o PGN da partida atual
 
         {user2_doc}
         """
+        await ctx.defer()
         async with ctx.channel.typing():
             result = self.chess_bot.generate_pgn(game)
             await ctx.send(result)
 
-    @commands.command(aliases=['xpos'])
+    @cog_ext.cog_slash(
+        name="xadrez_posicao",
+        description="Mostra a posição atual da partida em andamento",
+        options=[
+            create_option(
+                name="user",
+                description="Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo",
+                option_type=6,
+                required=False
+            ),
+        ],
+        guild_ids=[297129074692980737]
+    )
     @get_current_game
-    async def xadrez_posicao(self, ctx, *, game):
+    async def get_game_position(self, ctx, *, game):
         """
         Mostra a posição atual da partida em andamento
 
         {user2_doc}
         """
+        await ctx.defer()
         async with ctx.channel.typing():
             image = self.chess_bot.build_png_board(game)
             await ctx.send(file=discord.File(image, 'board.png'))
 
-    @commands.command(aliases=['xt', 'xadrez_jogos'])
-    async def xadrez_todos(self, ctx, page: int=0):
+    @cog_ext.cog_slash(
+        name="xadrez_todos",
+        description="Veja todas as partidas que estão sendo jogadas agora",
+        options=[
+            create_option(name="page", description="Página", option_type=4, required=False),
+        ],
+        guild_ids=[297129074692980737]
+    )
+    async def all_current_games(self, ctx, page: int=0):
         """
         Veja todas as partidas que estão sendo jogadas agora
         """
+        await ctx.defer()
         async with ctx.channel.typing():
             png_bytes = await self.chess_bot.get_all_boards_png(page)
             if not png_bytes:
@@ -204,8 +298,17 @@ class ChessCog(commands.Cog):
             else:
                 await ctx.send(file=discord.File(png_bytes, 'boards.png'))
 
-    @commands.command(aliases=['xgif'])
-    async def xadrez_gif(self, ctx, game_id: str, move_number: int, *moves):
+    @cog_ext.cog_slash(
+        name="xadrez_gif",
+        description="Exibe um GIF animado com uma variante fornecida para o jogo em questão, a partir do lance fornecido",
+        options=[
+            create_option(name="game_id", description="UUID da partida", option_type=3, required=True),
+            create_option(name="move_number", description="Número do lance", option_type=4, required=True),
+            create_option(name="moves", description="Jogadas", option_type=3, required=True)
+        ],
+        guild_ids=[297129074692980737]
+    )
+    async def make_animated_gif(self, ctx, game_id: str, move_number: int, moves):
         """
         Exibe um GIF animado com uma variante fornecida para o jogo em questão, a partir do lance fornecido
 
@@ -214,18 +317,27 @@ class ChessCog(commands.Cog):
 
         Exemplo de uso: `xgif f63e5e4f-dd94-4439-a283-33a1c1a065a0 11 Nxf5 Qxf5 Qxf5 gxf5`
         """
+        await ctx.defer()
         async with ctx.channel.typing():
             chess_game = await self.chess_bot.get_game_by_id(game_id)
             if not chess_game:
                 return await ctx.send(i(ctx, "Game not found"))
             
             gif_bytes = await self.chess_bot.build_animated_sequence_gif(
-                chess_game, move_number, moves)
+                chess_game, move_number, moves.split(" "))
             if not gif_bytes:
                 return await ctx.send(i(ctx, "Invalid move for the given sequence"))
             return await ctx.send(file=discord.File(gif_bytes, 'variation.gif'))
 
-    @commands.command(aliases=['xp'])
+    @cog_ext.cog_slash(
+        name="xadrez_puzzle",
+        description="Pratique um puzzle de xadrez",
+        options=[
+            create_option(name="puzzle_id", description="ID do puzzle", option_type=3, required=False),
+            create_option(name="move", description="Lance", option_type=3, required=False)
+        ],
+        guild_ids=[297129074692980737]
+    )
     async def xadrez_puzzle(self, ctx, puzzle_id=None, move=''):
         """
         Pratique um puzzle de xadrez
@@ -236,7 +348,7 @@ class ChessCog(commands.Cog):
         Exemplo de novo puzzle: `xadrez_puzzle`
         Exemplo de jogada em puzzle existente: `xadrez_puzzle 557b7aa7e13823b82b9bc1e9 Qa2`
         """
-        await ctx.trigger_typing()
+        await ctx.defer()
         if not puzzle_id:
             puzzle_dict = await self.puzzle_bot.get_random_puzzle()
             if 'error' in puzzle_dict:
