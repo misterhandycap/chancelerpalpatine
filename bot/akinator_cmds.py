@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+from discord_slash import cog_ext
+from discord_slash.utils.manage_commands import create_option
 
 from bot.akinator.akinator_game import AkinatorGame
 from bot.utils import i, get_server_lang
@@ -22,8 +24,12 @@ class AkinatorCog(commands.Cog):
         self.client = client
         self.akinator_bot = AkinatorGame()
 
-    @commands.command(aliases=['an'])
-    async def akinator_novo(self, ctx):
+    @cog_ext.cog_slash(
+        name="akinator",
+        description="Novo jogo com Akinator",
+        guild_ids=[297129074692980737]
+    )
+    async def new_game(self, ctx):
         """
         Novo jogo com Akinator
 
@@ -34,8 +40,9 @@ class AkinatorCog(commands.Cog):
         🇺: Provavelmente não
         🚫: Não
         """
+        await ctx.defer()
         async with ctx.channel.typing():
-            lang = get_server_lang(ctx.guild.id)
+            lang = get_server_lang(ctx.guild_id)
             game, question = await self.akinator_bot.new_game(ctx.author, lang)
         await ctx.send(i(ctx, "Game started. Answer by reaction to the bot's questions."))
         await self.send_embed(question, ctx.author, ctx)

@@ -4,6 +4,8 @@ from datetime import datetime
 
 import discord
 from discord.ext import commands
+from discord_slash import cog_ext
+from discord_slash.utils.manage_commands import create_option
 
 from bot.economy.exceptions import EconomyException
 from bot.economy.item import Item
@@ -24,19 +26,23 @@ class PalplatinaCmds(commands.Cog):
         self.shop_paginated_embed_manager = PaginatedEmbedManager(
             self.client, self._build_shop_embed)
 
-    @commands.command()
+    @cog_ext.cog_slash(
+        name="daily",
+        description="Receba sua recompensa diária em Palplatinas 🤑",
+        guild_ids=[297129074692980737]
+    )
     async def daily(self, ctx):
         """
         Receba sua recompensa diária em Palplatinas 🤑
         """
         received_daily, user = await self.palplatina.give_daily(
-            ctx.message.author.id, ctx.message.author.name)
+            ctx.author.id, ctx.author.name)
         if received_daily:
             palplatinas_embed = discord.Embed(
                 title=i(ctx, 'Daily!'),
                 description=i(ctx, 'You have received 300 palplatinas, enjoy!'),
                 colour=discord.Color.greyple(),
-                timestamp=ctx.message.created_at
+                timestamp=datetime.utcnow()
             )
         else:
             palplatinas_embed = discord.Embed(
@@ -46,15 +52,19 @@ class PalplatinaCmds(commands.Cog):
                 timestamp=user.daily_last_collected_at
             )
         palplatinas_embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')    
-        palplatinas_embed.set_author(name=ctx.message.author)
+        palplatinas_embed.set_author(name=ctx.author)
         await ctx.send(embed=palplatinas_embed)
 
-    @commands.command(aliases=['conta', 'atm', 'palplatina'])
-    async def banco(self, ctx):
+    @cog_ext.cog_slash(
+        name="banco",
+        description="Veja seu saldo de Palplatinas 💰",
+        guild_ids=[297129074692980737]
+    )
+    async def get_balance(self, ctx):
         """
         Veja seu saldo de Palplatinas 💰
         """
-        currency = await self.palplatina.get_currency(ctx.message.author.id)
+        currency = await self.palplatina.get_currency(ctx.author.id)
         
         embed = discord.Embed(
             title=i(ctx, 'Daily!'),
@@ -62,15 +72,21 @@ class PalplatinaCmds(commands.Cog):
                 username=ctx.author.mention,
                 currency=currency
             ),
-            colour=discord.Color.greyple(),
-            timestamp=ctx.message.created_at
+            colour=discord.Color.greyple()
         )
         embed.set_thumbnail(
             url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=['shop', 'lojinha'])
-    async def loja(self, ctx, *, search_query=''):
+    @cog_ext.cog_slash(
+        name="loja",
+        description="Veja os itens disponíveis para serem adquiridos",
+        options=[
+            create_option(name="search_query", description="Busca", option_type=3, required=False)
+        ],
+        guild_ids=[297129074692980737]
+    )
+    async def shop(self, ctx, search_query=''):
         """
         Veja os itens disponíveis para serem adquiridos
         """
@@ -101,12 +117,16 @@ class PalplatinaCmds(commands.Cog):
             )
         return embed
     
-    @commands.command(aliases=['items'])
-    async def itens(self, ctx):
+    @cog_ext.cog_slash(
+        name="itens",
+        description="Veja os itens que você comprou",
+        guild_ids=[297129074692980737]
+    )
+    async def items(self, ctx):
         """
         Veja os itens que você comprou
         """
-        user_profile_items = await self.palplatina.get_user_items(ctx.message.author.id)
+        user_profile_items = await self.palplatina.get_user_items(ctx.author.id)
         embed = discord.Embed(
             title=i(ctx, 'Your acquired items'),
             description=i(ctx, 'Browse through all your acquired items'),
@@ -119,24 +139,45 @@ class PalplatinaCmds(commands.Cog):
             )
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=['equip'])
-    async def equipar(self, ctx, *, profile_item_name):
+    @cog_ext.cog_slash(
+        name="equipar",
+        description="Equipa o item fornecido",
+        options=[
+            create_option(name="profile_item_name", description="Nome do item", option_type=3, required=True)
+        ],
+        guild_ids=[297129074692980737]
+    )
+    async def equip_item(self, ctx, profile_item_name):
         try:
             await self.palplatina.equip_item(ctx.author.id, profile_item_name)
             return await ctx.send(i(ctx, 'Equipped'))
         except EconomyException as e:
             result = i(ctx, e.message)
 
-    @commands.command(aliases=['unequip'])
-    async def desequipar(self, ctx, *, profile_item_name):
+    @cog_ext.cog_slash(
+        name="desequipar",
+        description="Desequipa o item fornecido",
+        options=[
+            create_option(name="profile_item_name", description="Nome do item", option_type=3, required=True)
+        ],
+        guild_ids=[297129074692980737]
+    )
+    async def unequip_item(self, ctx, profile_item_name):
         try:
             await self.palplatina.unequip_item(ctx.author.id, profile_item_name)
             return await ctx.send(i(ctx, 'Not equipped'))
         except EconomyException as e:
             result = i(ctx, e.message)
 
-    @commands.command(aliases=['buy'])
-    async def comprar(self, ctx, *, profile_item_name):
+    @cog_ext.cog_slash(
+        name="comprar",
+        description="Compre um item para seu perfil",
+        options=[
+            create_option(name="profile_item_name", description="Nome do item", option_type=3, required=True)
+        ],
+        guild_ids=[297129074692980737]
+    )
+    async def buy_item(self, ctx, profile_item_name):
         """
         Compre um item para seu perfil
 
@@ -157,7 +198,7 @@ class PalplatinaCmds(commands.Cog):
             embed.set_thumbnail(url="attachment://item.png")
         embed.set_author(name=ctx.author)
         embed.add_field(name=i(ctx, 'Price'), value=profile_item.price)
-        embed.add_field(name=i(ctx, 'Your palplatinas'), value=await self.palplatina.get_currency(ctx.message.author.id))
+        embed.add_field(name=i(ctx, 'Your palplatinas'), value=await self.palplatina.get_currency(ctx.author.id))
         
         message = await ctx.send(embed=embed, file=discord_file)
         await message.add_reaction('✅')
@@ -190,8 +231,24 @@ class PalplatinaCmds(commands.Cog):
         
         await reaction.message.channel.send(content=f'{embed.author.name}: {result}')
 
-    @commands.command(aliases=['new_item', 'sugerir_item'])
-    async def novo_item(self, ctx, item_type, price: int, *, name):
+    @cog_ext.cog_slash(
+        name="novo_item",
+        description="Sugira um novo item a ser adicionado à loja do bot",
+        options=[
+            create_option(
+                name="item_type",
+                description="Tipo de item",
+                option_type=3,
+                choices=['badge', 'wallpaper'],
+                required=True
+            ),
+            create_option(name="price", description="Preço", option_type=4, required=True),
+            create_option(name="name", description="Nome do item", option_type=3, required=True),
+            create_option(name="url", description="URL da imagem do item", option_type=3, required=True),
+        ],
+        guild_ids=[297129074692980737]
+    )
+    async def suggest_item(self, ctx, item_type, price: int, name, url):
         """
         Sugira um novo item a ser adicionado à loja do bot
         """
@@ -200,9 +257,6 @@ class PalplatinaCmds(commands.Cog):
         except ProfileItemException as e:
             return await ctx.send(i(ctx, e.message))
 
-        if not ctx.message.attachments:
-            return await ctx.send(i(ctx, i(ctx, 'Missing file attachment')))
-
         embed = discord.Embed(
             title=i(ctx, 'New item suggestion'),
             description=profile_item.name
@@ -210,8 +264,8 @@ class PalplatinaCmds(commands.Cog):
         embed.add_field(name=i(ctx, 'Type'), value=profile_item.type)
         embed.add_field(name=i(ctx, 'Price'), value=profile_item.price)
         embed.set_author(name=ctx.author)
-        embed.set_image(url=ctx.message.attachments[0].url)
-        result_message = await ctx.reply(embed=embed, mention_author=False)
+        embed.set_image(url=url)
+        result_message = await ctx.reply(embed=embed)
         await result_message.add_reaction('✅')
         await result_message.add_reaction('🚫')
 
@@ -237,6 +291,8 @@ class PalplatinaCmds(commands.Cog):
                 type=next(field.value for field in embed.fields if field.name == i(reaction.message, 'Type'))
             )
             try:
+                # TODO fix me: item_bot.save_profile_item will need to change, as we no longe have
+                # filename and image contents (instead, we only have image's URL)
                 original_message = reaction.message.reference.cached_message
                 if not original_message:
                     original_message = await reaction.message.channel.fetch_message(
