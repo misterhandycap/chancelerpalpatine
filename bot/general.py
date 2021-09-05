@@ -39,6 +39,10 @@ class GeneralCog(commands.Cog):
         logging.info('Bot is ready')
 
     @commands.Cog.listener()
+    async def on_slash_command_error(self, ctx, error):
+        return await self.on_command_error(ctx, error)
+
+    @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         try:
             raise error
@@ -70,8 +74,7 @@ class GeneralCog(commands.Cog):
         except commands.MissingPermissions:
             await ctx.reply(
                 i(ctx, "You do not have the required permissions to run this command: ") +
-                f"`{'`, `'.join(error.missing_perms)}`",
-                mention_author=False
+                f"`{'`, `'.join(error.missing_perms)}`"
             )
         except:
             logging.warning(f'{error.__class__}: {error}')
@@ -241,13 +244,21 @@ class GeneralCog(commands.Cog):
         embed.add_field(name=i(ctx, 'Help cmd'), value=f'{bot_prefix}help')
         return embed
 
-    @commands.command(aliases=['limpar', 'clean'])
+    @cog_ext.cog_slash(
+        name="clear",
+        description="Limpa as últimas mensagens do canal atual",
+        options=[
+            create_option(name="amount", description="Número de mensagens a excluir", option_type=4, required=True),
+        ],
+        guild_ids=[297129074692980737]
+    )
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount: int):
         """
         Limpa as últimas mensagens do canal atual
         """
-        await ctx.channel.purge(limit=amount+1)
+        await ctx.channel.purge(limit=amount)
+        return await ctx.send('Done')
 
     @cog_ext.cog_slash(
         name="vision",
@@ -303,7 +314,14 @@ class GeneralCog(commands.Cog):
         embed.set_image(url=image_url)
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @cog_ext.cog_slash(
+        name="lang",
+        description="Muda o idioma do bot no servidor atual",
+        options=[
+            create_option(name="language_code", description="Código válido de idioma", option_type=3, required=True)
+        ],
+        guild_ids=[297129074692980737]
+    )
     @commands.has_permissions(administrator=True)
     async def lang(self, ctx, language_code):
         """
