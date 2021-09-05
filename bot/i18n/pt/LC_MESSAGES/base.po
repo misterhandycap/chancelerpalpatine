@@ -224,6 +224,10 @@ msgid "You do not have the required permissions to run this command: "
 msgstr ""
 "Você não tem as seguintes permissões necessárias para rodar esse comando:"
 
+#: bot/general.py:81
+msgid "Command only available through DM"
+msgstr "Comando disponível apenas através de DM"
+
 #: bot/general.py:116
 msgid "Help"
 msgstr "Ajuda"
@@ -600,18 +604,14 @@ msgstr "Mostra uma foto aleatória de gato 🐈"
 
 msgid "cmd_mapa_astral"
 msgstr ""
-"Visualize ou crie via DM seu mapa astral\n"
+"Crie via DM seu mapa astral\n"
 "\n"
 "Para criar seu mapa astral, envie esse comando em DM para o bot informando a "
 "data, hora e local de seu nascimento da seguinte forma: `YYYY/mm/dd HH:MM "
 "Nome da cidade`.\n"
 "\n"
-"Se já tiver criado seu mapa astral, envie esse comando sem argumentos para "
-"visualizá-lo em qualquer canal.\n"
-"\n"
 "Exemplo de uso para criação de mapa astral: `mapa_astral 2000/15/01 12:00 "
-"Brasília`\n"
-"Exemplo de uso para visualização de mapa criado: `mapa_astral`"
+"Brasília`"
 
 msgid "cmd_xadrez_abandonar"
 msgstr ""

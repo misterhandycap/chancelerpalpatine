@@ -211,6 +211,10 @@ msgstr ""
 msgid "You do not have the required permissions to run this command: "
 msgstr ""
 
+#: bot/general.py:81
+msgid "Command only available through DM"
+msgstr ""
+
 #: bot/general.py:116
 msgid "Help"
 msgstr ""

@@ -76,8 +76,14 @@ class GeneralCog(commands.Cog):
                 i(ctx, "You do not have the required permissions to run this command: ") +
                 f"`{'`, `'.join(error.missing_perms)}`"
             )
+        except commands.PrivateMessageOnly:
+            await ctx.reply(
+                i(ctx, "Command only available through DM"),
+                mention_author=False
+            )
         except:
             logging.warning(f'{error.__class__}: {error}')
+            logging.exception(error)
             await ctx.message.add_reaction('⚠️')
 
     @commands.Cog.listener()

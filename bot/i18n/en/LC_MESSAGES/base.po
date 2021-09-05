@@ -212,6 +212,10 @@ msgstr ""
 msgid "You do not have the required permissions to run this command: "
 msgstr ""
 
+#: bot/general.py:81
+msgid "Command only available through DM"
+msgstr ""
+
 #: bot/general.py:116
 msgid "Help"
 msgstr ""
@@ -580,18 +584,14 @@ msgstr "Shows a random picture of cats 🐈"
 
 msgid "cmd_mapa_astral"
 msgstr ""
-"Check or create via DM your astrology birth chart\n"
+"Create via DM your astrology birth chart\n"
 "\n"
 "In order to create your astrology birth chart, send this command to the bot "
 "via DM informing your birth date, time and city on the following format: "
 "`YYYY/mm/dd HH:MM City name`.\n"
 "\n"
-"If you've already created your astrology chart, then send this command "
-"without parameters in any channel in order to view it.\n"
-"\n"
 "Example for astrology chart creation: `mapa_astral 2000/15/01 12:00 "
-"Brasília`\n"
-"Exemple of viewing created astrology chart: `mapa_astral`"
+"Brasília`"
 
 msgid "cmd_xadrez_abandonar"
 msgstr ""
