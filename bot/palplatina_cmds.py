@@ -291,14 +291,7 @@ class PalplatinaCmds(commands.Cog):
                 type=next(field.value for field in embed.fields if field.name == i(reaction.message, 'Type'))
             )
             try:
-                # TODO fix me: item_bot.save_profile_item will need to change, as we no longe have
-                # filename and image contents (instead, we only have image's URL)
-                original_message = reaction.message.reference.cached_message
-                if not original_message:
-                    original_message = await reaction.message.channel.fetch_message(
-                        reaction.message.reference.message_id)
-                original_image = original_message.attachments[0]
-                await self.item_bot.save_profile_item(profile_item, original_image.filename, await original_image.read())
+                await self.item_bot.save_profile_item(profile_item, embed.image.url)
                 result = i(reaction.message, 'New item added to the shop!')
             except discord.HTTPException:
                 result = i(reaction.message, 'Could not find original message 😣')
