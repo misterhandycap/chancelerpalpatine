@@ -1,4 +1,7 @@
 import os
+from pathlib import PurePosixPath
+
+from aiohttp import ClientSession
 
 from bot.models.profile_item import ProfileItem
 
@@ -14,16 +17,14 @@ class Item():
         """
         return ProfileItem(**args)
 
-    async def save_profile_item(self, profile_item: ProfileItem, filename: str, file_contents: bytes):
+    async def save_profile_item(self, profile_item: ProfileItem, url: str):
         """
         Saves given profile item with given image
 
         :param profile_item: Profile item to be persisted
         :type profile_item: ProfileItem
-        :param filename: Image's file name
-        :type filename: str
-        :param file_contents: Image's contents
-        :type file_contents: bytes
+        :param file_contents: Image's URL
+        :type file_contents: url
         :return: Created profile item's id
         :rtype: str
         """
@@ -32,6 +33,11 @@ class Item():
             os.environ.get("PROFILE_ITEM_IMAGES_PATH", default_path), f'{str(profile_item.type)}s'
         )
         os.makedirs(directory_path, exist_ok=True)
+
+        filename = PurePosixPath(url).parts[-1]
+        async with ClientSession() as session:
+            async with session.get(url) as response:
+                file_contents = await response.read()
 
         profile_item.file_path = os.path.join(directory_path, filename)
         with open(profile_item.file_path, 'wb') as f:

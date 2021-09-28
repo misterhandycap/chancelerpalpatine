@@ -2,6 +2,8 @@ import logging
 
 import discord
 from discord.ext import commands
+from discord_slash import cog_ext
+from discord_slash.utils.manage_commands import create_option
 
 from bot.anime.anime import Anime
 from bot.utils import i
@@ -16,11 +18,18 @@ class AnimeCog(commands.Cog):
         self.client = client
         self.anime_bot = Anime()
 
-    @commands.command(aliases=['busca_anime', 'buscar_anime', 'anime_buscar'])
-    async def anime_busca(self, ctx, *, query):
+    @cog_ext.cog_slash(
+        name="anime_busca",
+        description="Faça uma pesquisa por um nome de anime",
+        options=[
+            create_option(name="query", description="Anime query", option_type=3, required=True)
+        ]
+    )
+    async def anime_search(self, ctx, query):
         """
         Faça uma pesquisa por um nome de anime
         """
+        await ctx.defer()
         async with ctx.channel.typing():
             results = self.anime_bot.search_anime(query)
 
@@ -29,18 +38,24 @@ class AnimeCog(commands.Cog):
 
         embed = discord.Embed(
             title=i(ctx, "Results for {}").format(query),
-            colour=discord.Color.blurple(),
-            timestamp=ctx.message.created_at
+            colour=discord.Color.blurple()
         )
         for result in results[:5]:
             embed.add_field(name=result['title'], value=result['synopsis'])
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def anime(self, ctx, *, query):
+    @cog_ext.cog_slash(
+        name="anime_info",
+        description="Veja informações do anime buscado com MyAnimeList",
+        options=[
+            create_option(name="query", description="Anime query", option_type=3, required=True)
+        ]
+    )
+    async def get_anime(self, ctx, query):
         """
         Veja informações do anime buscado com MyAnimeList
         """
+        await ctx.defer()
         async with ctx.channel.typing():
             try:
                 result = self.anime_bot.get_anime(int(query))
@@ -56,7 +71,6 @@ class AnimeCog(commands.Cog):
             title=result.title,
             description=result.synopsis,
             colour=discord.Color.blurple(),
-            timestamp=ctx.message.created_at,
             url=result.url
         )
         embed.set_image(url=result.image_url)

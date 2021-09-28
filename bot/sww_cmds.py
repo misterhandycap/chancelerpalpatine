@@ -2,6 +2,8 @@ import logging
 
 import discord
 from discord.ext import commands
+from discord_slash import cog_ext
+from discord_slash.utils.manage_commands import create_option
 
 from bot.sww_leaderboard.leaderboard import Leaderboard
 from bot.utils import i, paginate, PaginatedEmbedManager
@@ -18,12 +20,18 @@ class StarWarsWikiCog(commands.Cog):
         self.medals_paginated_embed_manager = PaginatedEmbedManager(
             client, self._build_medals_embed)
 
-    @commands.command(aliases=['lb'])
+    @cog_ext.cog_slash(
+        name="leaderboard",
+        description="Exibe o leaderboard de medalhas da Star Wars Wiki",
+        options=[
+            create_option(name="page", description="Página", option_type=4, required=False),
+        ]
+    )
     async def leaderboard(self, ctx, page: int=1):
         """
         Exibe o leaderboard de medalhas da Star Wars Wiki
         """
-        await ctx.trigger_typing()
+        await ctx.defer()
         try:
             leaderboard_data = await self.leaderboard_bot.get()
             leaderboard_result = self.leaderboard_bot.build_leaderboard(*leaderboard_data)
@@ -34,12 +42,18 @@ class StarWarsWikiCog(commands.Cog):
             logging.warning(e, exc_info=True)
             return await ctx.send(i(ctx, "Something went wrong when trying to fetch Star Wars Wiki's leaderboard"))
 
-    @commands.command(aliases=['medalha'])
-    async def medal(self, ctx, *, medal_name):
+    @cog_ext.cog_slash(
+        name="medal",
+        description="Exibe detalhes de uma medalha da Star Wars Wiki",
+        options=[
+            create_option(name="medal_name", description="Nome da medalha", option_type=3, required=True)
+        ]
+    )
+    async def medal(self, ctx, medal_name):
         """
         Exibe detalhes de uma medalha da Star Wars Wiki
         """
-        await ctx.trigger_typing()
+        await ctx.defer()
         try:
             leaderboard_data = await self.leaderboard_bot.get()
             medals = await self.leaderboard_bot.build_medals_info(*leaderboard_data)
@@ -52,8 +66,7 @@ class StarWarsWikiCog(commands.Cog):
             embed = discord.Embed(
                 title=i(ctx, "Star Wars Wiki's medals"),
                 description=medal_info['name'],
-                colour=discord.Color.blurple(),
-                timestamp=ctx.message.created_at
+                colour=discord.Color.blurple()
             )
             embed.set_thumbnail(url=medal_info['image_url'])
             embed.add_field(name=i(ctx, 'Description'), value=medal_info['text'])
@@ -63,12 +76,18 @@ class StarWarsWikiCog(commands.Cog):
             logging.warning(e, exc_info=True)
             return await ctx.send(i(ctx, "Something went wrong when trying to fetch Star Wars Wiki's leaderboard"))
 
-    @commands.command(aliases=['medalhas'])
+    @cog_ext.cog_slash(
+        name="medals",
+        description="Exibe as medalhas disponíveis da Star Wars Wiki",
+        options=[
+            create_option(name="page", description="Página", option_type=4, required=False),
+        ]
+    )
     async def medals(self, ctx, page: int=1):
         """
         Exibe as medalhas disponíveis da Star Wars Wiki
         """
-        await ctx.trigger_typing()
+        await ctx.defer()
         try:
             return await self.medals_paginated_embed_manager.send_embed(
                 await self._build_medals_embed(page, ctx), page, ctx)

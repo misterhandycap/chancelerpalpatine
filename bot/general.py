@@ -7,6 +7,8 @@ import time
 
 import discord
 from discord.ext import commands
+from discord_slash import cog_ext
+from discord_slash.utils.manage_commands import create_option
 
 from bot.across_the_stars.vote import Vote
 from bot.aurebesh import text_to_aurebesh_img
@@ -35,6 +37,10 @@ class GeneralCog(commands.Cog):
         await cache.load_configs()
         cache.all_servers = self.client.guilds
         logging.info('Bot is ready')
+
+    @commands.Cog.listener()
+    async def on_slash_command_error(self, ctx, error):
+        return await self.on_command_error(ctx, error)
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -68,11 +74,16 @@ class GeneralCog(commands.Cog):
         except commands.MissingPermissions:
             await ctx.reply(
                 i(ctx, "You do not have the required permissions to run this command: ") +
-                f"`{'`, `'.join(error.missing_perms)}`",
+                f"`{'`, `'.join(error.missing_perms)}`"
+            )
+        except commands.PrivateMessageOnly:
+            await ctx.reply(
+                i(ctx, "Command only available through DM"),
                 mention_author=False
             )
         except:
             logging.warning(f'{error.__class__}: {error}')
+            logging.exception(error)
             await ctx.message.add_reaction('⚠️')
 
     @commands.Cog.listener()
@@ -160,23 +171,40 @@ class GeneralCog(commands.Cog):
         )
         return help_embed
 
-    @commands.command()
-    async def saimaluco(self, ctx, *, text):
+    @cog_ext.cog_slash(
+        name="saimaluco",
+        description="Manda o meme sai maluco com o texto enviado",
+        options=[
+            create_option(name="text", description="Texto", option_type=3, required=True)
+        ]
+    )
+    async def saimaluco(self, ctx, text):
         """
         Manda o meme sai maluco com o texto enviado
         """
+        await ctx.defer()
         image = meme_saimaluco_image(text)
         await ctx.send(file=discord.File(image, 'meme.png'))
     
-    @commands.command()
-    async def aurebesh(self, ctx, *, text):
+    @cog_ext.cog_slash(
+        name="aurebesh",
+        description="Gera uma imagem com o texto fornecido em Aurebesh",
+        options=[
+            create_option(name="text", description="Texto", option_type=3, required=True)
+        ]
+    )
+    async def aurebesh(self, ctx, text):
         """
         Gera uma imagem com o texto fornecido em Aurebesh
         """
+        await ctx.defer()
         image = text_to_aurebesh_img(text)
         await ctx.send(file=discord.File(image, 'aurebesh.png'))
     
-    @commands.command()
+    @cog_ext.cog_slash(
+        name="ping",
+        description="Confere se o bot está online e sua velocidade de resposta"
+    )
     async def ping(self, ctx):
         """
         Confere se o bot está online e sua velocidade de resposta
@@ -184,12 +212,14 @@ class GeneralCog(commands.Cog):
         ping = discord.Embed(
             title='Pong...',
             description=f'{round(self.client.latency * 1000)}ms',
-            colour=discord.Color.blurple(),
-            timestamp=ctx.message.created_at
+            colour=discord.Color.blurple()
         )
         await ctx.send(embed=ping)
 
-    @commands.command()
+    @cog_ext.cog_slash(
+        name="info",
+        description="Mostra informações sobre o bot"
+    )
     async def info(self, ctx):
         """
         Mostra informações sobre o bot
@@ -216,16 +246,29 @@ class GeneralCog(commands.Cog):
         embed.add_field(name=i(ctx, 'Help cmd'), value=f'{bot_prefix}help')
         return embed
 
-    @commands.command(aliases=['limpar', 'clean'])
+    @cog_ext.cog_slash(
+        name="clear",
+        description="Limpa as últimas mensagens do canal atual",
+        options=[
+            create_option(name="amount", description="Número de mensagens a excluir", option_type=4, required=True),
+        ]
+    )
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount: int):
         """
         Limpa as últimas mensagens do canal atual
         """
-        await ctx.channel.purge(limit=amount+1)
+        await ctx.channel.purge(limit=amount)
+        return await ctx.send('Done')
 
-    @commands.command(aliases=['8ball'])
-    async def vision(self, ctx, *, question):
+    @cog_ext.cog_slash(
+        name="vision",
+        description="Faça uma pergunta ao Chanceler e ele irá lhe responder",
+        options=[
+            create_option(name="question", description="Pergunta", option_type=3, required=True)
+        ]
+    )
+    async def vision(self, ctx, question):
         """
         Faça uma pergunta ao Chanceler e ele irá lhe responder
         """
@@ -242,12 +285,10 @@ class GeneralCog(commands.Cog):
         ]
         await ctx.send(f'{random.choice(responses)}')
 
-    @vision.error
-    async def clear_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('Queria me perguntar algo, Jedi?')
-
-    @commands.command(aliases=['caracoroa'])
+    @cog_ext.cog_slash(
+        name="sorte",
+        description="Cara ou coroa"
+    )
     async def sorte(self, ctx):
         """
         Cara ou coroa
@@ -255,12 +296,15 @@ class GeneralCog(commands.Cog):
         previsao = ['Cara', 'Coroa']
         await ctx.send(f'{random.choice(previsao)}')
 
-    @commands.command(aliases=['cat'])
-    async def gato(self, ctx):
+    @cog_ext.cog_slash(
+        name="gato",
+        description="Mostra uma foto aleatória de gato 🐈"
+    )
+    async def random_cat(self, ctx):
         """
         Mostra uma foto aleatória de gato 🐈
         """
-        await ctx.trigger_typing()
+        await ctx.defer()
         image_url = await random_cat()
         if not image_url:
             return await ctx.send(i(ctx, "Could not find a cat picture 😢"))
@@ -268,7 +312,13 @@ class GeneralCog(commands.Cog):
         embed.set_image(url=image_url)
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @cog_ext.cog_slash(
+        name="lang",
+        description="Muda o idioma do bot no servidor atual",
+        options=[
+            create_option(name="language_code", description="Código válido de idioma", option_type=3, required=True)
+        ]
+    )
     @commands.has_permissions(administrator=True)
     async def lang(self, ctx, language_code):
         """
@@ -280,8 +330,20 @@ class GeneralCog(commands.Cog):
         await cache.update_config(ctx.guild.id, language=language_code)
         return await ctx.send(i(ctx, 'Language updated to {lang}').format(lang=language_code))
 
-    @commands.command(aliases=['pedrapapeltesoura', 'ppt', 'dino'])
-    async def rps(self, ctx, player_choice_str):
+    @cog_ext.cog_slash(
+        name="rps",
+        description="Pedra, papel e tesoura com dinossauros",
+        options=[
+            create_option(
+                name="play",
+                description="Jogada",
+                option_type=3,
+                required=True,
+                choices=["Deus", "Homem", "Dinossauro"]
+            ),
+        ]
+    )
+    async def rps(self, ctx, play):
         """
         Pedra, papel e tesoura com dinossauros
 
@@ -290,12 +352,12 @@ class GeneralCog(commands.Cog):
         Regras: Homem ganha de Deus, Dinossauro ganha de Homem, \
             Deus ganha de Dinossauro e Mulher herda a Terra em caso de empate.
         """
-        player_choice_str = player_choice_str.title()
+        play = play.title()
         available_options = ['Deus', 'Homem', 'Dinossauro']
-        if player_choice_str not in available_options:
+        if play not in available_options:
             return await ctx.send(i(ctx, "Invalid option"))
 
-        player_choice = available_options.index(player_choice_str)
+        player_choice = available_options.index(play)
         bot_choice = random.randint(0,2)
         bot_choice_str = available_options[bot_choice]
 
@@ -306,10 +368,10 @@ class GeneralCog(commands.Cog):
             action_txt = ' destrói '
             if winner_choice == player_choice:
                 who = 'Você ganhou o jogo'
-                winner, loser = player_choice_str, bot_choice_str
+                winner, loser = play, bot_choice_str
             else:
                 who = 'Você perdeu o jogo'
-                winner, loser = bot_choice_str, player_choice_str
+                winner, loser = bot_choice_str, play
             if winner == 'Dinossauro':
                 action_txt = ' come o '
             result = f'{winner}{action_txt}{loser}\n{who}'
@@ -317,7 +379,10 @@ class GeneralCog(commands.Cog):
         resp_message = f"O bot escolheu: {bot_choice_str}\n{result}"
         await ctx.send(resp_message)
 
-    @commands.command()
+    @cog_ext.cog_slash(
+        name="plagueis",
+        description="Conta a tregédia de Darth Plagueis"
+    )
     async def plagueis(self, ctx):
         """
         Conta a tregédia de Darth Plagueis
@@ -325,13 +390,25 @@ class GeneralCog(commands.Cog):
         plagueis = discord.Embed(
             title='Já ouviu a tragédia de Darth Plagueis, o sábio?...',
             description='Eu achei que não. \nNão é uma história que um Jedi lhe contaria.\nÉ uma lenda Sith. \nDarth Plagueis era um Lorde Sombrio de Sith, tão poderoso e tão sábio que conseguia utilizar a Força para influenciar os midiclorians para criar vida. \nEle tinha tantos conhecimento do lado sombrio que podia até impedir que aqueles que lhe eram próximos morressem. \nAcontece que o lado sombrio é o caminho para muitas habilidades que muitos consideram serem... não naturais. \nEle se tornou tão poderoso; que a única coisa que ele tinha medo era, perder seu poder, o que acabou, é claro, ele perdeu. \nInfelizmente, ele ensinou a seu aprendiz tudo o que sabia; então, seu o seu aprendiz o matou enquanto dormia. \nÉ irônico. \nEle poderia salvar outros da morte, mas não podia a salvar a si mesmo.',
-            colour=discord.Color.blurple(),
-            timestamp=ctx.message.created_at
+            colour=discord.Color.blurple()
         )
         await ctx.send(embed=plagueis)
 
-    @commands.command(aliases=['google', 'buscar', 'search'])
-    async def busca(self, ctx, *, query):
+    @cog_ext.cog_slash(
+        name="busca",
+        description="Faz uma busca pelo buscador definido",
+        options=[
+            create_option(name="query", description="Busca", option_type=3, required=True),
+            create_option(
+                name="provider",
+                description="Buscador",
+                option_type=3,
+                choices=['google', 'sww', 'wookiee', 'aw'],
+                required=False
+            )
+        ]
+    )
+    async def get_search_url(self, ctx, query, provider='google'):
         """
         Faz uma busca pelo buscador definido
 
@@ -353,41 +430,54 @@ class GeneralCog(commands.Cog):
             'avatar':'https://avatar.fandom.com/pt-br/wiki/',
         }
 
-        search_provider = query.split(" ")[0]
-        if search_provider.lower() in providers:
-            search_engine = providers[search_provider.lower()]
-            actual_query = query[len(search_provider)+1:]
-        else:
-            search_engine = providers["google"]
-            actual_query = query
+        search_engine = providers[provider]
+        actual_query = query
         
         await ctx.send(f'{search_engine}{actual_query.replace(" ", "_")}')
 
-    @commands.command(aliases=['perfil'])
+    @cog_ext.cog_slash(
+        name="perfil",
+        description="Exibe o seu perfil ou de um usuário informado",
+        options=[
+            create_option(name="user", description="Usuário para exibir o perfil", option_type=6, required=False),
+        ]
+    )
     async def profile(self, ctx, user: discord.User=None):
         """
         Exibe o seu perfil ou de um usuário informado
         """
-        await ctx.trigger_typing()
-        selected_user = user if user else ctx.message.author
+        await ctx.defer()
+        selected_user = user if user else ctx.author
         user_avatar = await selected_user.avatar_url_as(
             size=128, static_format='png').read()
         image = await self.profile_bot.get_user_profile(
-            selected_user.id, user_avatar, get_server_lang(ctx.message.guild.id))
+            selected_user.id, user_avatar, get_server_lang(ctx.guild_id))
         if not image:
             return await ctx.send(i(ctx, 'Who are you?'))
         await ctx.send(file=discord.File(image, 'perfil.png'))
 
-    @commands.command(aliases=['cor_perfil', 'perfil_cor'])
+    @cog_ext.cog_slash(
+        name="profile_frame_color",
+        description="Atualiza a cor das bordas de seu perfil",
+        options=[
+            create_option(name="color", description="Cor que deseja em valor hex", option_type=3, required=True),
+        ]
+    )
     async def profile_frame_color(self, ctx, color):
         try:
-            await self.profile_bot.set_user_profile_frame_color(ctx.message.author.id, color)
+            await self.profile_bot.set_user_profile_frame_color(ctx.author_id, color)
             return await ctx.send(i(ctx, 'Profile color updated to {color}').format(color=color))
         except ValueError:
             return await ctx.send(i(ctx, 'Invalid color'))
 
-    @commands.command(aliases=['votar', 'vote', 'poll'])
-    async def voto(self, ctx, *, args):
+    @cog_ext.cog_slash(
+        name="voto",
+        description="Cria uma votação para as demais pessoas participarem",
+        options=[
+            create_option(name="args", description="A pergunta e as opções devem ser separadas por `;`", option_type=3, required=True),
+        ]
+    )
+    async def poll(self, ctx, args):
         """
         Cria uma votação para as demais pessoas participarem
 
@@ -413,7 +503,7 @@ class GeneralCog(commands.Cog):
         embed.add_field(  
             name=i(ctx, 'Democracy!'),
             value=i(ctx, 'I love democracy! {username} has summoned a vote! The proposition is **{question}**, and its options are:\n{options}').format(
-                username=ctx.message.author.mention,
+                username=ctx.author.mention,
                 question=question,
                 options=''.join([f'\n{emoji} - {choice}' for emoji, choice in zip(emoji_answers_vote, choices)])
             )

@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 
 import discord
 from discord.ext import commands
+from discord_slash import cog_ext
+from discord_slash.utils.manage_commands import create_option
 
 from bot.models.user import User
 from bot.models.xp_point import XpPoint
@@ -87,7 +89,13 @@ class LevelCog(commands.Cog):
             await User.save(user)
         return user
 
-    @commands.command(aliases=['nivel'])
+    @cog_ext.cog_slash(
+        name="level",
+        description="Mostra o nível de usuário",
+        options=[
+            create_option(name="user", description="Usuário para exibir o nível", option_type=6, required=False),
+        ]
+    )
     async def level(self, ctx, user: discord.User=None):
         """
         Mostra o nível de usuário
@@ -96,26 +104,31 @@ class LevelCog(commands.Cog):
             o seu nível de usuário será retornado.
         """
         selected_user = user if user else ctx.author
-        xp_point = await XpPoint.get_by_user_and_server(selected_user.id, ctx.message.guild.id)
+        xp_point = await XpPoint.get_by_user_and_server(selected_user.id, ctx.guild_id)
         if not xp_point:
             xp_point = XpPoint(level=0, points=0)
 
         levelbed = discord.Embed(
             title='Nível',
             description=f'{selected_user.mention} se encontra atualmente no nível {xp_point.level} com {xp_point.points}',
-            colour=discord.Color.red(),
-            timestamp=ctx.message.created_at
+            colour=discord.Color.red()
         )
         levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
         await ctx.send(embed=levelbed)
 
-    @commands.command(aliases=['board'])
+    @cog_ext.cog_slash(
+        name="rank",
+        description="Mostra a tabela de niveis de usuários em ordem de maior pra menor",
+        options=[
+            create_option(name="page_number", description="Página", option_type=4, required=False),
+        ]
+    )
     async def rank(self, ctx, page_number: int=1):
         """
         Mostra a tabela de niveis de usuários em ordem de maior pra menor
         """
         page_size = 5
-        xp_points = await XpPoint.list_by_server(ctx.message.guild.id)
+        xp_points = await XpPoint.list_by_server(ctx.guild_id)
 
         rank, last_page = paginate(xp_points, page_number, page_size)
 
