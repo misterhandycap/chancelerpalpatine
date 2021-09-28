@@ -23,8 +23,7 @@ class AnimeCog(commands.Cog):
         description="Faça uma pesquisa por um nome de anime",
         options=[
             create_option(name="query", description="Anime query", option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def anime_search(self, ctx, query):
         """
@@ -50,8 +49,7 @@ class AnimeCog(commands.Cog):
         description="Veja informações do anime buscado com MyAnimeList",
         options=[
             create_option(name="query", description="Anime query", option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def get_anime(self, ctx, query):
         """

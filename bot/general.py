@@ -176,8 +176,7 @@ class GeneralCog(commands.Cog):
         description="Manda o meme sai maluco com o texto enviado",
         options=[
             create_option(name="text", description="Texto", option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def saimaluco(self, ctx, text):
         """
@@ -192,8 +191,7 @@ class GeneralCog(commands.Cog):
         description="Gera uma imagem com o texto fornecido em Aurebesh",
         options=[
             create_option(name="text", description="Texto", option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def aurebesh(self, ctx, text):
         """
@@ -205,8 +203,7 @@ class GeneralCog(commands.Cog):
     
     @cog_ext.cog_slash(
         name="ping",
-        description="Confere se o bot está online e sua velocidade de resposta",
-        guild_ids=[297129074692980737]
+        description="Confere se o bot está online e sua velocidade de resposta"
     )
     async def ping(self, ctx):
         """
@@ -221,8 +218,7 @@ class GeneralCog(commands.Cog):
 
     @cog_ext.cog_slash(
         name="info",
-        description="Mostra informações sobre o bot",
-        guild_ids=[297129074692980737]
+        description="Mostra informações sobre o bot"
     )
     async def info(self, ctx):
         """
@@ -255,8 +251,7 @@ class GeneralCog(commands.Cog):
         description="Limpa as últimas mensagens do canal atual",
         options=[
             create_option(name="amount", description="Número de mensagens a excluir", option_type=4, required=True),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount: int):
@@ -271,8 +266,7 @@ class GeneralCog(commands.Cog):
         description="Faça uma pergunta ao Chanceler e ele irá lhe responder",
         options=[
             create_option(name="question", description="Pergunta", option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def vision(self, ctx, question):
         """
@@ -293,8 +287,7 @@ class GeneralCog(commands.Cog):
 
     @cog_ext.cog_slash(
         name="sorte",
-        description="Cara ou coroa",
-        guild_ids=[297129074692980737]
+        description="Cara ou coroa"
     )
     async def sorte(self, ctx):
         """
@@ -305,8 +298,7 @@ class GeneralCog(commands.Cog):
 
     @cog_ext.cog_slash(
         name="gato",
-        description="Mostra uma foto aleatória de gato 🐈",
-        guild_ids=[297129074692980737]
+        description="Mostra uma foto aleatória de gato 🐈"
     )
     async def random_cat(self, ctx):
         """
@@ -325,8 +317,7 @@ class GeneralCog(commands.Cog):
         description="Muda o idioma do bot no servidor atual",
         options=[
             create_option(name="language_code", description="Código válido de idioma", option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     @commands.has_permissions(administrator=True)
     async def lang(self, ctx, language_code):
@@ -350,8 +341,7 @@ class GeneralCog(commands.Cog):
                 required=True,
                 choices=["Deus", "Homem", "Dinossauro"]
             ),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def rps(self, ctx, play):
         """
@@ -391,8 +381,7 @@ class GeneralCog(commands.Cog):
 
     @cog_ext.cog_slash(
         name="plagueis",
-        description="Conta a tregédia de Darth Plagueis",
-        guild_ids=[297129074692980737]
+        description="Conta a tregédia de Darth Plagueis"
     )
     async def plagueis(self, ctx):
         """
@@ -417,8 +406,7 @@ class GeneralCog(commands.Cog):
                 choices=['google', 'sww', 'wookiee', 'aw'],
                 required=False
             )
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def get_search_url(self, ctx, query, provider='google'):
         """
@@ -452,8 +440,7 @@ class GeneralCog(commands.Cog):
         description="Exibe o seu perfil ou de um usuário informado",
         options=[
             create_option(name="user", description="Usuário para exibir o perfil", option_type=6, required=False),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def profile(self, ctx, user: discord.User=None):
         """
@@ -474,8 +461,7 @@ class GeneralCog(commands.Cog):
         description="Atualiza a cor das bordas de seu perfil",
         options=[
             create_option(name="color", description="Cor que deseja em valor hex", option_type=3, required=True),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def profile_frame_color(self, ctx, color):
         try:
@@ -489,8 +475,7 @@ class GeneralCog(commands.Cog):
         description="Cria uma votação para as demais pessoas participarem",
         options=[
             create_option(name="args", description="A pergunta e as opções devem ser separadas por `;`", option_type=3, required=True),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def poll(self, ctx, args):
         """

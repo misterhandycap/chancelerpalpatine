@@ -28,8 +28,7 @@ class PalplatinaCmds(commands.Cog):
 
     @cog_ext.cog_slash(
         name="daily",
-        description="Receba sua recompensa diária em Palplatinas 🤑",
-        guild_ids=[297129074692980737]
+        description="Receba sua recompensa diária em Palplatinas 🤑"
     )
     async def daily(self, ctx):
         """
@@ -57,8 +56,7 @@ class PalplatinaCmds(commands.Cog):
 
     @cog_ext.cog_slash(
         name="banco",
-        description="Veja seu saldo de Palplatinas 💰",
-        guild_ids=[297129074692980737]
+        description="Veja seu saldo de Palplatinas 💰"
     )
     async def get_balance(self, ctx):
         """
@@ -83,8 +81,7 @@ class PalplatinaCmds(commands.Cog):
         description="Veja os itens disponíveis para serem adquiridos",
         options=[
             create_option(name="search_query", description="Busca", option_type=3, required=False)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def shop(self, ctx, search_query=''):
         """
@@ -119,8 +116,7 @@ class PalplatinaCmds(commands.Cog):
     
     @cog_ext.cog_slash(
         name="itens",
-        description="Veja os itens que você comprou",
-        guild_ids=[297129074692980737]
+        description="Veja os itens que você comprou"
     )
     async def items(self, ctx):
         """
@@ -144,8 +140,7 @@ class PalplatinaCmds(commands.Cog):
         description="Equipa o item fornecido",
         options=[
             create_option(name="profile_item_name", description="Nome do item", option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def equip_item(self, ctx, profile_item_name):
         try:
@@ -159,8 +154,7 @@ class PalplatinaCmds(commands.Cog):
         description="Desequipa o item fornecido",
         options=[
             create_option(name="profile_item_name", description="Nome do item", option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def unequip_item(self, ctx, profile_item_name):
         try:
@@ -174,8 +168,7 @@ class PalplatinaCmds(commands.Cog):
         description="Compre um item para seu perfil",
         options=[
             create_option(name="profile_item_name", description="Nome do item", option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def buy_item(self, ctx, profile_item_name):
         """
@@ -245,8 +238,7 @@ class PalplatinaCmds(commands.Cog):
             create_option(name="price", description="Preço", option_type=4, required=True),
             create_option(name="name", description="Nome do item", option_type=3, required=True),
             create_option(name="url", description="URL da imagem do item", option_type=3, required=True),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def suggest_item(self, ctx, item_type, price: int, name, url):
         """

@@ -22,8 +22,7 @@ class AcrossTheStarsCmds(commands.Cog):
         description="Lista todos os planetas disponíveis da região fornecida",
         options=[
             create_option(name="region", description="Região galáctica", option_type=3, required=False)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def list_planets(self, ctx, region=None):
         """

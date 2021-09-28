@@ -25,8 +25,7 @@ class StarWarsWikiCog(commands.Cog):
         description="Exibe o leaderboard de medalhas da Star Wars Wiki",
         options=[
             create_option(name="page", description="Página", option_type=4, required=False),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def leaderboard(self, ctx, page: int=1):
         """
@@ -48,8 +47,7 @@ class StarWarsWikiCog(commands.Cog):
         description="Exibe detalhes de uma medalha da Star Wars Wiki",
         options=[
             create_option(name="medal_name", description="Nome da medalha", option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def medal(self, ctx, medal_name):
         """
@@ -83,8 +81,7 @@ class StarWarsWikiCog(commands.Cog):
         description="Exibe as medalhas disponíveis da Star Wars Wiki",
         options=[
             create_option(name="page", description="Página", option_type=4, required=False),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def medals(self, ctx, page: int=1):
         """

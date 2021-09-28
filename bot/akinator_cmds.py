@@ -26,8 +26,7 @@ class AkinatorCog(commands.Cog):
 
     @cog_ext.cog_slash(
         name="akinator",
-        description="Novo jogo com Akinator",
-        guild_ids=[297129074692980737]
+        description="Novo jogo com Akinator"
     )
     async def new_game(self, ctx):
         """

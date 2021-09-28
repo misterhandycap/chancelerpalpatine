@@ -94,8 +94,7 @@ class LevelCog(commands.Cog):
         description="Mostra o nível de usuário",
         options=[
             create_option(name="user", description="Usuário para exibir o nível", option_type=6, required=False),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def level(self, ctx, user: discord.User=None):
         """
@@ -122,8 +121,7 @@ class LevelCog(commands.Cog):
         description="Mostra a tabela de niveis de usuários em ordem de maior pra menor",
         options=[
             create_option(name="page_number", description="Página", option_type=4, required=False),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def rank(self, ctx, page_number: int=1):
         """

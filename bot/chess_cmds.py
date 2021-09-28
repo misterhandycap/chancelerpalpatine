@@ -90,8 +90,7 @@ class ChessCog(commands.Cog):
                 required=False,
                 choices=["blue", "purple", "green", "red", "gray", "wood"]
             ),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def new_game_pvp(self, ctx, user: discord.User, color_schema=None):
         """
@@ -125,8 +124,7 @@ class ChessCog(commands.Cog):
                 required=False,
                 choices=["blue", "purple", "green", "red", "gray", "wood"]
             ),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def new_game_pve(self, ctx, cpu_level: int, color_schema=None):
         """
@@ -155,8 +153,7 @@ class ChessCog(commands.Cog):
                 option_type=6,
                 required=False
             ),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     @get_current_game
     async def play_move(self, ctx, move, *, game):
@@ -205,8 +202,7 @@ class ChessCog(commands.Cog):
                 option_type=6,
                 required=False
             ),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     @get_current_game
     async def resign(self, ctx, *, game):
@@ -235,8 +231,7 @@ class ChessCog(commands.Cog):
                 option_type=6,
                 required=False
             ),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     @get_current_game
     async def get_game_pgn(self, ctx, *, game):
@@ -260,8 +255,7 @@ class ChessCog(commands.Cog):
                 option_type=6,
                 required=False
             ),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     @get_current_game
     async def get_game_position(self, ctx, *, game):
@@ -280,8 +274,7 @@ class ChessCog(commands.Cog):
         description="Veja todas as partidas que estão sendo jogadas agora",
         options=[
             create_option(name="page", description="Página", option_type=4, required=False),
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def all_current_games(self, ctx, page: int=0):
         """
@@ -305,8 +298,7 @@ class ChessCog(commands.Cog):
             create_option(name="game_id", description="UUID da partida", option_type=3, required=True),
             create_option(name="move_number", description="Número do lance", option_type=4, required=True),
             create_option(name="moves", description="Jogadas", option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def make_animated_gif(self, ctx, game_id: str, move_number: int, moves):
         """
@@ -335,8 +327,7 @@ class ChessCog(commands.Cog):
         options=[
             create_option(name="puzzle_id", description="ID do puzzle", option_type=3, required=False),
             create_option(name="move", description="Lance", option_type=3, required=False)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def xadrez_puzzle(self, ctx, puzzle_id=None, move=''):
         """

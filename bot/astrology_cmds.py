@@ -21,8 +21,7 @@ class AstrologyCog(commands.Cog):
 
     @cog_ext.cog_slash(
         name="mapa_astral",
-        description="Visualize seu mapa astral criado via DM",
-        guild_ids=[297129074692980737]
+        description="Visualize seu mapa astral criado via DM"
     )
     async def show_astrology_chart(self, ctx):
         user_chart = await self.astrology_bot.get_user_chart(ctx.author.id)
