@@ -4,6 +4,7 @@ import logging
 import os
 import random
 import time
+from io import BytesIO
 
 import discord
 from discord.ext import commands
@@ -435,6 +436,21 @@ class GeneralCog(commands.Cog):
         
         await ctx.send(f'{search_engine}{actual_query.replace(" ", "_")}')
 
+    @cog_ext.cog_slash(
+        name="avatar",
+        description="Exibe o avatar de um usuário",
+        options=[
+            create_option(name="user", description="Usuário para exibir o avatar", option_type=6, required=False)
+        ]
+    )
+    async def avatar(self, ctx, user: discord.User=None):
+        await ctx.defer()
+        selected_user = user if user else ctx.author
+        await ctx.send(file=discord.File(
+            BytesIO(await selected_user.avatar_url_as(format='png', size=4096).read()),
+            'avatar.png'
+        ))
+    
     @cog_ext.cog_slash(
         name="perfil",
         description="Exibe o seu perfil ou de um usuário informado",
