@@ -23,7 +23,7 @@ def i(ctx, text):
         server_id = ctx.guild.id
         lang = get_server_lang(server_id)
     else:
-        lang = get_lang_from_user(ctx.channel.recipient.id)
+        lang = get_lang_from_user(ctx.author_id)
     return i18n(text, lang)
 
 def get_server_lang(server_id):
