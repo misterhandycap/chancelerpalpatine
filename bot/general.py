@@ -13,6 +13,7 @@ from discord_slash.utils.manage_commands import create_option
 
 from bot.across_the_stars.vote import Vote
 from bot.aurebesh import text_to_aurebesh_img
+from bot.misc.scheduler import Scheduler
 from bot.meme import meme_saimaluco_image, random_cat
 from bot.servers import cache
 from bot.social.profile import Profile
@@ -28,6 +29,7 @@ class GeneralCog(commands.Cog):
         self.client = client
         self.help_cmd_manager = PaginatedEmbedManager(client, self._create_paginated_help_embed)
         self.profile_bot = Profile()
+        self.scheduler_bot = Scheduler()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -246,6 +248,19 @@ class GeneralCog(commands.Cog):
         embed.add_field(name=i(ctx, 'Prefix'), value=bot_prefix)
         embed.add_field(name=i(ctx, 'Help cmd'), value=f'{bot_prefix}help')
         return embed
+
+    @cog_ext.cog_slash(
+        name='lembrete',
+        description='Crie um lembre',
+        options=[
+            create_option(name='datetime', description='Data para lembrete', option_type=3, required=True),
+            create_option(name='text', description='Mensagem do lembrete', option_type=3, required=True)
+        ],
+        guild_ids=[297129074692980737]
+    )
+    async def remind(self, ctx, datetime, text):
+        self.scheduler_bot.add_job(datetime, send_msg_func, (ctx.author_id, ctx.channel_id, text))
+        await ctx.send(f'Mensagem {text} agendada para {datetime}')
 
     @cog_ext.cog_slash(
         name="clear",
@@ -528,3 +543,14 @@ class GeneralCog(commands.Cog):
         response_msg = await ctx.send(embed=embed)
         for emoji in emoji_answers_vote[:len(choices)]:
             await response_msg.add_reaction(emoji)
+
+
+async def send_msg_func(user_id, channel_id, text):
+    client = discord.Client()
+    try:
+        await client.login(os.environ.get("API_KEY"))
+        channel = await client.fetch_channel(channel_id)
+        user = await client.fetch_user(user_id)
+        await channel.send(f'{user.mention}: {text}')
+    finally:
+        await client.close()
