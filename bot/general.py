@@ -257,12 +257,20 @@ class GeneralCog(commands.Cog):
         options=[
             create_option(name='datetime', description='Data para lembrete', option_type=3, required=True),
             create_option(name='text', description='Mensagem do lembrete', option_type=3, required=True)
-        ],
-        guild_ids=[297129074692980737]
+        ]
     )
     async def remind(self, ctx, datetime, text):
-        self.scheduler_bot.add_job(datetime, 'send_msg', (ctx.author_id, ctx.channel_id, text))
-        await ctx.send(f'Mensagem {text} agendada para {datetime}')
+        schedule_datetime = self.scheduler_bot.parse_schedule_time(datetime)
+        if schedule_datetime is None:
+            return await ctx.send(i(ctx, "Invalid datetime format. Examples of valid formats: {}").format(
+                ", ".join(["`5 d`", "`15 s`", "`2020/12/31 12:59`", "`8 h`", "`60 min`"])
+            ))
+        
+        self.scheduler_bot.add_job(schedule_datetime, 'send_msg', (ctx.author_id, ctx.channel_id, text))
+        await ctx.send(i(ctx, 'Message "{text}" scheduled for {datetime}').format(
+            text=text,
+            datetime=schedule_datetime.strftime("%d/%m/%Y %H:%M:%S")
+        ))
 
     async def _send_msg(self, user_id, channel_id, text):
         channel = await self.client.fetch_channel(channel_id)

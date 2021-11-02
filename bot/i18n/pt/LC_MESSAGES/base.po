@@ -280,6 +280,14 @@ msgstr "Não foi possível encontrar uma foto de gato 😢"
 msgid "Invalid option"
 msgstr "Opção inválida"
 
+#: bot/general.py:264
+msgid "Invalid datetime format. Examples of valid formats: {}"
+msgstr "Data e/ou hora inválida(s). Exemplos de formatos válidos: {}"
+
+#: bot/general.py:271
+msgid "Message \"{text}\" scheduled for {datetime}"
+msgstr "Mensagem \"{text}\" agendada para {datetime}"
+
 #: bot/general.py:319
 msgid "Who are you?"
 msgstr "Quem é você?"

@@ -267,6 +267,14 @@ msgstr ""
 msgid "Invalid option"
 msgstr ""
 
+#: bot/general.py:264
+msgid "Invalid datetime format. Examples of valid formats: {}"
+msgstr ""
+
+#: bot/general.py:271
+msgid "Message \"{text}\" scheduled for {datetime}"
+msgstr ""
+
 #: bot/general.py:319
 msgid "Who are you?"
 msgstr ""
