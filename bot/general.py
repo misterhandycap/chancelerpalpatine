@@ -30,6 +30,8 @@ class GeneralCog(commands.Cog):
         self.help_cmd_manager = PaginatedEmbedManager(client, self._create_paginated_help_embed)
         self.profile_bot = Profile()
         self.scheduler_bot = Scheduler()
+        self.scheduler_bot.register_function('send_msg', self._send_msg)
+        self.scheduler_bot.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -259,8 +261,13 @@ class GeneralCog(commands.Cog):
         guild_ids=[297129074692980737]
     )
     async def remind(self, ctx, datetime, text):
-        self.scheduler_bot.add_job(datetime, send_msg_func, (ctx.author_id, ctx.channel_id, text))
+        self.scheduler_bot.add_job(datetime, 'send_msg', (ctx.author_id, ctx.channel_id, text))
         await ctx.send(f'Mensagem {text} agendada para {datetime}')
+
+    async def _send_msg(self, user_id, channel_id, text):
+        channel = await self.client.fetch_channel(channel_id)
+        user = await self.client.fetch_user(user_id)
+        await channel.send(f'{user.mention}: {text}')
 
     @cog_ext.cog_slash(
         name="clear",
@@ -543,14 +550,3 @@ class GeneralCog(commands.Cog):
         response_msg = await ctx.send(embed=embed)
         for emoji in emoji_answers_vote[:len(choices)]:
             await response_msg.add_reaction(emoji)
-
-
-async def send_msg_func(user_id, channel_id, text):
-    client = discord.Client()
-    try:
-        await client.login(os.environ.get("API_KEY"))
-        channel = await client.fetch_channel(channel_id)
-        user = await client.fetch_user(user_id)
-        await channel.send(f'{user.mention}: {text}')
-    finally:
-        await client.close()
