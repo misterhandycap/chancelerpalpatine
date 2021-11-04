@@ -8,6 +8,7 @@ class Servers():
     def __init__(self):
         self.server_configs = {}
         self.all_servers = []
+        self.scheduler_functions = {}
 
     async def load_configs(self):
         all_server_configs = await ServerConfig.all()

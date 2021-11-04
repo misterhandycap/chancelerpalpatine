@@ -13,6 +13,7 @@ from discord_slash.utils.manage_commands import create_option
 
 from bot.across_the_stars.vote import Vote
 from bot.aurebesh import text_to_aurebesh_img
+from bot.misc.scheduler import Scheduler
 from bot.meme import meme_saimaluco_image, random_cat
 from bot.servers import cache
 from bot.social.profile import Profile
@@ -28,6 +29,9 @@ class GeneralCog(commands.Cog):
         self.client = client
         self.help_cmd_manager = PaginatedEmbedManager(client, self._create_paginated_help_embed)
         self.profile_bot = Profile()
+        self.scheduler_bot = Scheduler()
+        self.scheduler_bot.register_function('send_msg', self._send_msg)
+        self.scheduler_bot.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -246,6 +250,32 @@ class GeneralCog(commands.Cog):
         embed.add_field(name=i(ctx, 'Prefix'), value=bot_prefix)
         embed.add_field(name=i(ctx, 'Help cmd'), value=f'{bot_prefix}help')
         return embed
+
+    @cog_ext.cog_slash(
+        name='lembrete',
+        description='Crie um lembre',
+        options=[
+            create_option(name='datetime', description='Data para lembrete', option_type=3, required=True),
+            create_option(name='text', description='Mensagem do lembrete', option_type=3, required=True)
+        ]
+    )
+    async def remind(self, ctx, datetime, text):
+        schedule_datetime = self.scheduler_bot.parse_schedule_time(datetime)
+        if schedule_datetime is None:
+            return await ctx.send(i(ctx, "Invalid datetime format. Examples of valid formats: {}").format(
+                ", ".join(["`5 d`", "`15 s`", "`2020/12/31 12:59`", "`8 h`", "`60 min`"])
+            ))
+        
+        self.scheduler_bot.add_job(schedule_datetime, 'send_msg', (ctx.author_id, ctx.channel_id, text))
+        await ctx.send(i(ctx, 'Message "{text}" scheduled for {datetime}').format(
+            text=text,
+            datetime=schedule_datetime.strftime("%d/%m/%Y %H:%M:%S")
+        ))
+
+    async def _send_msg(self, user_id, channel_id, text):
+        channel = await self.client.fetch_channel(channel_id)
+        user = await self.client.fetch_user(user_id)
+        await channel.send(f'{user.mention}: {text}')
 
     @cog_ext.cog_slash(
         name="clear",
