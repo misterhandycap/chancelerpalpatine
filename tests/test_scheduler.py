@@ -46,22 +46,22 @@ class TestScheduler(TestCase):
         self.assertEqual(self.db_session.query(jobs_table).count(), 1)
 
     def test_parse_schedule_time_seconds(self):
-        tests = ['5s', '5 s', ' 5 s', '05 seconds']
+        tests = ['30s', '30 s', ' 30 s', '30 seconds']
         
         for test in tests:
             result = self.scheduler_bot.parse_schedule_time(test)
 
-            self.assertGreaterEqual(result, datetime.now() + timedelta(seconds=4))
-            self.assertLessEqual(result, datetime.now() + timedelta(seconds=5))
+            self.assertGreaterEqual(result, datetime.now() + timedelta(seconds=29))
+            self.assertLessEqual(result, datetime.now() + timedelta(seconds=30))
 
     def test_parse_schedule_time_minutes(self):
-        tests = ['5m', '5 m', ' 5 m', '05 minutes']
+        tests = ['30m', '30 m', ' 30 m', '30 minutes']
         
         for test in tests:
             result = self.scheduler_bot.parse_schedule_time(test)
 
-            self.assertGreaterEqual(result, datetime.now() + timedelta(minutes=4))
-            self.assertLessEqual(result, datetime.now() + timedelta(minutes=5))
+            self.assertGreaterEqual(result, datetime.now() + timedelta(minutes=29))
+            self.assertLessEqual(result, datetime.now() + timedelta(minutes=30))
 
     def test_parse_schedule_time_hours(self):
         tests = ['5h', '5 h', ' 5 h', '05 hours']

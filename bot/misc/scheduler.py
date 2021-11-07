@@ -40,7 +40,7 @@ class Scheduler():
             'h': 'hours',
             'd': 'days'
         }
-        text_match = re.match(r'^(\d)+\s*([dhms])', text.strip())
+        text_match = re.match(r'^(\d+)\s*([dhms])', text.strip())
         if text_match:
             num = text_match.group(1)
             unit = text_match.group(2)
