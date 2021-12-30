@@ -3,6 +3,7 @@ import pickle
 from datetime import datetime, timedelta
 from unittest import TestCase
 
+import pytz
 from sqlalchemy import table
 from tzlocal import get_localzone
 
@@ -80,6 +81,15 @@ class TestScheduler(TestCase):
 
             self.assertGreaterEqual(result, datetime.now() + timedelta(days=4))
             self.assertLessEqual(result, datetime.now() + timedelta(days=5))
+            
+    def test_parse_schedule_time_formated_datetime(self):
+        test = '2021/12/31 00:00'
+        timezone_name = 'America/Sao_Paulo'
+        expected = pytz.timezone(timezone_name).localize(datetime(2021, 12, 31, 0, 0))
+        
+        result = self.scheduler_bot.parse_schedule_time(test, timezone_name)
+        
+        self.assertEqual(result, expected)
 
     @classmethod
     async def schedule_func(*args):

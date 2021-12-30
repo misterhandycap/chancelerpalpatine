@@ -58,6 +58,11 @@ def run_cpu_bound_task_with_event_loop(func, *args, **kwargs):
 
 def convert_users_to_players(*args):
         return tuple(map(lambda user: Player(user) if user else None, args))
+    
+server_language_to_tz = {
+    'pt': 'America/Sao_Paulo',
+    'en': 'UTC'
+}
 
 def paginate(elems: list, page: int, itens_per_page: int):
     """

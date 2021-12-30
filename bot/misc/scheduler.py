@@ -1,6 +1,7 @@
 import re
 from datetime import datetime, timedelta
 
+import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
@@ -33,7 +34,7 @@ class Scheduler():
     async def _run_job(self, func_name, *args):
         return await cache.scheduler_functions[func_name](*args)
 
-    def parse_schedule_time(self, text: str) -> datetime:
+    def parse_schedule_time(self, text: str, timezone: str='America/Sao_Paulo') -> datetime:
         unit_dict = {
             's': 'seconds',
             'm': 'minutes',
@@ -49,7 +50,8 @@ class Scheduler():
             return datetime.now() + timedelta(**timedelta_kwargs)
 
         try:
-            return datetime.strptime(text, '%Y/%m/%d %H:%M')
+            brt = pytz.timezone(timezone)
+            return brt.localize(datetime.strptime(text, '%Y/%m/%d %H:%M'))
         except:
             return None
 

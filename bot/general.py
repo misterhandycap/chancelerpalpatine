@@ -13,11 +13,12 @@ from discord_slash.utils.manage_commands import create_option
 
 from bot.across_the_stars.vote import Vote
 from bot.aurebesh import text_to_aurebesh_img
-from bot.misc.scheduler import Scheduler
 from bot.meme import meme_saimaluco_image, random_cat
+from bot.misc.scheduler import Scheduler
 from bot.servers import cache
 from bot.social.profile import Profile
-from bot.utils import current_bot_version, get_server_lang, i, paginate, PaginatedEmbedManager
+from bot.utils import (PaginatedEmbedManager, current_bot_version,
+                       get_server_lang, i, paginate, server_language_to_tz)
 
 
 class GeneralCog(commands.Cog):
@@ -260,7 +261,8 @@ class GeneralCog(commands.Cog):
         ]
     )
     async def remind(self, ctx, datetime, text):
-        schedule_datetime = self.scheduler_bot.parse_schedule_time(datetime)
+        server_timezone = server_language_to_tz.get(get_server_lang(ctx.guild_id), 'UTC')
+        schedule_datetime = self.scheduler_bot.parse_schedule_time(datetime, server_timezone)
         if schedule_datetime is None:
             return await ctx.send(i(ctx, "Invalid datetime format. Examples of valid formats: {}").format(
                 ", ".join(["`5 d`", "`15 s`", "`2020/12/31 12:59`", "`8 h`", "`60 min`"])
@@ -269,7 +271,7 @@ class GeneralCog(commands.Cog):
         self.scheduler_bot.add_job(schedule_datetime, 'send_msg', (ctx.author_id, ctx.channel_id, text))
         await ctx.send(i(ctx, 'Message "{text}" scheduled for {datetime}').format(
             text=text,
-            datetime=schedule_datetime.strftime("%d/%m/%Y %H:%M:%S")
+            datetime=schedule_datetime.strftime("%d/%m/%Y %H:%M:%S %Z")
         ))
 
     async def _send_msg(self, user_id, channel_id, text):
