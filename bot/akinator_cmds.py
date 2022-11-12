@@ -53,7 +53,7 @@ class AkinatorCog(commands.Cog):
         if not game or not message.embeds or message.author.id != self.client.user.id:
             return
         embed = message.embeds[0]
-        if 'Akinator' not in embed.title or game.question != embed.description:
+        if 'Akinator' not in embed.title or game.question.strip() != embed.description.strip():
             return
 
         emoji = str(reaction)
