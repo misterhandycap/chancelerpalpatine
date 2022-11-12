@@ -3,6 +3,7 @@ import os
 import warnings
 
 from asyncio import run
+from imagehash import average_hash
 from PIL import Image
 from vcr_unittest import VCRTestCase
 
@@ -151,8 +152,9 @@ class TestLeaderboard(VCRTestCase):
 
         actual = run(leaderboard_bot.draw_leaderboard(leaderboard, 1))
 
-        with open('tests/support/draw_leaderboard.png', 'rb') as f:
-            self.assertEqual(actual.getvalue(), f.read())
+        expected_hash = average_hash(Image.open('tests/support/draw_leaderboard.png'))
+        actual_hash = average_hash(Image.open(actual))
+        self.assertLessEqual(abs(expected_hash - actual_hash), 0)
 
     def test_draw_leaderboard_second_page(self):
         leaderboard_bot = Leaderboard(auto_close_session=True)
@@ -184,8 +186,9 @@ class TestLeaderboard(VCRTestCase):
 
         actual = run(leaderboard_bot.draw_leaderboard(leaderboard, 2))
 
-        with open(os.path.join('tests', 'support', 'draw_leaderboard_second_page.png'), 'rb') as f:
-            self.assertEqual(actual.getvalue(), f.read())
+        expected_hash = average_hash(Image.open(os.path.join('tests', 'support', 'draw_leaderboard_second_page.png')))
+        actual_hash = average_hash(Image.open(actual))
+        self.assertLessEqual(abs(expected_hash - actual_hash), 0)
 
     def test_complete_leaderboard_flow(self):
         async def complete_flow(leaderboard_bot):
