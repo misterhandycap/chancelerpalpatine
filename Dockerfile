@@ -1,4 +1,4 @@
-FROM python:3.7-alpine as builder
+FROM python:3.8-alpine as builder
 
 RUN apk add --no-cache gcc libc-dev libffi-dev
 
@@ -33,7 +33,7 @@ WORKDIR /app
 
 RUN pip3 install --user -r requirements.txt
 
-FROM python:3.7-alpine
+FROM python:3.8-alpine
 
 COPY --from=builder /root/.local /root/.local
 
