@@ -1,17 +1,13 @@
-import inspect
-import json
 import logging
 import os
 import random
-import time
 from io import BytesIO
+from typing import Literal
 
 import discord
+from discord import app_commands
 from discord.ext import commands
-from discord_slash import cog_ext
-from discord_slash.utils.manage_commands import create_option
 
-from bot.across_the_stars.vote import Vote
 from bot.aurebesh import text_to_aurebesh_img
 from bot.meme import meme_saimaluco_image, random_cat
 from bot.misc.scheduler import Scheduler
@@ -21,20 +17,22 @@ from bot.utils import (PaginatedEmbedManager, current_bot_version,
                        get_server_lang, i, paginate, server_language_to_tz)
 
 
-class GeneralCog(commands.Cog):
+class GeneralCmds(app_commands.Group):
     """
     Miscelânea
     """
 
     def __init__(self, client):
         self.client = client
+        self.client.add_listener(self.on_ready)
+        self.client.add_listener(self.on_message)
         self.help_cmd_manager = PaginatedEmbedManager(client, self._create_paginated_help_embed)
         self.profile_bot = Profile()
         self.scheduler_bot = Scheduler()
         self.scheduler_bot.register_function('send_msg', self._send_msg)
         self.scheduler_bot.start()
+        super().__init__(name='general')
 
-    @commands.Cog.listener()
     async def on_ready(self):
         await self.client.change_presence(
             status=discord.Status.online,
@@ -44,65 +42,52 @@ class GeneralCog(commands.Cog):
         cache.all_servers = self.client.guilds
         logging.info('Bot is ready')
 
-    @commands.Cog.listener()
-    async def on_slash_command_error(self, ctx, error):
-        return await self.on_command_error(ctx, error)
-
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def on_error(self, interaction: discord.Interaction, error):
         try:
             raise error
         except (commands.UserNotFound, commands.MemberNotFound):
-            await ctx.reply(
-                content=i(ctx, 'Master who?'),
-                mention_author=False
+            await interaction.response.send_message(
+                content=i(interaction, 'Master who?')
             )
         except commands.BadArgument:
-            await ctx.reply(
-                content=(i(ctx, 'Invalid parameter. ') +
-                i(ctx, 'Take a look at the command\'s documentation below for information about its correct usage:')),
-                embed=self._create_cmd_help_embed(ctx.command, ctx),
-                mention_author=False
+            await interaction.response.send_message(
+                content=(i(interaction, 'Invalid parameter. ') +
+                i(interaction, 'Take a look at the command\'s documentation below for information about its correct usage:')),
+                embed=self._create_cmd_help_embed(interaction.command, interaction)
             )
         except commands.CommandNotFound:
-            await ctx.reply(
-                content='Esta ordem não existe, agora se me der licença...',
-                mention_author=False
+            await interaction.response.send_message(
+                content='Esta ordem não existe, agora se me der licença...'
             )
         except commands.MissingRequiredArgument:
-            await ctx.reply(
-                content=i(ctx, "This command requires an argument (`{command_name}`) that has not been provided. ")
+            await interaction.response.send_message(
+                content=i(interaction, "This command requires an argument (`{command_name}`) that has not been provided. ")
                 .format(command_name=error.param.name)+
-                i(ctx, 'Take a look at the command\'s documentation below for information about its correct usage:'),
-                embed=self._create_cmd_help_embed(ctx.command, ctx),
-                mention_author=False
+                i(interaction, 'Take a look at the command\'s documentation below for information about its correct usage:'),
+                embed=self._create_cmd_help_embed(interaction.command, interaction)
             )
-        except commands.MissingPermissions:
-            await ctx.reply(
-                i(ctx, "You do not have the required permissions to run this command: ") +
-                f"`{'`, `'.join(error.missing_perms)}`"
+        except app_commands.errors.MissingPermissions:
+            await interaction.response.send_message(
+                i(interaction, "You do not have the required permissions to run this command: ") +
+                f"`{'`, `'.join(error.missing_permissions)}`"
             )
         except commands.PrivateMessageOnly:
-            await ctx.reply(
-                i(ctx, "Command only available through DM"),
-                mention_author=False
+            await interaction.response.send_message(
+                i(interaction, "Command only available through DM")
             )
         except:
             logging.warning(f'{error.__class__}: {error}')
             logging.exception(error)
-            await ctx.message.add_reaction('⚠️')
 
-    @commands.Cog.listener()
     async def on_message(self, message):
         if message.content.strip() == f'<@!{self.client.user.id}>':
             await message.reply(
                 content='Olá, segue abaixo algumas informações sobre mim 😊',
-                embed=await self._create_info_embed(message),
-                mention_author=False
+                embed=await self._create_info_embed(message)
             )
 
     @commands.command(aliases=['ajuda'])
-    async def help(self, ctx, page_or_cmd='1'):
+    async def help(self, interaction: discord.Interaction, page_or_cmd='1'):
         """
         Exibe essa mensagem
 
@@ -124,15 +109,15 @@ class GeneralCog(commands.Cog):
         bot_commands = sorted(self.client.commands, key=lambda x: x.name)
         
         if page_number:
-            help_embed = await self._create_paginated_help_embed(page_number, ctx)
-            await self.help_cmd_manager.send_embed(help_embed, page_number, ctx)
+            help_embed = await self._create_paginated_help_embed(page_number, interaction)
+            await self.help_cmd_manager.send_embed(help_embed, page_number, interaction)
         else:
             try:
                 cmd = [x for x in bot_commands if cmd_name in [x.name] + x.aliases][0]
             except IndexError:
-                return await ctx.send(f'{i(ctx, "Command not found. Check all available commands with")} `{bot_prefix}ajuda`')
-            help_embed = self._create_cmd_help_embed(cmd, ctx)
-            await ctx.send(embed=help_embed)
+                return await interaction.send(f'{i(interaction, "Command not found. Check all available commands with")} `{bot_prefix}ajuda`')
+            help_embed = self._create_cmd_help_embed(cmd, interaction)
+            await interaction.send(embed=help_embed)
 
     async def _create_paginated_help_embed(self, page_number, original_message):
         max_itens_per_page = 9
@@ -158,60 +143,56 @@ class GeneralCog(commands.Cog):
 
         return help_embed
 
-    def _create_cmd_help_embed(self, cmd, ctx):
-        cmd_description = i(ctx, f'cmd_{cmd.name}')
+    def _create_cmd_help_embed(self, cmd, interaction):
+        cmd_description = i(interaction, f'cmd_{cmd.name}')
         if cmd_description == f'cmd_{cmd.name}':
             cmd_description = 'No description available'
         
         help_embed = discord.Embed(
-            title=f'{i(ctx, "Help")} - {cmd.name}',
+            title=f'{i(interaction, "Help")} - {cmd.name}',
             description=cmd_description,
             colour=discord.Color.blurple()
         )
         help_embed.add_field(
-            name=i(ctx, 'Aliases'), value='\n'.join(cmd.aliases) or i(ctx, 'None'))
-        help_embed.add_field(name=i(ctx, 'Arguments'), value=cmd.signature or i(ctx, 'None'))
+            name=i(interaction, 'Aliases'), value='\n'.join(cmd.aliases) or i(interaction, 'None'))
+        help_embed.add_field(name=i(interaction, 'Arguments'), value=cmd.signature or i(interaction, 'None'))
         help_embed.add_field(
-            name=i(ctx, 'Category'),
-            value=cmd.cog.description if cmd.cog and cmd.cog.description else i(ctx, 'None')
+            name=i(interaction, 'Category'),
+            value=cmd.cog.description if cmd.cog and cmd.cog.description else i(interaction, 'None')
         )
         return help_embed
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="saimaluco",
-        description="Manda o meme sai maluco com o texto enviado",
-        options=[
-            create_option(name="text", description="Texto", option_type=3, required=True)
-        ]
+        description="Manda o meme sai maluco com o texto enviado"
     )
-    async def saimaluco(self, ctx, text):
+    @app_commands.describe(text='Texto')
+    async def saimaluco(self, interaction: discord.Interaction, text: str):
         """
         Manda o meme sai maluco com o texto enviado
         """
-        await ctx.defer()
+        await interaction.response.defer()
         image = meme_saimaluco_image(text)
-        await ctx.send(file=discord.File(image, 'meme.png'))
+        await interaction.followup.send(file=discord.File(image, 'meme.png'))
     
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="aurebesh",
-        description="Gera uma imagem com o texto fornecido em Aurebesh",
-        options=[
-            create_option(name="text", description="Texto", option_type=3, required=True)
-        ]
+        description="Gera uma imagem com o texto fornecido em Aurebesh"
     )
-    async def aurebesh(self, ctx, text):
+    @app_commands.describe(text='Texto')
+    async def aurebesh(self, interaction: discord.Interaction, text: str):
         """
         Gera uma imagem com o texto fornecido em Aurebesh
         """
-        await ctx.defer()
+        await interaction.response.defer()
         image = text_to_aurebesh_img(text)
-        await ctx.send(file=discord.File(image, 'aurebesh.png'))
+        await interaction.followup.send(file=discord.File(image, 'aurebesh.png'))
     
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="ping",
         description="Confere se o bot está online e sua velocidade de resposta"
     )
-    async def ping(self, ctx):
+    async def ping(self, interaction: discord.Interaction):
         """
         Confere se o bot está online e sua velocidade de resposta
         """
@@ -220,20 +201,20 @@ class GeneralCog(commands.Cog):
             description=f'{round(self.client.latency * 1000)}ms',
             colour=discord.Color.blurple()
         )
-        await ctx.send(embed=ping)
+        await interaction.response.send_message(embed=ping)
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="info",
         description="Mostra informações sobre o bot"
     )
-    async def info(self, ctx):
+    async def info(self, interaction: discord.Interaction):
         """
         Mostra informações sobre o bot
         """
-        embed = await self._create_info_embed(ctx)
-        await ctx.send(embed=embed)
+        embed = await self._create_info_embed(interaction)
+        await interaction.response.send_message(embed=embed)
 
-    async def _create_info_embed(self, ctx):
+    async def _create_info_embed(self, interaction: discord.Interaction):
         bot_prefix = self.client.command_prefix
         bot_info = await self.client.application_info()
         bot_owner = bot_info.team.owner
@@ -244,32 +225,29 @@ class GeneralCog(commands.Cog):
             colour=discord.Color.blurple(),
             url=os.environ.get("BOT_HOMEPAGE")
         )
-        embed.set_thumbnail(url=bot_info.icon_url)
-        embed.add_field(name=i(ctx, 'Owner'), value=f'{bot_owner.name}#{bot_owner.discriminator}')
+        embed.set_thumbnail(url=bot_info.icon.url)
+        embed.add_field(name=i(interaction, 'Owner'), value=f'{bot_owner.name}#{bot_owner.discriminator}')
         if current_bot_version:
-            embed.add_field(name=i(ctx, 'Current version'), value=current_bot_version)
-        embed.add_field(name=i(ctx, 'Prefix'), value=bot_prefix)
-        embed.add_field(name=i(ctx, 'Help cmd'), value=f'{bot_prefix}help')
+            embed.add_field(name=i(interaction, 'Current version'), value=current_bot_version)
+        embed.add_field(name=i(interaction, 'Prefix'), value=bot_prefix)
+        embed.add_field(name=i(interaction, 'Help cmd'), value=f'{bot_prefix}help')
         return embed
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name='lembrete',
-        description='Crie um lembre',
-        options=[
-            create_option(name='datetime', description='Data para lembrete', option_type=3, required=True),
-            create_option(name='text', description='Mensagem do lembrete', option_type=3, required=True)
-        ]
+        description='Crie um lembre'
     )
-    async def remind(self, ctx, datetime, text):
-        server_timezone = server_language_to_tz.get(get_server_lang(ctx.guild_id), 'UTC')
+    @app_commands.describe(datetime='Data para lembrete', text='Mensagem do lembrete')
+    async def remind(self, interaction: discord.Interaction, datetime: str, text: str):
+        server_timezone = server_language_to_tz.get(get_server_lang(interaction.guild_id), 'UTC')
         schedule_datetime = self.scheduler_bot.parse_schedule_time(datetime, server_timezone)
         if schedule_datetime is None:
-            return await ctx.send(i(ctx, "Invalid datetime format. Examples of valid formats: {}").format(
+            return await interaction.response.send_message(i(interaction, "Invalid datetime format. Examples of valid formats: {}").format(
                 ", ".join(["`5 d`", "`15 s`", "`2020/12/31 12:59`", "`8 h`", "`60 min`"])
             ))
         
-        self.scheduler_bot.add_job(schedule_datetime, 'send_msg', (ctx.author_id, ctx.channel_id, text))
-        await ctx.send(i(ctx, 'Message "{text}" scheduled for {datetime}').format(
+        self.scheduler_bot.add_job(schedule_datetime, 'send_msg', (interaction.user.id, interaction.channel_id, text))
+        await interaction.response.send_message(i(interaction, 'Message "{text}" scheduled for {datetime}').format(
             text=text,
             datetime=schedule_datetime.strftime("%d/%m/%Y %H:%M:%S %Z")
         ))
@@ -279,29 +257,25 @@ class GeneralCog(commands.Cog):
         user = await self.client.fetch_user(user_id)
         await channel.send(f'{user.mention}: {text}')
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="clear",
         description="Limpa as últimas mensagens do canal atual",
-        options=[
-            create_option(name="amount", description="Número de mensagens a excluir", option_type=4, required=True),
-        ]
     )
-    @commands.has_permissions(manage_messages=True)
-    async def clear(self, ctx, amount: int):
+    @app_commands.describe(amount='Número de mensagens a excluir')
+    @app_commands.checks.has_permissions(manage_messages=True)
+    async def clear(self, interaction: discord.Interaction, amount: int):
         """
         Limpa as últimas mensagens do canal atual
         """
-        await ctx.channel.purge(limit=amount)
-        return await ctx.send('Done')
+        await interaction.channel.purge(limit=amount)
+        return await interaction.response.send_message('Done')
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="vision",
-        description="Faça uma pergunta ao Chanceler e ele irá lhe responder",
-        options=[
-            create_option(name="question", description="Pergunta", option_type=3, required=True)
-        ]
+        description="Faça uma pergunta ao Chanceler e ele irá lhe responder"
     )
-    async def vision(self, ctx, question):
+    @app_commands.describe(question='Pergunta')
+    async def vision(self, interaction: discord.Interaction, question: str):
         """
         Faça uma pergunta ao Chanceler e ele irá lhe responder
         """
@@ -316,67 +290,57 @@ class GeneralCog(commands.Cog):
             'Acredito que esteja errado(a), Mestre', 
             'Isso necessita de mais análises'
         ]
-        await ctx.send(f'{random.choice(responses)}')
+        await interaction.response.send_message(f'{random.choice(responses)}')
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="sorte",
         description="Cara ou coroa"
     )
-    async def sorte(self, ctx):
+    async def sorte(self, interaction: discord.Interaction):
         """
         Cara ou coroa
         """
         previsao = ['Cara', 'Coroa']
-        await ctx.send(f'{random.choice(previsao)}')
+        await interaction.response.send_message(f'{random.choice(previsao)}')
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="gato",
         description="Mostra uma foto aleatória de gato 🐈"
     )
-    async def random_cat(self, ctx):
+    async def random_cat(self, interaction: discord.Interaction):
         """
         Mostra uma foto aleatória de gato 🐈
         """
-        await ctx.defer()
+        await interaction.response.defer()
         image_url = await random_cat()
         if not image_url:
-            return await ctx.send(i(ctx, "Could not find a cat picture 😢"))
+            return await interaction.followup.send(i(interaction, "Could not find a cat picture 😢"))
         embed = discord.Embed(title="Gato")
         embed.set_image(url=image_url)
-        await ctx.send(embed=embed)
+        await interaction.followup.send(embed=embed)
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="lang",
         description="Muda o idioma do bot no servidor atual",
-        options=[
-            create_option(name="language_code", description="Código válido de idioma", option_type=3, required=True)
-        ]
     )
-    @commands.has_permissions(administrator=True)
-    async def lang(self, ctx, language_code):
+    @app_commands.describe(language_code='Código válido de idioma')
+    @app_commands.checks.has_permissions(administrator=True)
+    async def lang(self, interaction: discord.Interaction, language_code: str):
         """
         Muda o idioma do bot no servidor atual
 
         Passe um código válido de idioma. Consulte os códigos válidos nesse link: \
             https://www.gnu.org/software/gettext/manual/html_node/Usual-Language-Codes.html
         """
-        await cache.update_config(ctx.guild.id, language=language_code)
-        return await ctx.send(i(ctx, 'Language updated to {lang}').format(lang=language_code))
+        await cache.update_config(interaction.guild.id, language=language_code)
+        return await interaction.response.send_message(i(interaction, 'Language updated to {lang}').format(lang=language_code))
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="rps",
-        description="Pedra, papel e tesoura com dinossauros",
-        options=[
-            create_option(
-                name="play",
-                description="Jogada",
-                option_type=3,
-                required=True,
-                choices=["Deus", "Homem", "Dinossauro"]
-            ),
-        ]
+        description="Pedra, papel e tesoura com dinossauros"
     )
-    async def rps(self, ctx, play):
+    @app_commands.describe(play='Jogada')
+    async def rps(self, interaction: discord.Interaction, play: Literal['Deus', 'Homem', 'Dinossauro']):
         """
         Pedra, papel e tesoura com dinossauros
 
@@ -388,7 +352,7 @@ class GeneralCog(commands.Cog):
         play = play.title()
         available_options = ['Deus', 'Homem', 'Dinossauro']
         if play not in available_options:
-            return await ctx.send(i(ctx, "Invalid option"))
+            return await interaction.response.send_message(i(interaction, "Invalid option"))
 
         player_choice = available_options.index(play)
         bot_choice = random.randint(0,2)
@@ -410,13 +374,13 @@ class GeneralCog(commands.Cog):
             result = f'{winner}{action_txt}{loser}\n{who}'
 
         resp_message = f"O bot escolheu: {bot_choice_str}\n{result}"
-        await ctx.send(resp_message)
+        await interaction.response.send_message(resp_message)
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="plagueis",
         description="Conta a tregédia de Darth Plagueis"
     )
-    async def plagueis(self, ctx):
+    async def plagueis(self, interaction: discord.Interaction):
         """
         Conta a tregédia de Darth Plagueis
         """
@@ -425,23 +389,15 @@ class GeneralCog(commands.Cog):
             description='Eu achei que não. \nNão é uma história que um Jedi lhe contaria.\nÉ uma lenda Sith. \nDarth Plagueis era um Lorde Sombrio de Sith, tão poderoso e tão sábio que conseguia utilizar a Força para influenciar os midiclorians para criar vida. \nEle tinha tantos conhecimento do lado sombrio que podia até impedir que aqueles que lhe eram próximos morressem. \nAcontece que o lado sombrio é o caminho para muitas habilidades que muitos consideram serem... não naturais. \nEle se tornou tão poderoso; que a única coisa que ele tinha medo era, perder seu poder, o que acabou, é claro, ele perdeu. \nInfelizmente, ele ensinou a seu aprendiz tudo o que sabia; então, seu o seu aprendiz o matou enquanto dormia. \nÉ irônico. \nEle poderia salvar outros da morte, mas não podia a salvar a si mesmo.',
             colour=discord.Color.blurple()
         )
-        await ctx.send(embed=plagueis)
+        await interaction.response.send_message(embed=plagueis)
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="busca",
-        description="Faz uma busca pelo buscador definido",
-        options=[
-            create_option(name="query", description="Busca", option_type=3, required=True),
-            create_option(
-                name="provider",
-                description="Buscador",
-                option_type=3,
-                choices=['google', 'sww', 'wookiee', 'aw'],
-                required=False
-            )
-        ]
+        description="Faz uma busca pelo buscador definido"
     )
-    async def get_search_url(self, ctx, query, provider='google'):
+    @app_commands.describe(query='Busca', provider='Buscador')
+    async def get_search_url(self, interaction: discord.Interaction, query: str,
+                             provider: Literal['google', 'sww', 'wookiee', 'aw']='google'):
         """
         Faz uma busca pelo buscador definido
 
@@ -466,66 +422,57 @@ class GeneralCog(commands.Cog):
         search_engine = providers[provider]
         actual_query = query
         
-        await ctx.send(f'{search_engine}{actual_query.replace(" ", "_")}')
+        await interaction.response.send_message(f'{search_engine}{actual_query.replace(" ", "_")}')
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="avatar",
-        description="Exibe o avatar de um usuário",
-        options=[
-            create_option(name="user", description="Usuário para exibir o avatar", option_type=6, required=False)
-        ]
+        description="Exibe o avatar de um usuário"
     )
-    async def avatar(self, ctx, user: discord.User=None):
-        await ctx.defer()
-        selected_user = user if user else ctx.author
-        await ctx.send(file=discord.File(
-            BytesIO(await selected_user.avatar_url_as(format='png', size=4096).read()),
+    @app_commands.describe(user='Usuáriuo para exibir o avatar')
+    async def avatar(self, interaction: discord.Interaction, user: discord.User=None):
+        await interaction.response.defer()
+        selected_user = user or interaction.user
+        await interaction.followup.send(file=discord.File(
+            BytesIO(await selected_user.display_avatar.read()),
             'avatar.png'
         ))
     
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="perfil",
-        description="Exibe o seu perfil ou de um usuário informado",
-        options=[
-            create_option(name="user", description="Usuário para exibir o perfil", option_type=6, required=False),
-        ]
+        description="Exibe o seu perfil ou de um usuário informado"
     )
-    async def profile(self, ctx, user: discord.User=None):
+    @app_commands.describe(user='Usuário para exibir o perfil')
+    async def profile(self, interaction: discord.Interaction, user: discord.User=None):
         """
         Exibe o seu perfil ou de um usuário informado
         """
-        await ctx.defer()
-        selected_user = user if user else ctx.author
-        user_avatar = await selected_user.avatar_url_as(
-            size=128, static_format='png').read()
+        await interaction.response.defer()
+        selected_user = user or interaction.user
+        user_avatar = await selected_user.avatar.read()
         image = await self.profile_bot.get_user_profile(
-            selected_user.id, user_avatar, get_server_lang(ctx.guild_id))
+            selected_user.id, user_avatar, get_server_lang(interaction.guild_id))
         if not image:
-            return await ctx.send(i(ctx, 'Who are you?'))
-        await ctx.send(file=discord.File(image, 'perfil.png'))
+            return await interaction.followup.send(i(interaction, 'Who are you?'))
+        await interaction.followup.send(file=discord.File(image, 'perfil.png'))
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="profile_frame_color",
-        description="Atualiza a cor das bordas de seu perfil",
-        options=[
-            create_option(name="color", description="Cor que deseja em valor hex", option_type=3, required=True),
-        ]
+        description="Atualiza a cor das bordas de seu perfil"
     )
-    async def profile_frame_color(self, ctx, color):
+    @app_commands.describe(color='Cor que deseja em valor hex')
+    async def profile_frame_color(self, interaction: discord.Interaction, color: str):
         try:
-            await self.profile_bot.set_user_profile_frame_color(ctx.author_id, color)
-            return await ctx.send(i(ctx, 'Profile color updated to {color}').format(color=color))
+            await self.profile_bot.set_user_profile_frame_color(interaction.user.id, color)
+            return await interaction.response.send_message(i(interaction, 'Profile color updated to {color}').format(color=color))
         except ValueError:
-            return await ctx.send(i(ctx, 'Invalid color'))
+            return await interaction.response.send_message(i(interaction, 'Invalid color'))
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="voto",
-        description="Cria uma votação para as demais pessoas participarem",
-        options=[
-            create_option(name="args", description="A pergunta e as opções devem ser separadas por `;`", option_type=3, required=True),
-        ]
+        description="Cria uma votação para as demais pessoas participarem"
     )
-    async def poll(self, ctx, args):
+    @app_commands.describe(args='A pergunta e as opções devem ser separadas por `;`')
+    async def poll(self, interaction: discord.Interaction, args: str):
         """
         Cria uma votação para as demais pessoas participarem
 
@@ -543,20 +490,20 @@ class GeneralCog(commands.Cog):
         choices = options[1:choices_limit]
         
         embed = discord.Embed(
-            title=i(ctx, 'Vote'),
-            description=i(ctx, 'Vote on your colleague\'s proposition!'),
+            title=i(interaction, 'Vote'),
+            description=i(interaction, 'Vote on your colleague\'s proposition!'),
             colour=discord.Color.red()
         )
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png")
         embed.add_field(  
-            name=i(ctx, 'Democracy!'),
-            value=i(ctx, 'I love democracy! {username} has summoned a vote! The proposition is **{question}**, and its options are:\n{options}').format(
-                username=ctx.author.mention,
+            name=i(interaction, 'Democracy!'),
+            value=i(interaction, 'I love democracy! {username} has summoned a vote! The proposition is **{question}**, and its options are:\n{options}').format(
+                username=interaction.user.mention,
                 question=question,
                 options=''.join([f'\n{emoji} - {choice}' for emoji, choice in zip(emoji_answers_vote, choices)])
             )
         )
 
-        response_msg = await ctx.send(embed=embed)
+        response_msg = await interaction.response.send_message(embed=embed)
         for emoji in emoji_answers_vote[:len(choices)]:
             await response_msg.add_reaction(emoji)

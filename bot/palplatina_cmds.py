@@ -1,11 +1,11 @@
 import logging
 import os
 from datetime import datetime
+from typing import Literal, Optional
 
 import discord
 from discord.ext import commands
-from discord_slash import cog_ext
-from discord_slash.utils.manage_commands import create_option
+from discord import app_commands
 
 from bot.economy.exceptions import EconomyException
 from bot.economy.item import Item
@@ -14,7 +14,7 @@ from bot.models.exceptions import ProfileItemException
 from bot.utils import i, PaginatedEmbedManager
 
 
-class PalplatinaCmds(commands.Cog):
+class PalplatinaCmds(app_commands.Group):
     """
     Economia
     """
@@ -25,75 +25,74 @@ class PalplatinaCmds(commands.Cog):
         self.item_bot = Item()
         self.shop_paginated_embed_manager = PaginatedEmbedManager(
             self.client, self._build_shop_embed)
+        super().__init__(name='palplatina')
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="daily",
         description="Receba sua recompensa diária em Palplatinas 🤑"
     )
-    async def daily(self, ctx):
+    async def daily(self, interaction: discord.Interaction):
         """
         Receba sua recompensa diária em Palplatinas 🤑
         """
         received_daily, user = await self.palplatina.give_daily(
-            ctx.author.id, ctx.author.name)
+            interaction.user.id, interaction.user.name)
         if received_daily:
             palplatinas_embed = discord.Embed(
-                title=i(ctx, 'Daily!'),
-                description=i(ctx, 'You have received 300 palplatinas, enjoy!'),
+                title=i(interaction, 'Daily!'),
+                description=i(interaction, 'You have received 300 palplatinas, enjoy!'),
                 colour=discord.Color.greyple(),
                 timestamp=datetime.utcnow()
             )
         else:
             palplatinas_embed = discord.Embed(
-                title=i(ctx, 'Daily!'),
-                description=i(ctx, 'You have alredy collected your daily today. Ambition leads to the dark side of the Force, I like it.'),
+                title=i(interaction, 'Daily!'),
+                description=i(interaction, 'You have alredy collected your daily today. Ambition leads to the dark side of the Force, I like it.'),
                 colour=discord.Color.greyple(),
                 timestamp=user.daily_last_collected_at
             )
         palplatinas_embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')    
-        palplatinas_embed.set_author(name=ctx.author)
-        await ctx.send(embed=palplatinas_embed)
+        palplatinas_embed.set_author(name=interaction.user)
+        await interaction.response.send_message(embed=palplatinas_embed)
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="banco",
         description="Veja seu saldo de Palplatinas 💰"
     )
-    async def get_balance(self, ctx):
+    async def get_balance(self, interaction: discord.Interaction):
         """
         Veja seu saldo de Palplatinas 💰
         """
-        currency = await self.palplatina.get_currency(ctx.author.id)
+        currency = await self.palplatina.get_currency(interaction.user.id)
         
         embed = discord.Embed(
-            title=i(ctx, 'Daily!'),
-            description=i(ctx, '{username} has {currency} palplatinas.').format(
-                username=ctx.author.mention,
+            title=i(interaction, 'Daily!'),
+            description=i(interaction, '{username} has {currency} palplatinas.').format(
+                username=interaction.user.mention,
                 currency=currency
             ),
             colour=discord.Color.greyple()
         )
         embed.set_thumbnail(
             url='https://cdn.discordapp.com/attachments/307920220406808576/800525198687731742/palplatina.png')
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="loja",
-        description="Veja os itens disponíveis para serem adquiridos",
-        options=[
-            create_option(name="search_query", description="Busca", option_type=3, required=False)
-        ]
+        description="Veja os itens disponíveis para serem adquiridos"
     )
-    async def shop(self, ctx, search_query=''):
+    @app_commands.describe(search_query='Busca')
+    async def shop(self, interaction: discord.Interaction, search_query: Optional[str]=''):
         """
         Veja os itens disponíveis para serem adquiridos
         """
         page_number = 1
         discord_file = discord.File(
             os.path.join('bot', 'images', 'arnaldo-o-hutt.gif'), 'hutt.gif')
-        shop_embed = await self._build_shop_embed(page_number, ctx, search_query=search_query)
+        shop_embed = await self._build_shop_embed(page_number, interaction, search_query=search_query)
         await self.shop_paginated_embed_manager.send_embed(
-            shop_embed, page_number, ctx,
-            discord_file=discord_file, content=i(ctx, 'Results for: {}').format(search_query)
+            shop_embed, page_number, interaction,
+            discord_file=discord_file, content=i(interaction, 'Results for: {}').format(search_query)
         )
 
     async def _build_shop_embed(self, page_number, original_message, search_query=None):
@@ -114,63 +113,57 @@ class PalplatinaCmds(commands.Cog):
             )
         return embed
     
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="itens",
         description="Veja os itens que você comprou"
     )
-    async def items(self, ctx):
+    async def items(self, interaction: discord.Interaction):
         """
         Veja os itens que você comprou
         """
-        user_profile_items = await self.palplatina.get_user_items(ctx.author.id)
+        user_profile_items = await self.palplatina.get_user_items(interaction.user.id)
         embed = discord.Embed(
-            title=i(ctx, 'Your acquired items'),
-            description=i(ctx, 'Browse through all your acquired items'),
+            title=i(interaction, 'Your acquired items'),
+            description=i(interaction, 'Browse through all your acquired items'),
             colour=discord.Color.green()
         )
         for user_profile_item in user_profile_items:
             embed.add_field(
                 name=user_profile_item.profile_item.name,
-                value=i(ctx, 'Equipped') if user_profile_item.equipped else i(ctx, 'Not equipped')
+                value=i(interaction, 'Equipped') if user_profile_item.equipped else i(interaction, 'Not equipped')
             )
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="equipar",
-        description="Equipa o item fornecido",
-        options=[
-            create_option(name="profile_item_name", description="Nome do item", option_type=3, required=True)
-        ]
+        description="Equipa o item fornecido"
     )
-    async def equip_item(self, ctx, profile_item_name):
+    @app_commands.describe(profile_item_name='Nome do item')
+    async def equip_item(self, interaction: discord.Interaction, profile_item_name: str):
         try:
-            await self.palplatina.equip_item(ctx.author.id, profile_item_name)
-            return await ctx.send(i(ctx, 'Equipped'))
+            await self.palplatina.equip_item(interaction.user.id, profile_item_name)
+            return await interaction.response.send_message(i(interaction, 'Equipped'))
         except EconomyException as e:
-            result = i(ctx, e.message)
+            result = i(interaction, e.message)
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="desequipar",
-        description="Desequipa o item fornecido",
-        options=[
-            create_option(name="profile_item_name", description="Nome do item", option_type=3, required=True)
-        ]
+        description="Desequipa o item fornecido"
     )
-    async def unequip_item(self, ctx, profile_item_name):
+    @app_commands.describe(profile_item_name='Nome do item')
+    async def unequip_item(self, interaction: discord.Interaction, profile_item_name: str):
         try:
-            await self.palplatina.unequip_item(ctx.author.id, profile_item_name)
-            return await ctx.send(i(ctx, 'Not equipped'))
+            await self.palplatina.unequip_item(interaction.user.id, profile_item_name)
+            return await interaction.response.send_message(i(interaction, 'Not equipped'))
         except EconomyException as e:
-            result = i(ctx, e.message)
+            result = i(interaction, e.message)
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="comprar",
-        description="Compre um item para seu perfil",
-        options=[
-            create_option(name="profile_item_name", description="Nome do item", option_type=3, required=True)
-        ]
+        description="Compre um item para seu perfil"
     )
-    async def buy_item(self, ctx, profile_item_name):
+    @app_commands.describe(profile_item_name='Nome do item')
+    async def buy_item(self, interaction: discord.Interaction, profile_item_name: str):
         """
         Compre um item para seu perfil
 
@@ -179,21 +172,21 @@ class PalplatinaCmds(commands.Cog):
         """
         profile_item = await self.palplatina.get_item(profile_item_name)
         if not profile_item:
-            return await ctx.send(i(ctx, 'Item not found'))
+            return await interaction.response.send_message(i(interaction, 'Item not found'))
         
         embed = discord.Embed(
-            title=i(ctx, 'Buy item'),
+            title=i(interaction, 'Buy item'),
             description=profile_item.name
         )
         discord_file = None
         if profile_item.get_file_contents():
             discord_file = discord.File(profile_item.file_path, 'item.png')
             embed.set_thumbnail(url="attachment://item.png")
-        embed.set_author(name=ctx.author)
-        embed.add_field(name=i(ctx, 'Price'), value=profile_item.price)
-        embed.add_field(name=i(ctx, 'Your palplatinas'), value=await self.palplatina.get_currency(ctx.author.id))
+        embed.set_author(name=interaction.user)
+        embed.add_field(name=i(interaction, 'Price'), value=profile_item.price)
+        embed.add_field(name=i(interaction, 'Your palplatinas'), value=await self.palplatina.get_currency(interaction.user.id))
         
-        message = await ctx.send(embed=embed, file=discord_file)
+        message = await interaction.response.send_message(embed=embed, file=discord_file)
         await message.add_reaction('✅')
         await message.add_reaction('🚫')
 
@@ -224,40 +217,36 @@ class PalplatinaCmds(commands.Cog):
         
         await reaction.message.channel.send(content=f'{embed.author.name}: {result}')
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="novo_item",
-        description="Sugira um novo item a ser adicionado à loja do bot",
-        options=[
-            create_option(
-                name="item_type",
-                description="Tipo de item",
-                option_type=3,
-                choices=['badge', 'wallpaper'],
-                required=True
-            ),
-            create_option(name="price", description="Preço", option_type=4, required=True),
-            create_option(name="name", description="Nome do item", option_type=3, required=True),
-            create_option(name="url", description="URL da imagem do item", option_type=3, required=True),
-        ]
+        description="Sugira um novo item a ser adicionado à loja do bot"
     )
-    async def suggest_item(self, ctx, item_type, price: int, name, url):
+    @app_commands.describe(
+        item_type='Tipo de item',
+        price='Preço',
+        name='Nome do item',
+        url='URL da imagem do item'
+    )
+    async def suggest_item(self, interaction: discord.Interaction,
+                           item_type: Literal['badge', 'wallpaper'], price: int,
+                           name: str, url: str):
         """
         Sugira um novo item a ser adicionado à loja do bot
         """
         try:
             profile_item = self.item_bot.build_profile_item(type=item_type, price=price, name=name)
         except ProfileItemException as e:
-            return await ctx.send(i(ctx, e.message))
+            return await interaction.response.send_message(i(interaction, e.message))
 
         embed = discord.Embed(
-            title=i(ctx, 'New item suggestion'),
+            title=i(interaction, 'New item suggestion'),
             description=profile_item.name
         )
-        embed.add_field(name=i(ctx, 'Type'), value=profile_item.type)
-        embed.add_field(name=i(ctx, 'Price'), value=profile_item.price)
-        embed.set_author(name=ctx.author)
+        embed.add_field(name=i(interaction, 'Type'), value=profile_item.type)
+        embed.add_field(name=i(interaction, 'Price'), value=profile_item.price)
+        embed.set_author(name=interaction.user)
         embed.set_image(url=url)
-        result_message = await ctx.reply(embed=embed)
+        result_message = await interaction.reply(embed=embed)
         await result_message.add_reaction('✅')
         await result_message.add_reaction('🚫')
 

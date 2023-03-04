@@ -1,15 +1,13 @@
 import logging
 
 import discord
-from discord.ext import commands
-from discord_slash import cog_ext
-from discord_slash.utils.manage_commands import create_option
+from discord import app_commands
 
 from bot.anime.anime import Anime
 from bot.utils import i
 
 
-class AnimeCog(commands.Cog):
+class AnimeCmds(app_commands.Group):
     """
     Comandos de anime
     """
@@ -17,46 +15,43 @@ class AnimeCog(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.anime_bot = Anime()
+        super().__init__(name='anime')
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="anime_busca",
-        description="Faça uma pesquisa por um nome de anime",
-        options=[
-            create_option(name="query", description="Anime query", option_type=3, required=True)
-        ]
+        description="Faça uma pesquisa por um nome de anime"
     )
-    async def anime_search(self, ctx, query):
+    @app_commands.describe(query='Anime query')
+    async def anime_search(self, interaction: discord.Interaction, query: str):
         """
         Faça uma pesquisa por um nome de anime
         """
-        await ctx.defer()
-        async with ctx.channel.typing():
+        await interaction.response.defer()
+        async with interaction.channel.typing():
             results = self.anime_bot.search_anime(query)
 
         if not results:
-            return await ctx.send("Oops, houve um erro ao buscar pelo seu anime...")
+            return await interaction.followup.send("Oops, houve um erro ao buscar pelo seu anime...")
 
         embed = discord.Embed(
-            title=i(ctx, "Results for {}").format(query),
+            title=i(interaction, "Results for {}").format(query),
             colour=discord.Color.blurple()
         )
         for result in results[:5]:
             embed.add_field(name=result['title'], value=result['synopsis'])
-        await ctx.send(embed=embed)
+        await interaction.followup.send(embed=embed)
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="anime_info",
-        description="Veja informações do anime buscado com MyAnimeList",
-        options=[
-            create_option(name="query", description="Anime query", option_type=3, required=True)
-        ]
+        description="Veja informações do anime buscado com MyAnimeList"
     )
-    async def get_anime(self, ctx, query):
+    @app_commands.describe(query='Anime query')
+    async def get_anime(self, interaction: discord.Interaction, query: str):
         """
         Veja informações do anime buscado com MyAnimeList
         """
-        await ctx.defer()
-        async with ctx.channel.typing():
+        await interaction.response.defer()
+        async with interaction.channel.typing():
             try:
                 result = self.anime_bot.get_anime(int(query))
             except:
@@ -65,7 +60,7 @@ class AnimeCog(commands.Cog):
                     result = self.anime_bot.get_anime(int(search_result["mal_id"]))
                 except Exception as e:
                     logging.warning(e, exc_info=True)
-                    return await ctx.send(i(ctx, "Something went wrong when searching for your anime"))
+                    return await interaction.send(i(interaction, "Something went wrong when searching for your anime"))
 
         embed = discord.Embed(
             title=result.title,
@@ -78,8 +73,4 @@ class AnimeCog(commands.Cog):
         embed.add_field(name='Genres', value=', '.join(result.genres))
         embed.add_field(name='Score', value=result.score)
         embed.add_field(name='Num episodes', value=result.episodes)
-        await ctx.send(embed=embed)
-
-    async def cog_command_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(f'{i(ctx, "Usage")}: `{self.client.command_prefix}{ctx.command.name} QUERY`')
+        await interaction.followup.send(embed=embed)

@@ -3,6 +3,7 @@ import os
 import re
 import subprocess
 
+import discord
 from asyncio import get_running_loop, new_event_loop
 from concurrent.futures.thread import ThreadPoolExecutor
 from functools import partial
@@ -18,12 +19,12 @@ try:
 except:
     current_bot_version = None
 
-def i(ctx, text):
-    if ctx.guild:
-        server_id = ctx.guild.id
+def i(interaction: discord.Interaction, text: str) -> str:
+    if interaction.guild:
+        server_id = interaction.guild.id
         lang = get_server_lang(server_id)
     else:
-        lang = get_lang_from_user(ctx.author_id)
+        lang = get_lang_from_user(interaction.user.id)
     return i18n(text, lang)
 
 def get_server_lang(server_id):
@@ -38,6 +39,9 @@ def get_lang_from_user(user_id):
         return 'en'
     server_langs = [get_server_lang(server.id) for server in server_user_is_in]
     return max(set(server_langs), key=server_langs.count)
+
+def dm_only(interaction: discord.Interaction):
+    return interaction.guild is None
 
 def run_cpu_bound_task(func, *args, **kwargs):
     async def function_wrapper(*args, **kwargs):
@@ -107,7 +111,7 @@ class PaginatedEmbedManager():
         self.client = client
         client.add_listener(self._on_reaction_add, 'on_reaction_add')
 
-    async def send_embed(self, embed, page_number, ctx, discord_file=None, content=None):
+    async def send_embed(self, embed, page_number, interaction, discord_file=None, content=None):
         """
         Prepares and sends given paginated embed. Also reacts with navigation emojis
 
@@ -115,14 +119,14 @@ class PaginatedEmbedManager():
         :type embed: discord.Embed
         :param page_number: Page number
         :type page_number: int
-        :param ctx: Discordpy's context
-        :type ctx: discord.ext.commands.Context
+        :param interaction: Discordpy's interaction
+        :type interaction: discord.Interaction
         :return: Sent message
         :rtype: discord.Message
         """
         self.embed_title = embed.title
-        embed = self._prepare_embed(embed, ctx.author, page_number)
-        message = await ctx.send(embed=embed, file=discord_file, content=content)
+        embed = self._prepare_embed(embed, interaction.user, page_number)
+        message = await interaction.response.send_message(embed=embed, file=discord_file, content=content)
         await message.add_reaction(self.BACKWARD_EMOJI)
         await message.add_reaction(self.FORWARD_EMOJI)
         return message
