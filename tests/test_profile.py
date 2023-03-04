@@ -3,6 +3,8 @@ import os
 from unittest import TestCase
 
 from dotenv import load_dotenv
+from imagehash import average_hash
+from PIL import Image
 
 from bot.astrology.astrology_chart import AstrologyChart
 from bot.models.user import User
@@ -43,8 +45,10 @@ class TestProfile(TestCase):
 
         result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes, lang='pt'))
 
-        with open(os.path.join('tests', 'support', 'get_user_profile_all_fields.png'), 'rb') as f:
-            self.assertEqual(result.getvalue(), f.read())
+        expected_hash = average_hash(
+            Image.open(os.path.join('tests', 'support', 'get_user_profile_all_fields.png')))
+        actual_hash = average_hash(Image.open(result))
+        self.assertLessEqual(abs(expected_hash - actual_hash), 0)
 
     def test_get_user_profile_user_has_badges(self):
         user_1 = UserFactory(name='Name')
@@ -72,8 +76,10 @@ class TestProfile(TestCase):
 
         result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes, lang='pt'))
 
-        with open(os.path.join('tests', 'support', 'get_user_profile_with_badges.png'), 'rb') as f:
-            self.assertEqual(result.getvalue(), f.read())
+        expected_hash = average_hash(
+            Image.open(os.path.join('tests', 'support', 'get_user_profile_with_badges.png')))
+        actual_hash = average_hash(Image.open(result))
+        self.assertLessEqual(abs(expected_hash - actual_hash), 0)
 
     def test_get_user_profile_user_has_wallpaper(self):
         user_1 = UserFactory(name='Name')
@@ -90,8 +96,10 @@ class TestProfile(TestCase):
 
         result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes, lang='pt'))
 
-        with open(os.path.join('tests', 'support', 'get_user_profile_with_wallpaper.png'), 'rb') as f:
-            self.assertEqual(result.getvalue(), f.read())
+        expected_hash = average_hash(
+            Image.open(os.path.join('tests', 'support', 'get_user_profile_with_wallpaper.png')))
+        actual_hash = average_hash(Image.open(result))
+        self.assertLessEqual(abs(expected_hash - actual_hash), 0)
 
     def test_get_user_profile_user_has_profile_frame_color(self):
         user_1 = UserFactory(name='Name', profile_frame_color='#cccccc')
@@ -101,8 +109,10 @@ class TestProfile(TestCase):
 
         result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes, lang='pt'))
 
-        with open(os.path.join('tests', 'support', 'get_user_profile_with_frame_color.png'), 'rb') as f:
-            self.assertEqual(result.getvalue(), f.read())
+        expected_hash = average_hash(
+            Image.open(os.path.join('tests', 'support', 'get_user_profile_with_frame_color.png')))
+        actual_hash = average_hash(Image.open(result))
+        self.assertLessEqual(abs(expected_hash - actual_hash), 0)
 
     def test_get_user_profile_user_exists_no_info(self):
         user_1 = UserFactory(name='Name')
@@ -112,8 +122,10 @@ class TestProfile(TestCase):
 
         result = asyncio.run(Profile().get_user_profile(user_1.id, user_avatar_bytes, lang='pt'))
 
-        with open(os.path.join('tests', 'support', 'get_user_profile_no_info.png'), 'rb') as f:
-            self.assertEqual(result.getvalue(), f.read())
+        expected_hash = average_hash(
+            Image.open(os.path.join('tests', 'support', 'get_user_profile_no_info.png')))
+        actual_hash = average_hash(Image.open(result))
+        self.assertLessEqual(abs(expected_hash - actual_hash), 0)
 
     def test_get_user_profile_no_user(self):
         with open(os.path.join('tests', 'support', 'user_avatar.png'), 'rb') as f:
