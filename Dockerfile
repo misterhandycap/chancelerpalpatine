@@ -52,6 +52,9 @@ RUN ln -s /usr/lib/libcairo.so.2 /usr/lib/libcairo.so
 # Updated SSL certificates
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
+# Bot healthcheck
+HEALTHCHECK CMD discordhealthcheck || exit 1
+
 ENTRYPOINT [ "python3" ]
 
 CMD [ "run.py" ]

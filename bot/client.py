@@ -2,6 +2,7 @@ import logging
 import os
 
 import discord
+import discordhealthcheck
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -36,6 +37,7 @@ class BotClient(commands.Bot):
             guild = None
         await self.tree.sync(guild=guild)
         logging.info(f'Synced tree... {[x.name for x in self.tree.get_commands()]}')
+        self.healthcheck_server = await discordhealthcheck.start(self)
         return await super().setup_hook()
 
 
