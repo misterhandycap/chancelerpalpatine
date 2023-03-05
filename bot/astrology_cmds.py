@@ -1,16 +1,14 @@
 import logging
 
 import discord
-from discord.ext import commands
-from discord_slash import cog_ext
-from discord_slash.utils.manage_commands import create_option
+from discord import app_commands
 
 from bot.astrology.astrology_chart import AstrologyChart
 from bot.astrology.exception import AstrologyInvalidInput
-from bot.utils import i
+from bot.utils import dm_only, i
 
 
-class AstrologyCog(commands.Cog):
+class AstrologyCmds(app_commands.Group):
     """
     Astrologia
     """
@@ -18,21 +16,26 @@ class AstrologyCog(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.astrology_bot = AstrologyChart()
+        super().__init__(name='astrologia')
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="mapa_astral",
         description="Visualize seu mapa astral criado via DM"
     )
-    async def show_astrology_chart(self, ctx):
-        user_chart = await self.astrology_bot.get_user_chart(ctx.author.id)
+    async def show_astrology_chart(self, interaction: discord.Interaction):
+        user_chart = await self.astrology_bot.get_user_chart(interaction.user.id)
         if not user_chart:
-            return await ctx.send(
-                i(ctx, 'You have not yet created your astrology chart. In order to do so, send this command to my DM 😁'))
-        return await self.send_astrology_triad(ctx, user_chart)
+            return await interaction.response.send_message(
+                i(interaction, 'You have not yet created your astrology chart. In order to do so, send this command to my DM 😁'))
+        return await self.send_astrology_triad(interaction, user_chart)
     
-    @commands.command()
-    @commands.dm_only()
-    async def mapa_astral(self, ctx, date, time, *, city_name):
+    @app_commands.command(
+        name='criar',
+        description='Visualize ou crie via DM seu mapa astral'
+    )
+    @app_commands.describe(date='Data no formato YYYY/mm/dd', time='Horário no formato HH:MM', city_name='Cidade')
+    @app_commands.check(dm_only)
+    async def mapa_astral(self, interaction: discord.Interaction, date: str, time: str, city_name: str):
         """
         Visualize ou crie via DM seu mapa astral
 
@@ -43,29 +46,34 @@ class AstrologyCog(commands.Cog):
         Exemplo de uso para criação de mapa astral: `mapa_astral 2000/15/01 12:00 Brasília`
         """
         try:
-            await ctx.trigger_typing()
-            chart = await self.astrology_bot.calc_chart(ctx.author.id, date, time, city_name)
-            await self.astrology_bot.save_chart(ctx.author.id, chart)
+            chart = await self.astrology_bot.calc_chart(interaction.user.id, date, time, city_name)
+            await self.astrology_bot.save_chart(interaction.user.id, chart)
         except AstrologyInvalidInput as e:
-            return await ctx.send(i(ctx, e.message))
+            return await interaction.response.send_message(i(interaction, e.response.message_send_message))
         except Exception as e:
             logging.warning(e, exc_info=True)
-            return await ctx.send(
-                i(ctx, 'There has been a momentary failure. Please try again in a few moments. If this error persists, then this might be a bug 😬')
+            return await interaction.response.send_message(
+                i(interaction, 'There has been a momentary failure. Please try again in a few moments. If this error persists, then this might be a bug 😬')
             )
-        await self.send_astrology_triad(ctx, chart)
+        await self.send_astrology_triad(interaction, chart)
+        
+    @mapa_astral.error
+    async def handle_errors(self, interaction: discord.Interaction, error):
+        if isinstance(error, app_commands.errors.CheckFailure):
+            await interaction.response.send_message(
+                i(interaction, 'Command only available through DM'))
 
-    async def send_astrology_triad(self, ctx, chart):
+    async def send_astrology_triad(self, interaction, chart):
         sign = self.astrology_bot.get_sun_sign(chart)
         asc = self.astrology_bot.get_asc_sign(chart)
         moon = self.astrology_bot.get_moon_sign(chart)
 
         embed = discord.Embed(
-            title=i(ctx, 'Your astrology chart'),
-            description=i(ctx, 'Your astrology triad'),
+            title=i(interaction, 'Your astrology chart'),
+            description=i(interaction, 'Your astrology triad'),
             colour=discord.Color.blurple()
         )
-        embed.add_field(name=i(ctx, 'Solar sign'), value=sign)
-        embed.add_field(name=i(ctx, 'Ascending sign'), value=asc)
-        embed.add_field(name=i(ctx, 'Moon sign'), value=moon)
-        await ctx.send(embed=embed)
+        embed.add_field(name=i(interaction, 'Solar sign'), value=sign)
+        embed.add_field(name=i(interaction, 'Ascending sign'), value=asc)
+        embed.add_field(name=i(interaction, 'Moon sign'), value=moon)
+        await interaction.response.send_message(embed=embed)

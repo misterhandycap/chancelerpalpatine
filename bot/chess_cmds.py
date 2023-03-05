@@ -1,10 +1,9 @@
+from enum import Enum
 import inspect
 import logging
 
 import discord
-from discord.ext import commands
-from discord_slash import cog_ext
-from discord_slash.utils.manage_commands import create_option
+from discord import app_commands
 
 from bot.chess.chess import Chess
 from bot.chess.exceptions import ChessException, MultipleGamesAtOnce
@@ -30,16 +29,16 @@ def get_current_game(func):
     key. As such, in order to properly document this changed behaviour, simply incluse
     `{user2_doc}` into the function's doc where appropriate.
     """
-    async def function_wrapper(this, ctx, *args, **kwargs):
+    async def function_wrapper(this, interaction, *args, **kwargs):
         try:
             user = args[-1] if args else kwargs.get("user", None)
-            game = this.chess_bot.find_current_game(ctx.author, user)
+            game = this.chess_bot.find_current_game(interaction.user, user)
         except MultipleGamesAtOnce as e:
-            return await ctx.send(i(ctx, e.message).format(number_of_games=e.number_of_games))
+            return await interaction.response.send_message(i(interaction, e.message).format(number_of_games=e.number_of_games))
         except ChessException as e:
-            return await ctx.send(i(ctx, e.message))
+            return await interaction.response.send_message(i(interaction, e.message))
         
-        func_args = [this, ctx] + list(args)
+        func_args = [this, interaction] + list(args)
         if 'user' in kwargs:
             del kwargs["user"]
         await func(*func_args, game=game, **kwargs)
@@ -55,6 +54,7 @@ def get_current_game(func):
     )})
 
     function_wrapper.__name__ = func.__name__
+    function_wrapper.__qualname__ = func.__qualname__
     function_wrapper.__doc__ = func.__doc__.format(
         user2_doc="Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo."
     )
@@ -63,36 +63,37 @@ def get_current_game(func):
     return function_wrapper
 
 
-class ChessCog(commands.Cog):
+class ChessBoardColors(Enum):
+    blue = 1
+    purple = 2
+    green = 3
+    red = 4
+    gray = 5
+    wood = 6
+
+
+class ChessCmds(app_commands.Group):
     """
     Xadrez
     """
 
     def __init__(self, client):
         self.client = client
+        self.client.add_listener(self.on_connect)
         self.chess_bot = Chess()
         self.puzzle_bot = Puzzle()
+        super().__init__(name='xadrez')
 
-    @commands.Cog.listener()
     async def on_connect(self):
         await self.chess_bot.load_games()
         logging.info(f'Successfully loaded {len(self.chess_bot.games)} active chess games')
     
-    @cog_ext.cog_slash(
-        name="xadrez_novo",
-        description="Inicie uma nova partida de xadrez com alguém",
-        options=[
-            create_option(name="user", description="Usuário contra quem quer jogar", option_type=6, required=True),
-            create_option(
-                name="color_schema",
-                description="Cores do tabuleiro",
-                option_type=3,
-                required=False,
-                choices=["blue", "purple", "green", "red", "gray", "wood"]
-            ),
-        ]
+    @app_commands.command(
+        name="novo",
+        description="Inicie uma nova partida de xadrez com alguém"
     )
-    async def new_game_pvp(self, ctx, user: discord.User, color_schema=None):
+    @app_commands.describe(user='Usuário contra quem quer jogar', color_schema='Cores do tabuleiro')
+    async def new_game_pvp(self, interaction: discord.Interaction, user: discord.User, color_schema: ChessBoardColors=None):
         """
         Inicie uma nova partida de xadrez com alguém
 
@@ -102,31 +103,22 @@ class ChessCog(commands.Cog):
         """
         bot_info = await self.client.application_info()
         if user.id == bot_info.id:
-            return await ctx.send(
-                i(ctx, "In order to play a game against the bot, use the command `{prefix}xadrez_bot`")
+            return await interaction.response.send_message(
+                i(interaction, "In order to play a game against the bot, use the command `{prefix}xadrez_bot`")
                 .format(prefix=self.client.command_prefix)
             )
         try:
-            game = self.chess_bot.new_game(ctx.author, user, color_schema=color_schema)
-            await ctx.send(i(ctx, 'Game started! {}, play your move').format(game.player1.name))
+            game = self.chess_bot.new_game(interaction.user, user, color_schema=color_schema.name if color_schema else None)
+            await interaction.response.send_message(i(interaction, 'Game started! {}, play your move').format(game.player1.name))
         except ChessException as e:
-            await ctx.send(i(ctx, e.message))
+            await interaction.response.send_message(i(interaction, e.message))
 
-    @cog_ext.cog_slash(
-        name="xadrez_bot",
-        description="Inicie uma nova partida de xadrez contra o bot",
-        options=[
-            create_option(name="cpu_level", description="Nível de dificuldade", option_type=4, required=True),
-            create_option(
-                name="color_schema",
-                description="Cores do tabuleiro",
-                option_type=3,
-                required=False,
-                choices=["blue", "purple", "green", "red", "gray", "wood"]
-            ),
-        ]
+    @app_commands.command(
+        name="bot",
+        description="Inicie uma nova partida de xadrez contra o bot"
     )
-    async def new_game_pve(self, ctx, cpu_level: int, color_schema=None):
+    @app_commands.describe(cpu_level='Nível de dificuldate (0 a 20)', color_schema='Cores do tabuleiro')
+    async def new_game_pve(self, interaction: discord.Interaction, cpu_level: int, color_schema: ChessBoardColors=None):
         """
         Inicie uma nova partida de xadrez contra o bot
 
@@ -137,170 +129,135 @@ class ChessCog(commands.Cog):
         bot_info = await self.client.application_info()
         try:
             game = self.chess_bot.new_game(
-                ctx.author, bot_info, cpu_level=cpu_level, color_schema=color_schema)
-            await ctx.send(i(ctx, 'Game started! {}, play your move').format(game.player1.name))
+                interaction.user, bot_info, cpu_level=cpu_level, color_schema=color_schema.name if color_schema else None)
+            await interaction.response.send_message(i(interaction, 'Game started! {}, play your move').format(game.player1.name))
         except ChessException as e:
-            await ctx.send(i(ctx, e.message))
+            await interaction.response.send_message(i(interaction, e.message))
 
-    @cog_ext.cog_slash(
-        name="xadrez_jogar",
-        description="Faça uma jogada em sua partida atual",
-        options=[
-            create_option(name="move", description="Use anotação SAN ou UCI", option_type=3, required=True),
-            create_option(
-                name="user",
-                description="Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo",
-                option_type=6,
-                required=False
-            ),
-        ]
+    @app_commands.command(
+        name="jogar",
+        description="Faça uma jogada em sua partida atual"
     )
+    @app_commands.describe(move='Use anotação SAN ou UCI', user='Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo')
     @get_current_game
-    async def play_move(self, ctx, move, *, game):
+    async def play_move(self, interaction: discord.Interaction, move: str, *, game):
         """
         Faça uma jogada em sua partida atual
 
         Use anotação SAN ou UCI. Movimentos inválidos ou ambíguos são rejeitados. {user2_doc}
         """
-        await ctx.defer()
-        async with ctx.channel.typing():
+        await interaction.response.defer()
+        async with interaction.channel.typing():
             try:
                 game = await self.chess_bot.make_move(game, move)
             except ChessException as e:
-                return await ctx.send(i(ctx, e.message))
+                return await interaction.followup.send(i(interaction, e.message))
             
             if self.chess_bot.is_game_over(game):
                 pgn = self.chess_bot.generate_pgn(game)
-                message = f'{i(ctx, "Game over!")}\n\n{pgn}'
+                message = f'{i(interaction, "Game over!")}\n\n{pgn}'
             else:
-                message = i(ctx, "That's your turn now, {}").format(game.current_player.name)
+                message = i(interaction, "That's your turn now, {}").format(game.current_player.name)
             
             board_png_bytes = self.chess_bot.build_png_board(game)
-            await ctx.send(
+            await interaction.followup.send(
                 content=message,
                 file=discord.File(board_png_bytes, 'board.png')
             )
 
         evaluation = await self.chess_bot.eval_last_move(game)
         if evaluation["blunder"]:
-            await ctx.send("👀")
+            await interaction.channel.send("👀")
         elif evaluation["mate_in"] and evaluation["mate_in"] in range(1, 4):
             sheev_msgs = [
-                i(ctx, "DEW IT!"),
-                i(ctx, "Kill him! Kill him now!"),
-                i(ctx, "Good, {username}, good!").format(username=game.current_player.name)
+                i(interaction, "DEW IT!"),
+                i(interaction, "Kill him! Kill him now!"),
+                i(interaction, "Good, {username}, good!").format(username=game.current_player.name)
             ]
-            await ctx.send(sheev_msgs[evaluation["mate_in"] - 1])
+            await interaction.channel.send(sheev_msgs[evaluation["mate_in"] - 1])
 
-    @cog_ext.cog_slash(
-        name="xadrez_abandonar",
-        description="Abandone a partida atual",
-        options=[
-            create_option(
-                name="user",
-                description="Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo",
-                option_type=6,
-                required=False
-            ),
-        ]
+    @app_commands.command(
+        name="abandonar",
+        description="Abandone a partida atual"
     )
+    @app_commands.describe(user='Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo')
     @get_current_game
-    async def resign(self, ctx, *, game):
+    async def resign(self, interaction: discord.Interaction, *, game):
         """
         Abandone a partida atual
 
         {user2_doc}
         """
-        await ctx.defer()
-        async with ctx.channel.typing():
+        await interaction.response.defer()
+        async with interaction.channel.typing():
             game = await self.chess_bot.resign(game)
             pgn = self.chess_bot.generate_pgn(game)
             board_png_bytes = self.chess_bot.build_png_board(game)
-            await ctx.send(
-                content=i(ctx, '{} has abandoned the game!').format(game.current_player.name)+f'\n{pgn}',
+            await interaction.followup.send(
+                content=i(interaction, '{} has abandoned the game!').format(game.current_player.name)+f'\n{pgn}',
                 file=discord.File(board_png_bytes, 'board.png')
             )
 
-    @cog_ext.cog_slash(
-        name="xadrez_pgn",
-        description="Gera o PGN da partida atual",
-        options=[
-            create_option(
-                name="user",
-                description="Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo",
-                option_type=6,
-                required=False
-            ),
-        ]
+    @app_commands.command(
+        name="pgn",
+        description="Gera o PGN da partida atual"
     )
+    @app_commands.describe(user='Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo')
     @get_current_game
-    async def get_game_pgn(self, ctx, *, game):
+    async def get_game_pgn(self, interaction: discord.Interaction, *, game):
         """
         Gera o PGN da partida atual
 
         {user2_doc}
         """
-        await ctx.defer()
-        async with ctx.channel.typing():
+        await interaction.response.defer()
+        async with interaction.channel.typing():
             result = self.chess_bot.generate_pgn(game)
-            await ctx.send(result)
+            await interaction.followup.send(result)
 
-    @cog_ext.cog_slash(
-        name="xadrez_posicao",
-        description="Mostra a posição atual da partida em andamento",
-        options=[
-            create_option(
-                name="user",
-                description="Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo",
-                option_type=6,
-                required=False
-            ),
-        ]
+    @app_commands.command(
+        name="posicao",
+        description="Mostra a posição atual da partida em andamento"
     )
+    @app_commands.describe(user='Informe o seu oponente caso esteja disputando múltiplas partidas ao mesmo tempo')
     @get_current_game
-    async def get_game_position(self, ctx, *, game):
+    async def get_game_position(self, interaction: discord.Interaction, *, game):
         """
         Mostra a posição atual da partida em andamento
 
         {user2_doc}
         """
-        await ctx.defer()
-        async with ctx.channel.typing():
+        await interaction.response.defer()
+        async with interaction.channel.typing():
             image = self.chess_bot.build_png_board(game)
-            await ctx.send(file=discord.File(image, 'board.png'))
+            await interaction.followup.send(file=discord.File(image, 'board.png'))
 
-    @cog_ext.cog_slash(
-        name="xadrez_todos",
-        description="Veja todas as partidas que estão sendo jogadas agora",
-        options=[
-            create_option(name="page", description="Página", option_type=4, required=False),
-        ]
+    @app_commands.command(
+        name="todos",
+        description="Veja todas as partidas que estão sendo jogadas agora"
     )
-    async def all_current_games(self, ctx, page: int=0):
+    @app_commands.describe(page='Página')
+    async def all_current_games(self, interaction: discord.Interaction, page: int=0):
         """
         Veja todas as partidas que estão sendo jogadas agora
         """
-        await ctx.defer()
-        async with ctx.channel.typing():
+        await interaction.response.defer()
+        async with interaction.channel.typing():
             png_bytes = await self.chess_bot.get_all_boards_png(page)
             if not png_bytes:
-                await ctx.send(
-                    i(ctx, "No game is being played currently... ☹️ Start a new one with `{prefix}!xadrez_novo`")
+                await interaction.followup.send(
+                    i(interaction, "No game is being played currently... ☹️ Start a new one with `{prefix}!xadrez_novo`")
                     .format(prefix=self.client.command_prefix)
                 )
             else:
-                await ctx.send(file=discord.File(png_bytes, 'boards.png'))
+                await interaction.followup.send(file=discord.File(png_bytes, 'boards.png'))
 
-    @cog_ext.cog_slash(
-        name="xadrez_gif",
-        description="Exibe um GIF animado com uma variante fornecida para o jogo em questão, a partir do lance fornecido",
-        options=[
-            create_option(name="game_id", description="UUID da partida", option_type=3, required=True),
-            create_option(name="move_number", description="Número do lance", option_type=4, required=True),
-            create_option(name="moves", description="Jogadas", option_type=3, required=True)
-        ]
+    @app_commands.command(
+        name="gif",
+        description="Exibe um GIF animado com uma variante fornecida para o jogo em questão, a partir do lance fornecido"
     )
-    async def make_animated_gif(self, ctx, game_id: str, move_number: int, moves):
+    @app_commands.describe(game_id='UUID da partida', move_number='Número do lance', moves='Jogadas')
+    async def make_animated_gif(self, interaction: discord.Interaction, game_id: str, move_number: int, moves: str):
         """
         Exibe um GIF animado com uma variante fornecida para o jogo em questão, a partir do lance fornecido
 
@@ -309,27 +266,24 @@ class ChessCog(commands.Cog):
 
         Exemplo de uso: `xgif f63e5e4f-dd94-4439-a283-33a1c1a065a0 11 Nxf5 Qxf5 Qxf5 gxf5`
         """
-        await ctx.defer()
-        async with ctx.channel.typing():
+        await interaction.response.defer()
+        async with interaction.channel.typing():
             chess_game = await self.chess_bot.get_game_by_id(game_id)
             if not chess_game:
-                return await ctx.send(i(ctx, "Game not found"))
+                return await interaction.followup.send(i(interaction, "Game not found"))
             
             gif_bytes = await self.chess_bot.build_animated_sequence_gif(
                 chess_game, move_number, moves.split(" "))
             if not gif_bytes:
-                return await ctx.send(i(ctx, "Invalid move for the given sequence"))
-            return await ctx.send(file=discord.File(gif_bytes, 'variation.gif'))
+                return await interaction.followup.send(i(interaction, "Invalid move for the given sequence"))
+            return await interaction.followup.send(file=discord.File(gif_bytes, 'variation.gif'))
 
-    @cog_ext.cog_slash(
-        name="xadrez_puzzle",
-        description="Pratique um puzzle de xadrez",
-        options=[
-            create_option(name="puzzle_id", description="ID do puzzle", option_type=3, required=False),
-            create_option(name="move", description="Lance", option_type=3, required=False)
-        ]
+    @app_commands.command(
+        name="puzzle",
+        description="Pratique um puzzle de xadrez"
     )
-    async def xadrez_puzzle(self, ctx, puzzle_id=None, move=''):
+    @app_commands.describe(puzzle_id='ID do puzzle', move='Lance')
+    async def xadrez_puzzle(self, interaction: discord.Interaction, puzzle_id: str=None, move: str=''):
         """
         Pratique um puzzle de xadrez
 
@@ -339,30 +293,30 @@ class ChessCog(commands.Cog):
         Exemplo de novo puzzle: `xadrez_puzzle`
         Exemplo de jogada em puzzle existente: `xadrez_puzzle 557b7aa7e13823b82b9bc1e9 Qa2`
         """
-        await ctx.defer()
+        await interaction.response.defer()
         if not puzzle_id:
             puzzle_dict = await self.puzzle_bot.get_random_puzzle()
             if 'error' in puzzle_dict:
-                return await ctx.send(
-                    f'{i(ctx, "There has been an error when trying to fetch a new puzzle")}: {puzzle_dict["error"]}')
+                return await interaction.followup.send(
+                    f'{i(interaction, "There has been an error when trying to fetch a new puzzle")}: {puzzle_dict["error"]}')
             puzzle = self.puzzle_bot.build_puzzle(puzzle_dict)
             if 'error' in puzzle:
-                return await ctx.send(
-                    f'{i(ctx, "There has been an error when trying to build a new puzzle")}: {puzzle["error"]}')
-            return await ctx.send(puzzle["id"], file=discord.File(self.chess_bot.build_png_board(puzzle["game"]), 'puzzle.png'))
+                return await interaction.followup.send(
+                    f'{i(interaction, "There has been an error when trying to build a new puzzle")}: {puzzle["error"]}')
+            return await interaction.followup.send(puzzle["id"], file=discord.File(self.chess_bot.build_png_board(puzzle["game"]), 'puzzle.png'))
         
         try:
             puzzle_result = self.puzzle_bot.validate_puzzle_move(puzzle_id, move)
         except ChessException as e:
-            return await ctx.send(i(ctx, e.message))
+            return await interaction.followup.send(i(interaction, e.message))
         
         if puzzle_result:
             if self.puzzle_bot.is_puzzle_over(puzzle_id):
-                return await ctx.send(i(ctx, "Good job, puzzle solved 👍"))
+                return await interaction.followup.send(i(interaction, "Good job, puzzle solved 👍"))
         if puzzle_result or move == '':
-            return await ctx.send(file=discord.File(
+            return await interaction.followup.send(file=discord.File(
                 self.chess_bot.build_png_board(
                     self.puzzle_bot.puzzles[puzzle_id]["game"]), 'puzzle.png')
             )
         
-        return await ctx.send(i(ctx, "Wrong answer"))
+        return await interaction.followup.send(i(interaction, "Wrong answer"))

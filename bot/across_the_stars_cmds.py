@@ -1,30 +1,27 @@
 import os
 
 import discord
-from discord.ext import commands
-from discord_slash import cog_ext
-from discord_slash.utils.manage_commands import create_option
+from discord import app_commands
 
 from bot.across_the_stars.planets import Planets
 from bot.utils import i
 
 
-class AcrossTheStarsCmds(commands.Cog):
+class AcrossTheStarsCmds(app_commands.Group):
     """
     Jogo Across The Stars
     """
     def __init__(self, client):
         self.client = client
         self.planets = Planets()
+        super().__init__(name='across_the_stars')
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="planetas",
-        description="Lista todos os planetas disponíveis da região fornecida",
-        options=[
-            create_option(name="region", description="Região galáctica", option_type=3, required=False)
-        ]
+        description="Lista todos os planetas disponíveis da região fornecida"
     )
-    async def list_planets(self, ctx, region=None):
+    @app_commands.describe(region='Região galáctica')
+    async def list_planets(self, interaction: discord.Interaction, region: str=None):
         """
         Lista todos os planetas disponíveis da região fornecida
         """
@@ -34,16 +31,16 @@ class AcrossTheStarsCmds(commands.Cog):
         planets = await self.planets.list_of_planets(region=region)
 
         embed = discord.Embed(
-            title=i(ctx, "Arnaldo's Emporium"),
-            description=i(ctx, "Become a planet's senator"),
+            title=i(interaction, "Arnaldo's Emporium"),
+            description=i(interaction, "Become a planet's senator"),
             colour=discord.Color.green()
         )
         embed.set_thumbnail(url="attachment://hutt.gif")
         for planet in planets:
             embed.add_field(
                 name=planet.name,
-                value=f'{i(ctx, "Price")}: {planet.price}\n{i(ctx, "Region")}: {planet.region}\n'\
-                    f'{i(ctx, "Climate")}: {planet.climate}\n{i(ctx, "Circuference")}: {planet.circuference}'
+                value=f'{i(interaction, "Price")}: {planet.price}\n{i(interaction, "Region")}: {planet.region}\n'\
+                    f'{i(interaction, "Climate")}: {planet.climate}\n{i(interaction, "Circuference")}: {planet.circuference}'
             )
 
-        await ctx.reply(embed=embed, file=discord_file)
+        await interaction.response.send_message(embed=embed, file=discord_file)

@@ -5,9 +5,7 @@ import time
 from datetime import datetime, timedelta
 
 import discord
-from discord.ext import commands
-from discord_slash import cog_ext
-from discord_slash.utils.manage_commands import create_option
+from discord import app_commands
 
 from bot.models.user import User
 from bot.models.xp_point import XpPoint
@@ -15,15 +13,16 @@ from bot.servers import cache
 from bot.utils import i, paginate
 
 
-class LevelCog(commands.Cog):
+class LevelCmds(app_commands.Group):
     """
     Comandos de nível do bot
     """
 
     def __init__(self, client):
         self.client = client
+        self.client.add_listener(self.on_message)
+        super().__init__(name='nível')
     
-    @commands.Cog.listener()
     async def on_message(self, message):
         if message.author.bot or not message.guild:
             return
@@ -89,22 +88,20 @@ class LevelCog(commands.Cog):
             await User.save(user)
         return user
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="level",
-        description="Mostra o nível de usuário",
-        options=[
-            create_option(name="user", description="Usuário para exibir o nível", option_type=6, required=False),
-        ]
+        description="Mostra o nível de usuário"
     )
-    async def level(self, ctx, user: discord.User=None):
+    @app_commands.describe(user='Usuário para exibir o nível')
+    async def level(self, interaction: discord.Interaction, user: discord.User=None):
         """
         Mostra o nível de usuário
 
         Passe um usuário para ver seu nível. Se não for passado nenhum usuário, \
             o seu nível de usuário será retornado.
         """
-        selected_user = user if user else ctx.author
-        xp_point = await XpPoint.get_by_user_and_server(selected_user.id, ctx.guild_id)
+        selected_user = user if user else interaction.user
+        xp_point = await XpPoint.get_by_user_and_server(selected_user.id, interaction.guild_id)
         if not xp_point:
             xp_point = XpPoint(level=0, points=0)
 
@@ -114,25 +111,23 @@ class LevelCog(commands.Cog):
             colour=discord.Color.red()
         )
         levelbed.set_thumbnail(url='https://cdn.discordapp.com/attachments/676574583083499532/752314249610657932/1280px-Flag_of_the_Galactic_Republic.png')
-        await ctx.send(embed=levelbed)
+        await interaction.response.send_message(embed=levelbed)
 
-    @cog_ext.cog_slash(
+    @app_commands.command(
         name="rank",
-        description="Mostra a tabela de niveis de usuários em ordem de maior pra menor",
-        options=[
-            create_option(name="page_number", description="Página", option_type=4, required=False),
-        ]
+        description="Mostra a tabela de niveis de usuários em ordem de maior pra menor"
     )
-    async def rank(self, ctx, page_number: int=1):
+    @app_commands.describe(page_number='Página')
+    async def rank(self, interaction: discord.Interaction, page_number: int=1):
         """
         Mostra a tabela de niveis de usuários em ordem de maior pra menor
         """
         page_size = 5
-        xp_points = await XpPoint.list_by_server(ctx.guild_id)
+        xp_points = await XpPoint.list_by_server(interaction.guild_id)
 
         rank, last_page = paginate(xp_points, page_number, page_size)
 
         msg = '\n'.join([f'* **{r.user.name}** - {r.points}' for r in rank])
         msg += f'\n\nPágina {page_number} de {last_page}'
 
-        await ctx.send(msg)
+        await interaction.response.send_message(msg)

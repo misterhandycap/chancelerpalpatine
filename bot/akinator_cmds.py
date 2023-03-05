@@ -1,13 +1,11 @@
 import discord
-from discord.ext import commands
-from discord_slash import cog_ext
-from discord_slash.utils.manage_commands import create_option
+from discord import app_commands
 
 from bot.akinator.akinator_game import AkinatorGame
 from bot.utils import i, get_server_lang
 
 
-class AkinatorCog(commands.Cog):
+class AkinatorCmds(app_commands.Group):
     """
     Jogos com Akinator
     """
@@ -22,13 +20,15 @@ class AkinatorCog(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.client.add_listener(self.on_reaction_add)
         self.akinator_bot = AkinatorGame()
+        super().__init__(name='akinator')
 
-    @cog_ext.cog_slash(
-        name="akinator",
+    @app_commands.command(
+        name="novo",
         description="Novo jogo com Akinator"
     )
-    async def new_game(self, ctx):
+    async def new_game(self, interaction: discord.Interaction):
         """
         Novo jogo com Akinator
 
@@ -39,14 +39,13 @@ class AkinatorCog(commands.Cog):
         🇺: Provavelmente não
         🚫: Não
         """
-        await ctx.defer()
-        async with ctx.channel.typing():
-            lang = get_server_lang(ctx.guild_id)
-            game, question = await self.akinator_bot.new_game(ctx.author, lang)
-        await ctx.send(i(ctx, "Game started. Answer by reaction to the bot's questions."))
-        await self.send_embed(question, ctx.author, ctx)
+        await interaction.response.defer()
+        async with interaction.channel.typing():
+            lang = get_server_lang(interaction.guild_id)
+            game, question = await self.akinator_bot.new_game(interaction.user, lang)
+        await interaction.followup.send(i(interaction, "Game started. Answer by reaction to the bot's questions."))
+        await self.send_embed(question, interaction.user, interaction.channel)
 
-    @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         game = self.akinator_bot.get_user_game(user)
         message = reaction.message
@@ -86,5 +85,5 @@ class AkinatorCog(commands.Cog):
         for emoji in self.emoji_answers.values():
             await message.add_reaction(emoji)
 
-    async def cog_command_error(self, ctx, error):
-        await ctx.send(i(ctx, "There has been an error with Akinator."))
+    async def cog_command_error(self, interaction, error):
+        await interaction.send(i(interaction, "There has been an error with Akinator."))
