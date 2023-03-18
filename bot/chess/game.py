@@ -5,6 +5,7 @@ from chess.engine import Cp
 from chess.pgn import Game as PGN
 from chess.pgn import read_game
 
+from bot.chess.player import Player
 from bot.models.chess_game import ChessGame
 from bot.models.user import User
 from bot.utils import convert_users_to_players
@@ -12,15 +13,15 @@ from bot.utils import convert_users_to_players
 
 class Game():
     def __init__(self):
-        self.id = None
-        self.board = None
-        self.player1 = None
-        self.player2 = None
-        self.current_player = None
-        self.result = '*'
-        self.color_schema = None
-        self.last_eval = Cp(0)
-        self.cpu_level = None
+        self.id: str = None
+        self.board: Board = None
+        self.player1: Player = None
+        self.player2: Player = None
+        self.current_player: Player = None
+        self.result: str = '*'
+        self.color_schema: str = None
+        self.last_eval: Cp = Cp(0)
+        self.cpu_level: int = None
 
     def __eq__(self, value):
         try:
@@ -41,7 +42,7 @@ class Game():
         self.id = chess_game_id
 
     @classmethod
-    def from_chess_game_model(cls, chess_game):
+    def from_chess_game_model(cls, chess_game: ChessGame) -> 'Game':
         game = Game()
         game.id = chess_game.id
         game.player1, = convert_users_to_players(chess_game.player1)

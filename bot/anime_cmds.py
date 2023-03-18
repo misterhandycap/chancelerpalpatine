@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 
 from bot.anime.anime import Anime
-from bot.utils import i
+from bot.discord_helpers import i
 
 
 class AnimeCmds(app_commands.Group):
@@ -60,7 +60,8 @@ class AnimeCmds(app_commands.Group):
                     result = self.anime_bot.get_anime(int(search_result["mal_id"]))
                 except Exception as e:
                     logging.warning(e, exc_info=True)
-                    return await interaction.send(i(interaction, "Something went wrong when searching for your anime"))
+                    return await interaction.followup.send(
+                        i(interaction,"Something went wrong when searching for your anime"))
 
         embed = discord.Embed(
             title=result.title,

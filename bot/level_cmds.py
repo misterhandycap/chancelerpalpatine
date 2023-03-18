@@ -10,7 +10,7 @@ from discord import app_commands
 from bot.models.user import User
 from bot.models.xp_point import XpPoint
 from bot.servers import cache
-from bot.utils import i, paginate
+from bot.utils import paginate
 
 
 class LevelCmds(app_commands.Group):

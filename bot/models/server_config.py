@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy import BigInteger, Column, select, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import relationship, subqueryload
@@ -13,21 +15,21 @@ class ServerConfig(Base):
     autoreply_configs = relationship(ServerConfigAutoreply, lazy='subquery')
 
     @classmethod
-    async def all(cls):
+    async def all(cls) -> List['ServerConfig']:
         async with AsyncSession(engine) as session:
             return (await session.execute(
                 select(ServerConfig).options(subqueryload(ServerConfig.autoreply_configs))
             )).scalars().fetchall()
     
     @classmethod
-    async def get(cls, server_id):
+    async def get(cls, server_id: int) -> 'ServerConfig':
         async with AsyncSession(engine) as session:
             return (await session.execute(
                 select(ServerConfig).where(ServerConfig.id == server_id)
             )).scalars().first()
     
     @classmethod
-    async def save(cls, server_config):
+    async def save(cls, server_config: 'ServerConfig') -> int:
         async with AsyncSession(engine) as session:
             session.add(server_config)
             await session.commit()

@@ -3,8 +3,9 @@ import logging
 import discord
 from discord import app_commands
 
+from bot.discord_helpers import i, PaginatedEmbedManager
 from bot.sww_leaderboard.leaderboard import Leaderboard
-from bot.utils import i, paginate, PaginatedEmbedManager
+from bot.utils import paginate
 
 
 class StarWarsWikiCmds(app_commands.Group):

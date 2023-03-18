@@ -6,11 +6,11 @@ import discord
 from discord.ui import button
 from discord import app_commands
 
+from bot.discord_helpers import i, PaginatedEmbedManager, PersonalView
 from bot.economy.exceptions import EconomyException
 from bot.economy.item import Item
 from bot.economy.palplatina import Palplatina
 from bot.models.exceptions import ProfileItemException
-from bot.utils import i, PaginatedEmbedManager, PersonalView
 
 
 class PalplatinaCmds(app_commands.Group):

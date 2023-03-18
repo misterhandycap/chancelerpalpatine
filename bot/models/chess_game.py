@@ -1,3 +1,4 @@
+from typing import List, Optional
 from uuid import uuid4
 
 from sqlalchemy import (BigInteger, Column, ForeignKey, SmallInteger, String,
@@ -22,7 +23,7 @@ class ChessGame(Base):
     cpu_level = Column(SmallInteger, nullable=True)
 
     @classmethod
-    async def get(cls, chess_game_id, preload_players=False):
+    async def get(cls, chess_game_id: str, preload_players: bool=False) -> Optional['ChessGame']:
         query = select(ChessGame).where(ChessGame.id == chess_game_id)
         if preload_players:
             query = query.options(
@@ -33,7 +34,7 @@ class ChessGame(Base):
             return (await session.execute(query)).scalars().first()
 
     @classmethod
-    async def get_all_ongoing_games(cls):
+    async def get_all_ongoing_games(cls) -> List['ChessGame']:
         async with AsyncSession(engine) as session:
             return (await session.execute(
                 select(ChessGame).where(ChessGame.result == None).options(
@@ -43,7 +44,7 @@ class ChessGame(Base):
             )).scalars().fetchall()
 
     @classmethod
-    async def get_number_of_victories(cls, user_id):
+    async def get_number_of_victories(cls, user_id: int) -> int:
         async with AsyncSession(engine) as session:
             return (await session.execute(
                 select(func.count()).select_from(ChessGame).where(
@@ -55,7 +56,7 @@ class ChessGame(Base):
             )).scalars().first()
     
     @classmethod
-    async def save(cls, chess_game):
+    async def save(cls, chess_game: 'ChessGame') -> str:
         async with AsyncSession(engine) as session:
             session.add(chess_game)
             await session.commit()

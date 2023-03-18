@@ -1,8 +1,9 @@
 import discord
 from discord import app_commands
+from discord.ext.commands import Bot
 
 from bot.akinator.akinator_game import AkinatorGame
-from bot.utils import i, get_server_lang
+from bot.discord_helpers import i, get_server_lang
 
 
 class AkinatorCmds(app_commands.Group):
@@ -18,8 +19,8 @@ class AkinatorCmds(app_commands.Group):
         'n': '🚫'
     }
 
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, client: Bot):
+        self.client: Bot = client
         self.client.add_listener(self.on_reaction_add)
         self.akinator_bot = AkinatorGame()
         super().__init__(name='akinator')
@@ -46,7 +47,7 @@ class AkinatorCmds(app_commands.Group):
         await interaction.followup.send(i(interaction, "Game started. Answer by reaction to the bot's questions."))
         await self.send_embed(question, interaction.user, interaction.channel)
 
-    async def on_reaction_add(self, reaction, user):
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         game = self.akinator_bot.get_user_game(user)
         message = reaction.message
         if not game or not message.embeds or message.author.id != self.client.user.id:
@@ -75,7 +76,7 @@ class AkinatorCmds(app_commands.Group):
             embed.set_thumbnail(url=result.get('absolute_picture_path'))
             await message.channel.send(embed=embed)
 
-    async def send_embed(self, result, user, channel):
+    async def send_embed(self, result: str, user: discord.User, channel: discord.TextChannel):
         embed = discord.Embed(
             title=f'Akinator: {user.name}',
             description=result,

@@ -34,11 +34,19 @@ class Item():
         )
         os.makedirs(directory_path, exist_ok=True)
 
-        filename = PurePosixPath(url).parts[-1]
+        if os.environ.get("USE_PROXY").lower() == 'true':
+            proxy_url = 'https://www.99luca11.com/proxy'
+            proxy_headers = {'Authorization': f'Bearer {os.environ.get("PROXY_TOKEN")}'}
+            get_args = [proxy_url]
+            get_kwargs = {'params': {'url': url}, 'headers': proxy_headers}
+        else:
+            get_args = [url]
+            get_kwargs = {}
         async with ClientSession() as session:
-            async with session.get(url) as response:
+            async with session.get(*get_args, **get_kwargs) as response:
                 file_contents = await response.read()
 
+        filename = PurePosixPath(url).parts[-1]
         profile_item.file_path = os.path.join(directory_path, filename)
         with open(profile_item.file_path, 'wb') as f:
             f.write(file_contents)
