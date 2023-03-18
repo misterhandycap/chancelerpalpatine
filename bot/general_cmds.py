@@ -22,15 +22,12 @@ class GeneralCmds(app_commands.Group):
     Miscelânea
     """
 
-    def __init__(self, client):
+    def __init__(self, client: commands.Bot):
         self.client = client
         self.client.add_listener(self.on_ready)
         self.client.add_listener(self.on_message)
         self.help_cmd_manager = PaginatedEmbedManager(self._create_paginated_help_embed)
         self.profile_bot = Profile()
-        self.scheduler_bot = Scheduler()
-        self.scheduler_bot.register_function('send_msg', self._send_msg)
-        self.scheduler_bot.start()
         super().__init__(name='general')
 
     async def on_ready(self):
@@ -40,6 +37,9 @@ class GeneralCmds(app_commands.Group):
         )
         await cache.load_configs()
         cache.all_servers = self.client.guilds
+        self.scheduler_bot = Scheduler(event_loop=self.client.loop)
+        self.scheduler_bot.register_function('send_msg', self._send_msg)
+        self.scheduler_bot.start()
         logging.info('Bot is ready')
 
     async def on_error(self, interaction: discord.Interaction, error):
@@ -249,7 +249,7 @@ class GeneralCmds(app_commands.Group):
         self.scheduler_bot.add_job(schedule_datetime, 'send_msg', (interaction.user.id, interaction.channel_id, text))
         await interaction.response.send_message(i(interaction, 'Message "{text}" scheduled for {datetime}').format(
             text=text,
-            datetime=schedule_datetime.strftime("%d/%m/%Y %H:%M:%S %Z")
+            datetime=discord.utils.format_dt(schedule_datetime, 'R')
         ))
 
     async def _send_msg(self, user_id, channel_id, text):
