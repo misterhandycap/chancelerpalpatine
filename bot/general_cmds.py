@@ -26,7 +26,7 @@ class GeneralCmds(app_commands.Group):
         self.client = client
         self.client.add_listener(self.on_ready)
         self.client.add_listener(self.on_message)
-        self.help_cmd_manager = PaginatedEmbedManager(client, self._create_paginated_help_embed)
+        self.help_cmd_manager = PaginatedEmbedManager(self._create_paginated_help_embed)
         self.profile_bot = Profile()
         self.scheduler_bot = Scheduler()
         self.scheduler_bot.register_function('send_msg', self._send_msg)
@@ -504,6 +504,7 @@ class GeneralCmds(app_commands.Group):
             )
         )
 
-        response_msg = await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(embed=embed)
+        response_msg = await interaction.original_response()
         for emoji in emoji_answers_vote[:len(choices)]:
             await response_msg.add_reaction(emoji)

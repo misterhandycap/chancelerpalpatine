@@ -1,11 +1,11 @@
 import logging
-import os
-import re
 import subprocess
+from typing import Awaitable, Callable, Optional
 
 import discord
 from asyncio import get_running_loop, new_event_loop
 from concurrent.futures.thread import ThreadPoolExecutor
+from discord.ui import button, View
 from functools import partial
 
 from bot.chess.player import Player
@@ -68,6 +68,26 @@ server_language_to_tz = {
     'en': 'UTC'
 }
 
+
+class PersonalView(View):
+    def __init__(self, *, owner=discord.User, timeout: Optional[float]=180):
+        self.owner = owner
+        super().__init__(timeout=timeout)
+    
+    async def interaction_check(self, interaction: discord.Interaction):
+        check = self._permission_check(interaction)
+        if not check:
+            await interaction.response.send_message(self._permission_denied_message(interaction),
+                ephemeral=True, delete_after=3)
+        return check
+        
+    def _permission_check(self, interaction: discord.Interaction):
+        return interaction.user == self.owner
+    
+    def _permission_denied_message(self, interaction: discord.Interaction):
+        return i(interaction, "Only user {username} may react to this message").format(username=self.owner.name)
+
+
 def paginate(elems: list, page: int, itens_per_page: int):
     """
     Paginates long list into pages and returns requested page
@@ -93,10 +113,8 @@ def paginate(elems: list, page: int, itens_per_page: int):
 
 class PaginatedEmbedManager():
     """
-    Utility for managing paginated embed via user reactions
+    Utility for managing paginated embed via Discord UI Buttons
 
-    :param client: Discord bot client
-    :type client: discord.Bot
     :param embed_func: Function responsible for creating paginated embed
     :type embed_func: function
     """
@@ -104,14 +122,15 @@ class PaginatedEmbedManager():
     BACKWARD_EMOJI = '◀️'
     FORWARD_EMOJI = '▶️'
 
-    def __init__(self, client, embed_func):
+    def __init__(self, embed_func: Callable[[int, discord.Message], Awaitable[discord.Embed]]):
         self.last_page = None
-        self.embed_title = None
+        self.embed_title: str = None
         self.callback = embed_func
-        self.client = client
-        client.add_listener(self._on_reaction_add, 'on_reaction_add')
+        self.interaction: discord.Interaction = None
 
-    async def send_embed(self, embed, page_number, interaction, discord_file=None, content=None):
+    async def send_embed(self, embed: discord.Embed, page_number: int,
+                         interaction: discord.Interaction, discord_file: discord.File=None,
+                         content=None):
         """
         Prepares and sends given paginated embed. Also reacts with navigation emojis
 
@@ -125,48 +144,52 @@ class PaginatedEmbedManager():
         :rtype: discord.Message
         """
         self.embed_title = embed.title
+        self.interaction = interaction
+        pagination_view = PaginationView(
+            owner=interaction.user, page=page_number, last_page=self.last_page,
+            embed_send_func=lambda x: self._send_updated_embed(x))
         embed = self._prepare_embed(embed, interaction.user, page_number)
-        message = await interaction.response.send_message(embed=embed, file=discord_file, content=content)
-        await message.add_reaction(self.BACKWARD_EMOJI)
-        await message.add_reaction(self.FORWARD_EMOJI)
-        return message
+        if interaction.response.is_done():
+            await self.interaction.edit_original_response(
+                embed=embed, content=content, view=pagination_view)
+        else:
+            await interaction.response.send_message(
+                embed=embed, file=discord_file, content=content, view=pagination_view)
+        return await interaction.original_response()
 
     def _prepare_embed(self, embed, author_name, page_number):
         embed.set_author(name=author_name)
         embed.set_footer(text=f'{page_number}/{self.last_page}')
         return embed
-
-    async def _on_reaction_add(self, reaction, user):
-        valid_emojis = [self.BACKWARD_EMOJI, self.FORWARD_EMOJI]
-        original_message = reaction.message
-        if not original_message.embeds or original_message.author.id != self.client.user.id:
-            return
-        embed = original_message.embeds[0]
-        if not (embed.title == self.embed_title and str(user) == embed.author.name):
-            return
-
-        emoji = str(reaction)
-        if emoji not in valid_emojis:
-            return
-
-        match = re.match(r'(\d+)\/(\d+)', embed.footer.text)
-        if not match:
-            page_number = 1
-            last_page = 1
-        else:
-            page_number = int(match.group(1))
-            last_page = int(match.group(2))
+    
+    async def _send_updated_embed(self, page: int):
+        message = await self.interaction.original_response()
         
-        if emoji == self.BACKWARD_EMOJI and page_number > 1:
-            page_number -= 1
-        elif emoji == self.FORWARD_EMOJI and page_number < last_page:
-            page_number += 1
-
         try:
             embed = self._prepare_embed(
-                await self.callback(page_number, original_message), str(user), page_number)
-            await original_message.edit(embed=embed)
+                await self.callback(page, message), self.interaction.user, page)
+            await self.interaction.edit_original_response(embed=embed)
         except Exception as e:
             logging.warning(f'{e.__class__}: {e}')
-            return await original_message.add_reaction('⚠️')
-        await original_message.remove_reaction(emoji, user)
+            await self.interaction.edit_original_response(content='⚠️')
+
+
+class PaginationView(PersonalView):
+    def __init__(self, *, owner: discord.User, page: int=0, last_page: int=None,
+                 embed_send_func: Callable[[int], Awaitable], timeout: Optional[float]=180):
+        self.value: int = page
+        self.last_page = last_page
+        self.callback = embed_send_func
+        super().__init__(owner=owner, timeout=timeout)
+        
+    @button(emoji='◀️')
+    async def previous_page(self, interaction: discord.Interaction, _):
+        await interaction.response.defer(thinking=False)
+        self.value = max(self.value - 1, 1)
+        await self.callback(self.value)
+    
+    @button(emoji='▶️')
+    async def next_page(self, interaction: discord.Interaction, _):
+        await interaction.response.defer(thinking=False)
+        self.value = min(self.value + 1, self.last_page)
+        await self.callback(self.value)

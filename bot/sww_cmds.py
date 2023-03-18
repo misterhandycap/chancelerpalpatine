@@ -15,8 +15,7 @@ class StarWarsWikiCmds(app_commands.Group):
     def __init__(self, client):
         self.client = client
         self.leaderboard_bot = Leaderboard()
-        self.medals_paginated_embed_manager = PaginatedEmbedManager(
-            client, self._build_medals_embed)
+        self.medals_paginated_embed_manager = PaginatedEmbedManager(self._build_medals_embed)
         super().__init__(name='sww')
 
     @app_commands.command(

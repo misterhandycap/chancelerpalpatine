@@ -1,17 +1,16 @@
-import logging
 import os
 from datetime import datetime
 from typing import Literal, Optional
 
 import discord
-from discord.ext import commands
+from discord.ui import button
 from discord import app_commands
 
 from bot.economy.exceptions import EconomyException
 from bot.economy.item import Item
 from bot.economy.palplatina import Palplatina
 from bot.models.exceptions import ProfileItemException
-from bot.utils import i, PaginatedEmbedManager
+from bot.utils import i, PaginatedEmbedManager, PersonalView
 
 
 class PalplatinaCmds(app_commands.Group):
@@ -23,8 +22,7 @@ class PalplatinaCmds(app_commands.Group):
         self.client = client
         self.palplatina = Palplatina()
         self.item_bot = Item()
-        self.shop_paginated_embed_manager = PaginatedEmbedManager(
-            self.client, self._build_shop_embed)
+        self.shop_paginated_embed_manager = PaginatedEmbedManager(self._build_shop_embed)
         super().__init__(name='palplatina')
 
     @app_commands.command(
@@ -174,6 +172,7 @@ class PalplatinaCmds(app_commands.Group):
         if not profile_item:
             return await interaction.response.send_message(i(interaction, 'Item not found'))
         
+        confirm_view = ConfirmView(owner=interaction.user)
         embed = discord.Embed(
             title=i(interaction, 'Buy item'),
             description=profile_item.name
@@ -186,36 +185,21 @@ class PalplatinaCmds(app_commands.Group):
         embed.add_field(name=i(interaction, 'Price'), value=profile_item.price)
         embed.add_field(name=i(interaction, 'Your palplatinas'), value=await self.palplatina.get_currency(interaction.user.id))
         
-        message = await interaction.response.send_message(embed=embed, file=discord_file)
-        await message.add_reaction('✅')
-        await message.add_reaction('🚫')
-
-    async def _purchase_confirmation_listener(self, reaction, user):
-        confirm_emoji = '✅'
-        cancel_emoji = '🚫'
-        valid_emojis = [confirm_emoji, cancel_emoji]
-        if not reaction.message.embeds or reaction.message.author.id != self.client.user.id:
-            return
-        embed = reaction.message.embeds[0]
-        if not (embed.title == i(reaction.message, 'Buy item') and str(user) == embed.author.name):
-            return
-
-        emoji = str(reaction)
-        if emoji not in valid_emojis:
-            return
-
-        if emoji == confirm_emoji:
+        await interaction.response.send_message(embed=embed, file=discord_file, view=confirm_view)
+        await confirm_view.wait()
+        
+        if confirm_view.value:
             try:
-                economy_user = await self.palplatina.buy_item(user.id, embed.description)
-                result = (i(reaction.message, 'Item bought. You now have {currency} palplatinas')
-                    .format(currency = economy_user.currency)
+                economy_user = await self.palplatina.buy_item(interaction.user.id, embed.description)
+                result = (i(interaction, 'Item bought. You now have {currency} palplatinas')
+                    .format(currency=economy_user.currency)
                 )
             except EconomyException as e:
-                result = i(reaction.message, e.message)
+                result = i(interaction, e.message)
         else:
-            result = i(reaction.message, 'Operation canceled')
+            result = i(interaction, 'Operation canceled')
         
-        await reaction.message.channel.send(content=f'{embed.author.name}: {result}')
+        await interaction.edit_original_response(content=f'{embed.author.name}: {result}', view=None)
 
     @app_commands.command(
         name="novo_item",
@@ -238,6 +222,7 @@ class PalplatinaCmds(app_commands.Group):
         except ProfileItemException as e:
             return await interaction.response.send_message(i(interaction, e.message))
 
+        moderator_confirm_view = ModeratorConfirmView()
         embed = discord.Embed(
             title=i(interaction, 'New item suggestion'),
             description=profile_item.name
@@ -246,46 +231,51 @@ class PalplatinaCmds(app_commands.Group):
         embed.add_field(name=i(interaction, 'Price'), value=profile_item.price)
         embed.set_author(name=interaction.user)
         embed.set_image(url=url)
-        result_message = await interaction.reply(embed=embed)
-        await result_message.add_reaction('✅')
-        await result_message.add_reaction('🚫')
-
-    async def _new_item_confirmation_listener(self, reaction, user):
-        confirm_emoji = '✅'
-        cancel_emoji = '🚫'
-        valid_emojis = [confirm_emoji, cancel_emoji]
-        moderators_ids = os.environ.get('MODERATORS_IDS', '').split(',')
-        if not reaction.message.embeds or reaction.message.author.id != self.client.user.id:
-            return
-        embed = reaction.message.embeds[0]
-        if not (embed.title == i(reaction.message, 'New item suggestion') and str(user.id) in moderators_ids):
-            return
-
-        emoji = str(reaction)
-        if emoji not in valid_emojis:
-            return
-
-        if emoji == confirm_emoji:
+        await interaction.response.send_message(embed=embed, view=moderator_confirm_view)
+        await moderator_confirm_view.wait()
+        
+        if moderator_confirm_view.value:
             profile_item = self.item_bot.build_profile_item(
                 name=embed.description,
-                price=next(int(field.value) for field in embed.fields if field.name == i(reaction.message, 'Price')),
-                type=next(field.value for field in embed.fields if field.name == i(reaction.message, 'Type'))
+                price=next(int(field.value) for field in embed.fields if field.name == i(interaction, 'Price')),
+                type=next(field.value for field in embed.fields if field.name == i(interaction, 'Type'))
             )
             try:
                 await self.item_bot.save_profile_item(profile_item, embed.image.url)
-                result = i(reaction.message, 'New item added to the shop!')
+                result = i(interaction, 'New item added to the shop!')
             except discord.HTTPException:
-                result = i(reaction.message, 'Could not find original message 😣')
+                result = i(interaction, 'Could not find original message 😣')
         else:
-            result = i(reaction.message, 'Operation canceled')
+            result = i(interaction, 'Operation canceled')
         
-        await reaction.message.channel.send(content=f'{embed.author.name}: {result}')
+        await interaction.edit_original_response(content=f'{embed.author.name}: {result}', view=None)
 
-    @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
-        try:
-            await self._purchase_confirmation_listener(reaction, user)
-            await self._new_item_confirmation_listener(reaction, user)
-        except Exception as e:
-            logging.warning(f'{e.__class__}: {e}')
-            await reaction.message.add_reaction('⚠️')
+            
+class ConfirmView(PersonalView):
+    def __init__(self, *, owner=discord.User, timeout: Optional[float] = 180):
+        self.value = None
+        super().__init__(owner=owner, timeout=timeout)
+    
+    @button(label='Confirmar', style=discord.ButtonStyle.green)
+    async def confirm(self, interaction: discord.Interaction, _):
+        await interaction.response.defer(thinking=False)
+        self.value = True
+        self.stop()
+        
+    @button(label='Cancelar', style=discord.ButtonStyle.red)
+    async def cancel(self, interaction: discord.Interaction, _):
+        await interaction.response.defer(thinking=False)
+        self.value = False
+        self.stop()
+
+
+class ModeratorConfirmView(ConfirmView):
+    def __init__(self, *, timeout: Optional[float] = 180):
+        self.moderators_ids = os.environ.get('MODERATORS_IDS', '').split(',')
+        super().__init__(owner=None, timeout=timeout)
+        
+    def _permission_check(self, interaction: discord.Interaction):
+        return str(interaction.user.id) in self.moderators_ids
+    
+    def _permission_denied_message(self, interaction: discord.Interaction):
+        return i(interaction, "Only bot moderators may react to this message")

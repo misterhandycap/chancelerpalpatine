@@ -415,6 +415,14 @@ msgstr "Novo item adicionado à loja!"
 msgid "Could not find original message 😣"
 msgstr "Não consegui encontrar a mensagem original 😣"
 
+#: bot/palplatina_cmds.py:271
+msgid "Only user {username} may react to this message"
+msgstr "Apenas o usuário {username} pode reagir à mensagem"
+
+#: bot/palplatina_cmds.py:295
+msgid "Only bot moderators may react to this message"
+msgstr "Apenas moderadores do bot podem reagir à mensagem"
+
 #: bot/social/profile.py:56 bot/sww_cmds.py:61
 msgid "Points"
 msgstr "Pontos"
