@@ -39,6 +39,21 @@ class BotClient(commands.Bot):
         logging.info(f'Synced tree... {[x.name for x in self.tree.get_commands()]}')
         self.healthcheck_server = await discordhealthcheck.start(self)
         return await super().setup_hook()
+    
+    async def on_interaction(self, interaction: discord.Interaction):
+        if interaction.command:
+            interaction_name = interaction.command.qualified_name
+        elif interaction.message.interaction:
+            interaction_name = f"Component from {interaction.message.interaction.name}"
+        else:
+            interaction_name = "Component"
+        user_id = interaction.user.id
+        guild_id = interaction.guild_id or 'DM'
+        logging.info(f'{interaction_name} interaction by user {user_id} requested on {guild_id}')
+        
+    async def on_app_command_completion(self, interaction: discord.Interaction, _):
+        guild_id = interaction.guild_id or 'DM'
+        logging.info(f'{interaction.command.qualified_name} interaction by user {interaction.user.id} completed on {guild_id}')
 
 
 client = BotClient(
