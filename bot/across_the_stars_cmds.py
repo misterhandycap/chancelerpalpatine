@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 
 from bot.across_the_stars.planets import Planets
-from bot.utils import i
+from bot.discord_helpers import i
 
 
 class AcrossTheStarsCmds(app_commands.Group):

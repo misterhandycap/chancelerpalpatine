@@ -9,12 +9,12 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot.aurebesh import text_to_aurebesh_img
+from bot.discord_helpers import PaginatedEmbedManager, get_server_lang, i, server_language_to_tz
 from bot.meme import meme_saimaluco_image, random_cat
 from bot.misc.scheduler import Scheduler
 from bot.servers import cache
 from bot.social.profile import Profile
-from bot.utils import (PaginatedEmbedManager, current_bot_version,
-                       get_server_lang, i, paginate, server_language_to_tz)
+from bot.utils import current_bot_version, paginate
 
 
 class GeneralCmds(app_commands.Group):

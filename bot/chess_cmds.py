@@ -8,7 +8,7 @@ from discord import app_commands
 from bot.chess.chess import Chess
 from bot.chess.exceptions import ChessException, MultipleGamesAtOnce
 from bot.chess.puzzle import Puzzle
-from bot.utils import i
+from bot.discord_helpers import i
 
 
 def get_current_game(func):

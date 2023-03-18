@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 
 from bot.anime.anime import Anime
-from bot.utils import i
+from bot.discord_helpers import i
 
 
 class AnimeCmds(app_commands.Group):

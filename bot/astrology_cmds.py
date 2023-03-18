@@ -5,7 +5,10 @@ from discord import app_commands
 
 from bot.astrology.astrology_chart import AstrologyChart
 from bot.astrology.exception import AstrologyInvalidInput
-from bot.utils import dm_only, i
+from bot.discord_helpers import i
+
+def dm_only(interaction: discord.Interaction):
+    return interaction.guild is None
 
 
 class AstrologyCmds(app_commands.Group):

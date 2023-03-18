@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 
 from bot.akinator.akinator_game import AkinatorGame
-from bot.utils import i, get_server_lang
+from bot.discord_helpers import i, get_server_lang
 
 
 class AkinatorCmds(app_commands.Group):
