@@ -1,4 +1,5 @@
 import subprocess
+from typing import Tuple
 
 from asyncio import get_running_loop, new_event_loop
 from concurrent.futures.thread import ThreadPoolExecutor
@@ -31,7 +32,7 @@ def run_cpu_bound_task_with_event_loop(func, *args, **kwargs):
 def convert_users_to_players(*args):
         return tuple(map(lambda user: Player(user) if user else None, args))
     
-def paginate(elems: list, page: int, itens_per_page: int):
+def paginate(elems: list, page: int, itens_per_page: int) -> Tuple[list, int]:
     """
     Paginates long list into pages and returns requested page
 
@@ -43,8 +44,8 @@ def paginate(elems: list, page: int, itens_per_page: int):
     :type page: int
     :param itens_per_page: Max number of elements per page
     :type itens_per_page: int
-    :return: Paginated list
-    :rtype: list
+    :return: Paginated list and last page
+    :rtype: Tuple[list, int]
     """
     len_elems = len(elems)
     last_page = len_elems // itens_per_page + (len_elems % itens_per_page > 0)

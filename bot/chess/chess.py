@@ -1,8 +1,8 @@
 import logging
 import os
-import pickle
 from io import BytesIO
 from math import copysign, exp, floor, log, pow, sqrt
+from typing import List, Optional, Tuple
 
 import asyncssh
 from cairosvg import svg2png
@@ -16,7 +16,6 @@ from chess.pgn import Game as ChessGame
 from bot.chess.exceptions import (GameAlreadyInProgress, GameNotFound, 
                                 InvalidMove, MultipleGamesAtOnce, NoGamesWithPlayer)
 from bot.chess.game import Game
-from bot.chess.player import Player
 from bot.models.chess_game import ChessGame as ChessGameModel
 from bot.utils import convert_users_to_players, paginate, run_cpu_bound_task
 
@@ -38,7 +37,7 @@ class Chess():
             "known_hosts": None
         }
 
-    async def load_games(self):
+    async def load_games(self) -> List[Game]:
         """
         Load all ongoing games from database
 
@@ -71,7 +70,7 @@ class Chess():
             return None
         return Game.from_chess_game_model(chess_game_model)
 
-    def new_game(self, user1, user2, color_schema=None, cpu_level=None):
+    def new_game(self, user1, user2, color_schema: str=None, cpu_level: int=None) -> Game:
         player1, player2 = convert_users_to_players(user1, user2)
         current_players_pairs = map(lambda x: [x.player1, x.player2], self.games)
         given_players_pairs = [player1, player2]
@@ -91,7 +90,7 @@ class Chess():
         self.games.append(game)
         return game
 
-    def find_current_game(self, user, other_user=None):
+    def find_current_game(self, user, other_user=None) -> Game:
         """
         Get users' current game. Second user may be necessary if player1 is playing
         more than one game at a time.
@@ -183,7 +182,7 @@ class Chess():
         for game in self.games:
             await game.save()
 
-    def generate_pgn(self, game: Game):
+    def generate_pgn(self, game: Game) -> str:
         """
         Gets PGN for given game
 
@@ -206,7 +205,7 @@ class Chess():
         return result
 
     @run_cpu_bound_task
-    def get_all_boards_png(self, page: int=0):
+    def get_all_boards_png(self, page: int=0) -> BytesIO:
         """
         Gets an image showing all ongoing games' current position.
         If there are more than 9 games being played at once, this
@@ -241,13 +240,13 @@ class Chess():
         bytesio.seek(0)
         return bytesio
 
-    def is_pve_game(self, game: Game):
+    def is_pve_game(self, game: Game) -> bool:
         """
         Returns whether given game is PvE or not
         """
         return game.cpu_level is not None and self.is_stockfish_enabled()
     
-    def is_stockfish_enabled(self):
+    def is_stockfish_enabled(self) -> bool:
         """
         Returns whether Stockfish is enabled on this environment
 
@@ -255,7 +254,7 @@ class Chess():
         """
         return bool(self.stockfish_path)
     
-    async def eval_last_move(self, game: Game):
+    async def eval_last_move(self, game: Game) -> dict:
         """
         Evaluates last played move in given game.
         Returns a dictonary containing information such as whether
@@ -355,7 +354,7 @@ class Chess():
         bytesio.seek(0)
         return bytesio
     
-    def _parse_str_move(self, game: Game, move: str) -> chess.Move:
+    def _parse_str_move(self, game: Game, move: str) -> Optional[chess.Move]:
         try:
             return game.board.parse_uci(move)
         except ValueError:
@@ -367,7 +366,7 @@ class Chess():
             logging.warning(e)
             return None
     
-    def _is_last_move_blunder(self, game: Game, analysis: dict):
+    def _is_last_move_blunder(self, game: Game, analysis: dict) -> bool:
         mate_score = 100000
         last_eval = game.last_eval
         game.last_eval = analysis["score"].white()
@@ -381,7 +380,7 @@ class Chess():
             self._evaluation_normalizer(current_eval_score) - self._evaluation_normalizer(last_eval_score)
         ) > 2
 
-    def _evaluation_normalizer(self, evaluation_cents):
+    def _evaluation_normalizer(self, evaluation_cents: float) -> float:
         evaluation = evaluation_cents / 100
         normalizer = lambda x: (7 - exp(log(7) - 0.2 * abs(x))) * copysign(1, x)
         # normilizer = lambda x: 7 * atan(0.3 * x) / 0.5 * pi
@@ -403,7 +402,7 @@ class Chess():
                 await engine.quit()
                 transport.close()
 
-    async def _play_move(self, game: Game):
+    async def _play_move(self, game: Game) -> chess.engine.InfoDict:
         limit = chess.engine.Limit(**self.stockfish_limit)
         if self.stockfish_ssh["host"]:
             async with asyncssh.connect(**self.stockfish_ssh) as conn:
@@ -418,7 +417,7 @@ class Chess():
                 await engine.quit()
                 transport.close()
 
-    def _board_colors(self, color_schema):
+    def _board_colors(self, color_schema: str) -> Tuple[str, str, str, str]:
         colors = {
             "blue": ("#dee3e6", "#8ca2ad", "#c3d887", "#92b166"),
             "purple": ("#e7dcf1", "#967bb1", "#c7d38e", "#989a68"),

@@ -1,5 +1,5 @@
 import logging
-from typing import Awaitable, Callable, Optional
+from typing import Awaitable, Callable, List, Optional
 
 import discord
 from discord.ui import button, View
@@ -20,14 +20,14 @@ def i(interaction: discord.Interaction, text: str) -> str:
         lang = get_lang_from_user(interaction.user.id)
     return i18n(text, lang)
 
-def get_server_lang(server_id):
+def get_server_lang(server_id: int) -> str:
     server_config = cache.get_config(server_id)
     if not server_config:
         return 'en'
     return server_config.language
 
-def get_lang_from_user(user_id):
-    server_user_is_in = [guild for guild in cache.all_servers if guild.get_member(user_id)]
+def get_lang_from_user(user_id: int) -> str:
+    server_user_is_in: List[discord.Guild] = [guild for guild in cache.all_servers if guild.get_member(user_id)]
     if not server_user_is_in:
         return 'en'
     server_langs = [get_server_lang(server.id) for server in server_user_is_in]
@@ -39,17 +39,17 @@ class PersonalView(View):
         self.owner = owner
         super().__init__(timeout=timeout)
     
-    async def interaction_check(self, interaction: discord.Interaction):
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
         check = self._permission_check(interaction)
         if not check:
             await interaction.response.send_message(self._permission_denied_message(interaction),
                 ephemeral=True, delete_after=3)
         return check
         
-    def _permission_check(self, interaction: discord.Interaction):
+    def _permission_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user == self.owner
     
-    def _permission_denied_message(self, interaction: discord.Interaction):
+    def _permission_denied_message(self, interaction: discord.Interaction) -> str:
         return i(interaction, "Only user {username} may react to this message").format(username=self.owner.name)
 
 
@@ -72,7 +72,7 @@ class PaginatedEmbedManager():
 
     async def send_embed(self, embed: discord.Embed, page_number: int,
                          interaction: discord.Interaction, discord_file: discord.File=None,
-                         content=None):
+                         content=None) -> discord.Message:
         """
         Prepares and sends given paginated embed. Also reacts with navigation emojis
 
