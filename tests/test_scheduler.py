@@ -34,17 +34,65 @@ class TestScheduler(TestCase):
         job_datetime = timedelta(seconds=2) + datetime.now(tz=get_localzone())
         self.scheduler_bot.register_function('my_func', my_func)
 
-        job = self.scheduler_bot.add_job(job_datetime, 'my_func')
+        job = self.scheduler_bot.add_date_job(job_datetime, 'my_func')
 
         scheduled_jobs = self.scheduler_bot._scheduler.get_jobs()
         
         self.assertEqual(len(scheduled_jobs), 1)
+        self.assertEqual(job, scheduled_jobs[0])
         self.assertEqual(asyncio.run(scheduled_jobs[0].func(self.scheduler_bot, 'my_func')), asyncio.run(my_func()))
         self.assertLessEqual(scheduled_jobs[0].trigger.run_date, job_datetime)
 
         jobs_table = self.scheduler_bot._scheduler._jobstores['default'].jobs_t
 
         self.assertEqual(self.db_session.query(jobs_table).count(), 1)
+        
+    def test_add_periodical_job_wo_id(self):
+        my_func = TestScheduler.schedule_func
+        interval = {'minutes': 5}
+        self.scheduler_bot.register_function('my_func', my_func)
+
+        job = self.scheduler_bot.add_periodical_job('interval', interval, 'my_func')
+
+        scheduled_jobs = self.scheduler_bot._scheduler.get_jobs()
+        
+        self.assertEqual(len(scheduled_jobs), 1)
+        self.assertEqual(job, scheduled_jobs[0])
+        self.assertEqual(asyncio.run(scheduled_jobs[0].func(self.scheduler_bot, 'my_func')), asyncio.run(my_func()))
+        self.assertLessEqual(scheduled_jobs[0].next_run_time, datetime.now(tz=get_localzone()) + timedelta(minutes=5))
+
+        jobs_table = self.scheduler_bot._scheduler._jobstores['default'].jobs_t
+
+        self.assertEqual(self.db_session.query(jobs_table).count(), 1)
+    
+    def test_add_periodical_job_with_id(self):
+        my_func = TestScheduler.schedule_func
+        interval = {'minutes': 5}
+        self.scheduler_bot.register_function('my_func', my_func)
+
+        job = self.scheduler_bot.add_periodical_job('interval', interval, 'my_func', job_id='job_id')
+
+        scheduled_jobs = self.scheduler_bot._scheduler.get_jobs()
+        
+        self.assertEqual(len(scheduled_jobs), 1)
+        self.assertEqual(job, scheduled_jobs[0])
+        self.assertEqual(asyncio.run(scheduled_jobs[0].func(self.scheduler_bot, 'my_func')), asyncio.run(my_func()))
+        self.assertLessEqual(scheduled_jobs[0].next_run_time, datetime.now(tz=get_localzone()) + timedelta(minutes=5))
+        self.assertEqual(scheduled_jobs[0].id, 'job_id')
+
+        jobs_table = self.scheduler_bot._scheduler._jobstores['default'].jobs_t
+
+        self.assertEqual(self.db_session.query(jobs_table).count(), 1)
+    
+    def test_add_periodical_job_return_existing_job(self):
+        my_func = TestScheduler.schedule_func
+        interval = {'minutes': 5}
+        self.scheduler_bot.register_function('my_func', my_func)
+        existing_job = self.scheduler_bot._scheduler.add_job(my_func, 'cron', year=2030, id='job_id')
+
+        job = self.scheduler_bot.add_periodical_job('interval', interval, 'my_func', job_id='job_id')
+        
+        self.assertEqual(job, existing_job)
 
     def test_parse_schedule_time_seconds(self):
         tests = ['30s', '30 s', ' 30 s', '30 seconds']
@@ -82,7 +130,7 @@ class TestScheduler(TestCase):
             self.assertGreaterEqual(result, datetime.now() + timedelta(days=4))
             self.assertLessEqual(result, datetime.now() + timedelta(days=5))
             
-    def test_parse_schedule_time_formated_datetime(self):
+    def test_parse_schedule_time_formatted_datetime(self):
         test = '2021/12/31 00:00'
         timezone_name = 'America/Sao_Paulo'
         expected = pytz.timezone(timezone_name).localize(datetime(2021, 12, 31, 0, 0))

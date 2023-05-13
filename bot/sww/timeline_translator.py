@@ -1,7 +1,7 @@
 import logging
 import os
 import re
-from typing import List
+from typing import Dict, List
 
 from aiohttp import ClientSession, ClientResponseError
 from pywikibot import APISite, config, Page, Site
@@ -24,16 +24,13 @@ class TimelineTranslator():
         self._site: APISite = None
         self._original_content: str = None
         self._current_content: str = None
-        self._translated_refs: dict[str, str] = {}
+        self._translated_refs: Dict[str, str] = {}
         self._current_revision: int = None
         config.put_throttle = 1
     
     @run_blocking_io_task
     def login(self) -> None:
         self._site = Site(fam=StarWarsWikiFamily(), code='pt', user=os.environ.get("SWW_BOT_USERNAME"))
-        
-        # config.password_file = 'user-password.py'
-        # self._site.login()
         
         if not self._site.logged_in():
             bot_password = BotPassword(
@@ -68,7 +65,7 @@ class TimelineTranslator():
         self._current_revision = self.page.latest_revision_id
         return self.page
                 
-    def build_new_references(self) -> dict[str, str]:
+    def build_new_references(self) -> Dict[str, str]:
         if not self._original_content or not self._current_content:
             raise Exception("Load both Wookieepedia and SWW content first")
         
@@ -118,7 +115,7 @@ class TimelineTranslator():
     def get_diff_url(self) -> str:
         return f'{self.page.permalink(self._current_revision, with_protocol=True)}&diff=next'
     
-    def _build_reference_dict(self, wikitext: str) -> dict[str, str]:
+    def _build_reference_dict(self, wikitext: str) -> Dict[str, str]:
         parsed_content: Wikicode = mwparse(wikitext)
         all_refs = self._get_tags_from_wikitext(parsed_content, 'ref')
         return {str(x.get('name').value): str(x.contents) for x in all_refs if x.contents}
@@ -286,7 +283,7 @@ class TimelineTranslator():
 
 if __name__ == "__main__":
     from asyncio import run
-    from pywikibot import showDiff, Page, Site
+    from pywikibot import Page, Site
     
     from dotenv import load_dotenv
     
@@ -300,7 +297,6 @@ if __name__ == "__main__":
             translated_text = input(f'Translate ref {ref_name}: {ref_txt}') or ref_txt
             timeline_translator.add_reference_translation(ref_name, translated_text)
         timeline_translator.translate_page()
-        # showDiff(timeline_translator._current_content, timeline_translator.page.text)
         await timeline_translator.save_page()
         print('Page saved. Check the edit diff here: ', timeline_translator.get_diff_url())
     

@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Coroutine, TYPE_CHECKING
+import os
+from typing import Any, Coroutine, TYPE_CHECKING, Optional
 
 import discord
 from discord import app_commands, Embed, TextStyle
@@ -32,63 +33,65 @@ class StarWarsWikiCmds(app_commands.Group):
         super().__init__(name='sww')
 
     def _schedule_timeline(self, scheduler_bot: Scheduler):
-        pass
+        scheduler_bot.register_function('translate_timeline', self.translate_timeline)
+        scheduler_bot.add_periodical_job('cron', {'hour': '12'}, 'translate_timeline',
+                                       (os.environ.get('SWW_BOT_CHANNEL_ID'),),
+                                       job_id='translate_timeline_scheduled_job')
     
-    @app_commands.command(
-        name="linha_do_tempo",
-        description="Tradução da linha do tempo de mídia canônica"
-    )
-    async def translate_timeline(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=False)
+    async def translate_timeline(self, channel_id: str):
+        channel = await self.client.fetch_channel(channel_id)
         
         await self.timeline_translator.login()
         await self.timeline_translator.get_wookiee_page()
         await self.timeline_translator.get_timeline_page()
-        for ref_name, ref_txt in self.timeline_translator.build_new_references().items():
+        new_references = self.timeline_translator.build_new_references()
+        for index, (ref_name, ref_txt) in enumerate(new_references.items()):
             timeline_view = TimelineView()
             embed = Embed(
-                title=i(interaction, "Timeline of canon media"),
-                description=i(interaction,
+                title=i(channel, "Timeline of canon media"),
+                description=i(channel,
                               "Contribute to Star Wars Wiki by translating the selected references to the timeline of canon media")
             )
-            embed.add_field(name=i(interaction, 'Reference name'), value=ref_name, inline=False)
-            embed.add_field(name=i(interaction, 'Reference content'), value=ref_txt, inline=False)
-            message = await interaction.channel.send(embed=embed, view=timeline_view)
+            embed.add_field(name=i(channel, 'Reference name'), value=ref_name, inline=False)
+            embed.add_field(name=i(channel, 'Reference content'), value=ref_txt, inline=False)
+            embed.set_footer(text=f'{index + 1}/{len(new_references)}')
+            message = await channel.send(embed=embed, view=timeline_view)
             await timeline_view.wait()
             translated_text = timeline_view.value or ref_txt
             self.timeline_translator.add_reference_translation(ref_name, translated_text)
             
-            embed.add_field(name=i(interaction, 'Translation'), value=translated_text, inline=False)
-            embed.set_author(name=interaction.user)
+            embed.add_field(name=i(channel, 'Translation'), value=translated_text, inline=False)
+            embed.set_author(name=timeline_view.author, icon_url=timeline_view.author.display_avatar.url)
             await message.edit(embed=embed, view=None)
-        self.timeline_translator.translate_page()
         
         try:
+            self.timeline_translator.translate_page()
             await self.timeline_translator.save_page()
             
             if self.timeline_translator._current_content == self.timeline_translator.page.text:
                 embed = Embed(
-                    title=i(interaction, "Timeline of canon media"),
+                    title=i(channel, "Timeline of canon media"),
                     url=self.timeline_translator.page.full_url(),
-                    description=i(interaction, "No new content to translate")
+                    colour=discord.Color.dark_blue(),
+                    description=i(channel, "No new content to translate")
                 )
             else:
                 embed = Embed(
-                    title=i(interaction, "Timeline of canon media"),
+                    title=i(channel, "Timeline of canon media"),
                     url=self.timeline_translator.get_diff_url(),
                     colour=discord.Color.green(),
-                    description=i(interaction,
+                    description=i(channel,
                                 "Page has been successfully updated with new content. Please, check the persisted modifications to ensure that everything is correct.")
                 )
-            await interaction.channel.send(embed=embed)
+            await channel.send(embed=embed)
         except Exception as e:
             embed = Embed(
-                title=i(interaction, "Timeline of canon media"),
+                title=i(channel, "Timeline of canon media"),
                 colour=discord.Color.red(),
-                description=i(interaction, "An error has occurred. Ask the admin to check for details.")
+                description=i(channel, "An error has occurred. Ask the admin to check for details.")
             )
             logging.exception(e)
-            await interaction.channel.send(embed=embed)
+            await channel.send(embed=embed)
     
     @app_commands.command(
         name="leaderboard",
@@ -178,18 +181,47 @@ class StarWarsWikiCmds(app_commands.Group):
     
     
 class TimelineView(View):
-    def __init__(self, *, timeout: float | None = None):
+    def __init__(self, *, timeout: Optional[float] = None):
         super().__init__(timeout=timeout)
         self.value: str = None
+        self.author = None
         
     @button(label='Adicionar tradução', style=discord.ButtonStyle.green)
     async def open_modal(self, interaction: discord.Interaction, _):
-        await interaction.response.send_modal(TimelineModal(self, title="Tradução de referência"))
+        await interaction.response.send_modal(TimelineModal(self, title=i(interaction, 'Translation')))
         
     @button(label='Manter texto original', style=discord.ButtonStyle.secondary)
     async def dismiss(self, interaction: discord.Interaction, _):
         await interaction.response.defer(thinking=False)
+        self.author = interaction.user
         self.stop()
+        
+    @button(label='Ajuda', style=discord.ButtonStyle.secondary)
+    async def help(self, interaction: discord.Interaction, _):
+        embed = Embed(
+            title=i(interaction, "Timeline of canon media"),
+            description=i(interaction,
+                            "Contribute to Star Wars Wiki by translating the selected references to the timeline of canon media")
+        )
+        embed.add_field(
+            name=i(interaction, 'What does this do?'),
+            value=i(interaction, 
+                    "This is an automated script for translating the timeline of canon media from Wookieepedia to our corresponding article. "
+                    "As such, the routine gathers the current Wookieepedia's article content, translates common phrases and terminology, "
+                    "and crosses with the media Translation Appendix."),
+            inline=False
+        )
+        embed.add_field(
+            name=i(interaction, 'How can I help?'),
+            value=i(interaction,
+                    "The only thing that this script cannot do by its own is the references translation. That's because they are usually "
+                    "written in far less predictable way, so human input here is needed for acceptable results. Therefore, for every new "
+                    "reference that's not already present on the current version of the SWW article, the bot will send a message in this "
+                    "channel with the new reference content, asking for any user to input a adequate translation. After all of them are "
+                    "translated, the bot can resume the rest of the operation at its own."),
+            inline=False
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
         
 
 class TimelineModal(Modal):
@@ -202,4 +234,5 @@ class TimelineModal(Modal):
     async def on_submit(self, interaction: Interaction) -> Coroutine[Any, Any, None]:
         await interaction.response.defer(thinking=False)
         self.view.value = self.translation.value
+        self.view.author = interaction.user
         self.view.stop()
