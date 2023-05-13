@@ -153,3 +153,10 @@ tests/cassettes/*
 
 # Keep base.pot
 !base.pot
+
+# pywikibot stuff
+pywikibot.lwp
+throttle.ctrl
+apicache-py3/
+user-password.py
+pywikibot-*.lwp

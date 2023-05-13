@@ -433,11 +433,67 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: bot/sww_leaderboard/leaderboard.py:38
+#: bot/sww_cmds.py:42 bot/sww_cmds.py:63 bot/sww_cmds.py:72
+msgid "Timeline of canon media"
+msgstr ""
+
+#: bot/sww_cmds.py:44
+msgid "Contribute to Star Wars Wiki by translating the selected references to the timeline of canon media"
+msgstr ""
+
+#: bot/sww_cmds.py:47
+msgid "Reference name"
+msgstr ""
+
+#: bot/sww_cmds.py:48
+msgid "Reference content"
+msgstr ""
+
+#: bot/sww_cmds.py:54
+msgid "Translation"
+msgstr ""
+
+#: bot/sww_cmds.py:66
+msgid "No new content to translate"
+msgstr ""
+
+#: bot/sww_cmds.py:67
+msgid "Page has been successfully updated with new content. Please, check the persisted modifications to ensure that everything is correct."
+msgstr ""
+
+#: bot/sww_cmds.py:75
+msgid "An error has occurred. Ask the admin to check for details."
+msgstr ""
+
+#: bot/sww_cmds.py:207
+msgid "What does this do?"
+msgstr ""
+
+#: bot/sww_cmds.py:2015
+msgid "How can I help?"
+msgstr ""
+
+#: bot/sww_cmds.py:54
+msgid ""
+"This is an automated script for translating the timeline of canon media from Wookieepedia to our corresponding article. "
+"As such, the routine gathers the current Wookieepedia's article content, translates common phrases and terminology, "
+"and crosses with the media Translation Appendix."
+msgstr ""
+
+#: bot/sww_cmds.py:54
+msgid ""
+"The only thing that this script cannot do by its own is the references translation. That's because they are usually "
+"written in far less predictable way, so human input here is needed for acceptable results. Therefore, for every new "
+"reference that's not already present on the current version of the SWW article, the bot will send a message in this "
+"channel with the new reference content, asking for any user to input a adequate translation. After all of them are "
+"translated, the bot can resume the rest of the operation at its own."
+msgstr ""
+
+#: bot/sww/leaderboard.py:38
 msgid "Error parsing content"
 msgstr ""
 
-#: bot/sww_leaderboard/leaderboard.py:63
+#: bot/sww/leaderboard.py:63
 msgid "Invalid medals info"
 msgstr ""
 

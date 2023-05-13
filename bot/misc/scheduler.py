@@ -1,8 +1,10 @@
 import re
 from datetime import datetime, timedelta
+from typing import Dict, Literal, Union
 
 import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.jobstores.base import ConflictingIdError
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 from bot.models import db_url
@@ -23,13 +25,27 @@ class Scheduler():
     def register_function(self, name: str, func):
         cache.scheduler_functions[name] = func
 
-    def add_job(self, dt: datetime, func_name: str, args=()):
+    def add_date_job(self, dt: datetime, func_name: str, args=()):
         return self._scheduler.add_job(
             self._run_job, 'date',
             run_date=dt,
             args=(func_name,) + args,
             misfire_grace_time=None
         )
+        
+    def add_periodical_job(self, type: Literal["interval", "cron"],
+                           interval: Dict[str, Union[int, str]], func_name: str,
+                           args=(), *, job_id: str = None):
+        try:
+            return self._scheduler.add_job(
+                self._run_job, type,
+                **interval,
+                args=(func_name,) + args,
+                misfire_grace_time=None,
+                id=job_id
+            )
+        except ConflictingIdError:
+            return self._scheduler.get_job(job_id)
 
     async def _run_job(self, func_name, *args):
         return await cache.scheduler_functions[func_name](*args)
@@ -57,5 +73,6 @@ class Scheduler():
 
     def __getstate__(self):
         pickleable_dict = self.__dict__.copy()
-        pickleable_dict.pop('_scheduler')
+        if '_scheduler' in pickleable_dict:
+            pickleable_dict.pop('_scheduler')
         return pickleable_dict

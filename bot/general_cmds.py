@@ -2,7 +2,7 @@ import logging
 import os
 import random
 from io import BytesIO
-from typing import Literal
+from typing import Literal, TYPE_CHECKING
 
 import discord
 from discord import app_commands
@@ -16,31 +16,22 @@ from bot.servers import cache
 from bot.social.profile import Profile
 from bot.utils import current_bot_version, paginate
 
+if TYPE_CHECKING:
+    from bot.client import BotClient
+
 
 class GeneralCmds(app_commands.Group):
     """
     Miscelânea
     """
 
-    def __init__(self, client: commands.Bot):
+    def __init__(self, client: 'BotClient'):
         self.client = client
-        self.client.add_listener(self.on_ready)
         self.client.add_listener(self.on_message)
+        self.client.scheduler_callbacks.append(self._register_send_msg)
         self.help_cmd_manager = PaginatedEmbedManager(self._create_paginated_help_embed)
         self.profile_bot = Profile()
         super().__init__(name='general')
-
-    async def on_ready(self):
-        await self.client.change_presence(
-            status=discord.Status.online,
-            activity=discord.Game(f'Planejando uma ordem surpresa')
-        )
-        await cache.load_configs()
-        cache.all_servers = self.client.guilds
-        self.scheduler_bot = Scheduler(event_loop=self.client.loop)
-        self.scheduler_bot.register_function('send_msg', self._send_msg)
-        self.scheduler_bot.start()
-        logging.info('Bot is ready')
 
     async def on_error(self, interaction: discord.Interaction, error):
         try:
@@ -240,23 +231,27 @@ class GeneralCmds(app_commands.Group):
     @app_commands.describe(datetime='Data para lembrete', text='Mensagem do lembrete')
     async def remind(self, interaction: discord.Interaction, datetime: str, text: str):
         server_timezone = server_language_to_tz.get(get_server_lang(interaction.guild_id), 'UTC')
-        schedule_datetime = self.scheduler_bot.parse_schedule_time(datetime, server_timezone)
+        schedule_datetime = self.client.scheduler_bot.parse_schedule_time(datetime, server_timezone)
         if schedule_datetime is None:
-            return await interaction.response.send_message(i(interaction, "Invalid datetime format. Examples of valid formats: {}").format(
-                ", ".join(["`5 d`", "`15 s`", "`2020/12/31 12:59`", "`8 h`", "`60 min`"])
+            return await interaction.response.send_message(
+                i(interaction, "Invalid datetime format. Examples of valid formats: {}").format(
+                    ", ".join(["`5 d`", "`15 s`", "`2020/12/31 12:59`", "`8 h`", "`60 min`"])
             ))
         
-        self.scheduler_bot.add_job(schedule_datetime, 'send_msg', (interaction.user.id, interaction.channel_id, text))
+        self.client.scheduler_bot.add_date_job(schedule_datetime, 'send_msg', (interaction.user.id, interaction.channel_id, text))
         await interaction.response.send_message(i(interaction, 'Message "{text}" scheduled for {datetime}').format(
             text=text,
             datetime=discord.utils.format_dt(schedule_datetime, 'R')
         ))
-
-    async def _send_msg(self, user_id, channel_id, text):
+        
+    def _register_send_msg(self, scheduler_bot: Scheduler):
+        scheduler_bot.register_function('send_msg', self._send_msg)
+    
+    async def _send_msg(self, user_id: str, channel_id: str, text: str):
         channel = await self.client.fetch_channel(channel_id)
         user = await self.client.fetch_user(user_id)
         await channel.send(f'{user.mention}: {text}')
-
+        
     @app_commands.command(
         name="clear",
         description="Limpa as últimas mensagens do canal atual",

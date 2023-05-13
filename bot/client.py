@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Any, Callable, List
 
 import discord
 import discordhealthcheck
@@ -12,7 +13,9 @@ from bot.anime_cmds import AnimeCmds
 from bot.chess_cmds import ChessCmds
 from bot.general_cmds import GeneralCmds
 from bot.level_cmds import LevelCmds
+from bot.misc.scheduler import Scheduler
 from bot.palplatina_cmds import PalplatinaCmds
+from bot.servers import cache
 from bot.sww_cmds import StarWarsWikiCmds
 
 load_dotenv()
@@ -27,6 +30,9 @@ intents.message_content = True
 
 class BotClient(commands.Bot):
     
+    scheduler_bot: Scheduler
+    scheduler_callbacks: List[Callable[[Scheduler], Any]] = []
+    
     async def setup_hook(self) -> None:
         testing_guild_id = int(os.environ.get("TESTING_GUILD_ID", 0))
         if testing_guild_id:
@@ -40,6 +46,19 @@ class BotClient(commands.Bot):
         self.healthcheck_server = await discordhealthcheck.start(self)
         return await super().setup_hook()
     
+    async def on_ready(self):
+        await self.change_presence(
+            status=discord.Status.online,
+            activity=discord.Game(f'Planejando uma ordem surpresa')
+        )
+        await cache.load_configs()
+        cache.all_servers = self.guilds
+        self.scheduler_bot = Scheduler(event_loop=self.loop)
+        self.scheduler_bot.start()
+        for callback in self.scheduler_callbacks:
+            callback(self.scheduler_bot)
+        logging.info('Bot is ready')
+        
     async def on_interaction(self, interaction: discord.Interaction):
         if interaction.command:
             interaction_name = interaction.command.qualified_name

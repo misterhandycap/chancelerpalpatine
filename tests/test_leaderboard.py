@@ -7,7 +7,7 @@ from imagehash import average_hash
 from PIL import Image
 from vcr_unittest import VCRTestCase
 
-from bot.sww_leaderboard.leaderboard import Leaderboard
+from bot.sww.leaderboard import Leaderboard
 
 
 class TestLeaderboard(VCRTestCase):
