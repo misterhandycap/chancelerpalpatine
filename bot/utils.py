@@ -12,6 +12,12 @@ try:
 except:
     current_bot_version = None
 
+def run_blocking_io_task(func, *args, **kwargs):
+    async def function_wrapper(*args, **kwargs):
+        loop = get_running_loop()
+        return await loop.run_in_executor(None, partial(func, *args, **kwargs))
+    return function_wrapper
+
 def run_cpu_bound_task(func, *args, **kwargs):
     async def function_wrapper(*args, **kwargs):
         loop = get_running_loop()
