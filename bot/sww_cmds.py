@@ -41,7 +41,6 @@ class StarWarsWikiCmds(app_commands.Group):
     async def translate_timeline(self, channel_id: str):
         channel = await self.client.fetch_channel(channel_id)
         
-        await self.timeline_translator.login()
         await self.timeline_translator.get_wookiee_page()
         await self.timeline_translator.get_timeline_page()
         new_references = self.timeline_translator.build_new_references()
@@ -66,6 +65,7 @@ class StarWarsWikiCmds(app_commands.Group):
         
         try:
             self.timeline_translator.translate_page()
+            await self.timeline_translator.login()
             await self.timeline_translator.save_page()
             
             if self.timeline_translator._current_content == self.timeline_translator.page.text:

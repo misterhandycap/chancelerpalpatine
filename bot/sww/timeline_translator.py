@@ -30,18 +30,17 @@ class TimelineTranslator():
     
     @run_blocking_io_task
     def login(self) -> None:
-        self._site = Site(fam=StarWarsWikiFamily(), code='pt', user=os.environ.get("SWW_BOT_USERNAME"))
-        
-        if not self._site.logged_in():
-            bot_password = BotPassword(
-                os.environ.get("SWW_BOT_USERNAME"), os.environ.get('SWW_BOT_PASSWORD'))
-            login_manager = ClientLoginManager(site=self._site, user=self._site.username())
-            login_manager.password = bot_password.password
-            login_manager.login_name = bot_password.login_name(login_manager.username)
-            login_manager.login()
-            self._site._username = login_manager.username
-            del self._site.userinfo
-            self._site.userinfo
+        logging.getLogger('pywiki').disabled = True
+        bot_password = BotPassword(
+            os.environ.get("SWW_BOT_USERNAME"), os.environ.get('SWW_BOT_PASSWORD'))
+        login_manager = ClientLoginManager(site=self._site, user=self._site.username())
+        login_manager.password = bot_password.password
+        login_manager.login_name = bot_password.login_name(login_manager.username)
+        login_manager.login()
+        logging.getLogger('pywiki').disabled = False
+        self._site._username = login_manager.username
+        del self._site.userinfo
+        self._site.userinfo
     
     async def get_wookiee_page(self) -> str:
         if not self.client_session:
@@ -60,6 +59,7 @@ class TimelineTranslator():
                 
     @run_blocking_io_task
     def get_timeline_page(self) -> Page:
+        self._site = APISite(fam=StarWarsWikiFamily(), code='pt', user=os.environ.get("SWW_BOT_USERNAME"))
         self.page = Page(self._site, u"Linha do tempo de mídia canônica")
         self._current_content = self.page.text
         self._current_revision = self.page.latest_revision_id
@@ -288,15 +288,15 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
     
     async def main():
+        logging.basicConfig(level=logging.DEBUG)
         timeline_translator = TimelineTranslator()
-        await timeline_translator.login()
-        print(f'{timeline_translator._site.logged_in()=}')
         await timeline_translator.get_wookiee_page()
         await timeline_translator.get_timeline_page()
         for ref_name, ref_txt in timeline_translator.build_new_references().items():
             translated_text = input(f'Translate ref {ref_name}: {ref_txt}') or ref_txt
             timeline_translator.add_reference_translation(ref_name, translated_text)
         timeline_translator.translate_page()
+        await timeline_translator.login()
         await timeline_translator.save_page()
         print('Page saved. Check the edit diff here: ', timeline_translator.get_diff_url())
     

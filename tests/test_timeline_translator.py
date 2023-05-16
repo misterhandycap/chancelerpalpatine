@@ -39,10 +39,14 @@ class TestTimelineTranslator(VCRTestCase):
     @skip_if_no_bot_config
     def test_login(self):
         timeline_translator = TimelineTranslator()
+        timeline_translator._site = Site(
+            fam=StarWarsWikiFamily(), 
+            code='pt', 
+            user=os.environ.get("SWW_BOT_USERNAME")
+        )
         
         run(timeline_translator.login())
         
-        self.assertIsInstance(timeline_translator._site, BaseSite)
         self.assertTrue(timeline_translator._site.logged_in())
     
     def test_get_wookiee_page(self):
@@ -56,14 +60,10 @@ class TestTimelineTranslator(VCRTestCase):
         
     def test_get_timeline_page(self):
         timeline_translator = TimelineTranslator()
-        timeline_translator._site = Site(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
         
         result = run(timeline_translator.get_timeline_page())
         
+        self.assertIsInstance(timeline_translator._site, BaseSite)
         self.assertEqual(result, timeline_translator.page)
         self.assertIsInstance(result, Page)
         self.assertEqual(result.title(), "Linha do tempo de mídia canônica")
