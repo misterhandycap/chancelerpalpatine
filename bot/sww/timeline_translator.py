@@ -1,47 +1,31 @@
 import logging
-import os
 import re
 from typing import Dict, List
 
 from aiohttp import ClientSession, ClientResponseError
-from pywikibot import APISite, config, Page, Site
-from pywikibot.login import ClientLoginManager, BotPassword
+from pywikibot import config, Page
 from mwparserfromhell import parse as mwparse
 from mwparserfromhell.wikicode import Wikicode
 from mwparserfromhell.nodes.tag import Tag
 
-from bot.sww.sww_family import StarWarsWikiFamily
+from bot.sww.wiki_bot import WikiBot
 from bot.utils import run_blocking_io_task
 
 
-class TimelineTranslator():
+class TimelineTranslator(WikiBot):
     WOOKIEE_TIMELINE_URL = "http://starwars.wikia.com/wiki/Timeline_of_canon_media?action=raw"
     
     def __init__(self, auto_close_session: bool=False) -> None:
         self.auto_close_session = auto_close_session
         self.client_session: ClientSession = None
         self.page: Page = None
-        self._site: APISite = None
         self._original_content: str = None
         self._current_content: str = None
         self._translated_refs: Dict[str, str] = {}
         self._current_revision: int = None
         config.put_throttle = 1
-    
-    @run_blocking_io_task
-    def login(self) -> None:
-        logging.getLogger('pywiki').disabled = True
-        bot_password = BotPassword(
-            os.environ.get("SWW_BOT_USERNAME"), os.environ.get('SWW_BOT_PASSWORD'))
-        login_manager = ClientLoginManager(site=self._site, user=self._site.username())
-        login_manager.password = bot_password.password
-        login_manager.login_name = bot_password.login_name(login_manager.username)
-        login_manager.login()
-        logging.getLogger('pywiki').disabled = False
-        self._site._username = login_manager.username
-        del self._site.userinfo
-        self._site.userinfo
-    
+        super().__init__()
+        
     async def get_wookiee_page(self) -> str:
         if not self.client_session:
             self.client_session = ClientSession(raise_for_status=True)
@@ -59,8 +43,7 @@ class TimelineTranslator():
                 
     @run_blocking_io_task
     def get_timeline_page(self) -> Page:
-        self._site = APISite(fam=StarWarsWikiFamily(), code='pt', user=os.environ.get("SWW_BOT_USERNAME"))
-        self.page = Page(self._site, u"Linha do tempo de mídia canônica")
+        self.page = Page(self.site, u"Linha do tempo de mídia canônica")
         self._current_content = self.page.text
         self._current_revision = self.page.latest_revision_id
         return self.page
@@ -108,7 +91,7 @@ class TimelineTranslator():
     
     @run_blocking_io_task
     def save_page(self) -> None:
-        if not self._site.logged_in():
+        if not self.site.logged_in():
             raise Exception("Bot not logged in")
         self.page.save('2.3 Expansão - Atualizando com conteúdo da Wookieepedia', botflag=False)
         
@@ -290,6 +273,7 @@ if __name__ == "__main__":
     async def main():
         logging.basicConfig(level=logging.DEBUG)
         timeline_translator = TimelineTranslator()
+        await timeline_translator.get_site()
         await timeline_translator.get_wookiee_page()
         await timeline_translator.get_timeline_page()
         for ref_name, ref_txt in timeline_translator.build_new_references().items():
