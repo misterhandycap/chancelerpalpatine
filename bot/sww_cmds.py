@@ -7,10 +7,10 @@ from discord import app_commands, Embed, TextStyle
 from discord.enums import TextStyle
 from discord.interactions import Interaction
 from discord.ui import TextInput, View, button, Modal
-from pywikibot import showDiff
 
 from bot.discord_helpers import i, PaginatedEmbedManager
 from bot.misc.scheduler import Scheduler
+from bot.sww.double_redirect_bot import DoubleRedirectBot
 from bot.sww.leaderboard import Leaderboard
 from bot.sww.timeline_translator import TimelineTranslator
 from bot.utils import paginate
@@ -27,20 +27,26 @@ class StarWarsWikiCmds(app_commands.Group):
     def __init__(self, client: 'BotClient'):
         self.client = client
         self.client.scheduler_callbacks.append(self._schedule_timeline)
-        self.timeline_translator = TimelineTranslator()
+        self.double_redirect_bot: DoubleRedirectBot = DoubleRedirectBot()
+        self.timeline_translator: TimelineTranslator = TimelineTranslator()
         self.leaderboard_bot = Leaderboard()
         self.medals_paginated_embed_manager = PaginatedEmbedManager(self._build_medals_embed)
         super().__init__(name='sww')
 
     def _schedule_timeline(self, scheduler_bot: Scheduler):
         scheduler_bot.register_function('translate_timeline', self.translate_timeline)
+        scheduler_bot.register_function('fix_double_redirect', self.fix_double_redirect)
         scheduler_bot.add_periodical_job('cron', {'hour': '12'}, 'translate_timeline',
                                        (os.environ.get('SWW_BOT_CHANNEL_ID'),),
                                        job_id='translate_timeline_scheduled_job')
+        scheduler_bot.add_periodical_job('cron', {'hour': '11'}, 'fix_double_redirect',
+                                       (os.environ.get('SWW_BOT_CHANNEL_ID'),),
+                                       job_id='fix_double_redirect_scheduled_job')
     
     async def translate_timeline(self, channel_id: str):
         channel = await self.client.fetch_channel(channel_id)
         
+        await self.timeline_translator.get_site()
         await self.timeline_translator.get_wookiee_page()
         await self.timeline_translator.get_timeline_page()
         new_references = self.timeline_translator.build_new_references()
@@ -85,12 +91,42 @@ class StarWarsWikiCmds(app_commands.Group):
                 )
             await channel.send(embed=embed)
         except Exception as e:
+            logging.exception(e)
             embed = Embed(
                 title=i(channel, "Timeline of canon media"),
                 colour=discord.Color.red(),
                 description=i(channel, "An error has occurred. Ask the admin to check for details.")
             )
+            await channel.send(embed=embed)
+    
+    async def fix_double_redirect(self, channel_id: str):
+        channel = await self.client.fetch_channel(channel_id)
+        
+        await self.double_redirect_bot.get_site()
+        double_redirects = await self.double_redirect_bot.get_double_redirects()
+        await self.double_redirect_bot.login()
+        try:
+            for page in double_redirects:
+                redirect_fix = await self.double_redirect_bot.fix_double_redirect(page)
+                await self.double_redirect_bot.save_page(redirect_fix['redirect_page'])
+                
+                embed = Embed(
+                    title=i(channel, "Double redirect fix"),
+                    url=redirect_fix['redirect_page'].full_url(),
+                    colour=discord.Color.green(),
+                    description=i(channel, "Fixing Star Wars Wiki's double redirects")
+                )
+                embed.add_field(name=i(channel, 'Redirect page'), value=page.title(), inline=True)
+                embed.add_field(name=i(channel, 'Target page'), value=redirect_fix['target_page'].title(),
+                                inline=True)
+                await channel.send(embed=embed)
+        except Exception as e:
             logging.exception(e)
+            embed = Embed(
+                title=i(channel, "Double redirect fix"),
+                colour=discord.Color.red(),
+                description=i(channel, "An error has occurred. Ask the admin to check for details.")
+            )
             await channel.send(embed=embed)
     
     @app_commands.command(

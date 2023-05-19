@@ -506,10 +506,10 @@ msgid ""
 "current Wookieepedia's article content, translates common phrases and "
 "terminology, and crosses with the media Translation Appendix."
 msgstr ""
-"Este é um script automatizado para tradução da linha do tempo de mídia canônica "
-"da Wookieepedia para nosso artigo correspondente. Assim, essa rotina obtém o "
-"conteúdo atual do artigo da Wookieepedia, traduz frases e terminologia comuns, "
-"e cruza com o Apêndice de Tradução de obras."
+"Este é um script automatizado para tradução da linha do tempo de mídia "
+"canônica da Wookieepedia para nosso artigo correspondente. Assim, essa "
+"rotina obtém o conteúdo atual do artigo da Wookieepedia, traduz frases e "
+"terminologia comuns, e cruza com o Apêndice de Tradução de obras."
 
 #: bot/sww_cmds.py:54
 msgid ""
@@ -522,13 +522,31 @@ msgid ""
 "After all of them are translated, the bot can resume the rest of the "
 "operation at its own."
 msgstr ""
-"A única coisa que este script não consegue fazer por conta própria é traduzir "
-"as referências. Isto ocorre devido à natureza do texto nelas contido, muito menos "
-"previsível que o corpo do artigo, então supervisão humana é necessária. Assim, "
-"para cada nova referência que não está presente no conteúdo atual do artigo da SWW, "
-"o bot envia uma mensagem neste canal com o conteúdo da referência, pedindo aos usuários "
-"que forneçam uma tradução adequada. Depois que todas elas forem traduzidas, o bot pode "
-"terminar o resto do script por conta própria."
+"A única coisa que este script não consegue fazer por conta própria é "
+"traduzir as referências. Isto ocorre devido à natureza do texto nelas "
+"contido, muito menos previsível que o corpo do artigo, então supervisão "
+"humana é necessária. Assim, para cada nova referência que não está presente "
+"no conteúdo atual do artigo da SWW, o bot envia uma mensagem neste canal com "
+"o conteúdo da referência, pedindo aos usuários que forneçam uma tradução "
+"adequada. Depois que todas elas forem traduzidas, o bot pode terminar o "
+"resto do script por conta própria."
+
+#: bot/sww_cmds.py:115
+msgid "Double redirect fix"
+msgstr "Correção de redirecionamentos duplos"
+
+#: bot/sww_cmds.py:118
+#, fuzzy
+msgid "Fixing Star Wars Wiki's double redirects"
+msgstr "Script para correção dos redirecionamentos duplos da Star Wars Wiki"
+
+#: bot/sww_cmds.py:120
+msgid "Redirect page"
+msgstr "Redirecionamento"
+
+#: bot/sww_cmds.py:121
+msgid "Target page"
+msgstr "Alvo"
 
 #: bot/sww/leaderboard.py:38
 msgid "Error parsing content"
