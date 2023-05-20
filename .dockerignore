@@ -10,3 +10,13 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Env file
+.env
+
+# Pywikibot stuff
+pywikibot.lwp
+throttle.ctrl
+apicache-py3/
+user-password.py
+pywikibot-*.lwp

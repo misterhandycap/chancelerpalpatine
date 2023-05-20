@@ -4,6 +4,10 @@ I love democracy! And Python!
 
 ## Setup
 
+Requirements:
+
+- Python 3.10+
+
 ### Installing dependencies
 
 ```bash
