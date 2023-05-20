@@ -1,4 +1,4 @@
-FROM python:3.8-alpine as builder
+FROM python:3.11-alpine as builder
 
 RUN apk add --no-cache gcc libc-dev libffi-dev
 
@@ -31,17 +31,11 @@ COPY ./requirements.txt /app/requirements.txt
 
 WORKDIR /app
 
-RUN pip3 install --user -r requirements.txt
+RUN pip3 install -r requirements.txt
 
-FROM python:3.8-alpine
+FROM python:3.11-alpine
 
-COPY --from=builder /root/.local /root/.local
-
-COPY . /app
-
-WORKDIR /app
-
-ENV PATH=/root/.local/bin:$PATH
+COPY --from=builder /usr/local/lib/python3.11 /usr/local/lib/python3.11
 
 # Runtime dependencies
 RUN apk add git cairo libjpeg openjpeg tiff openblas postgresql-libs
@@ -52,9 +46,17 @@ RUN ln -s /usr/lib/libcairo.so.2 /usr/lib/libcairo.so
 # Updated SSL certificates
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
+# Stockfish dependencies
+RUN apk add libgcc libstdc++ musl
+
+# Add run time non root user
+RUN addgroup -g 1000 run_user && adduser -G run_user -u 1000 run_user -D
+USER run_user
+
+COPY --chown=1000:1000 . /app
+WORKDIR /app
+
 # Bot healthcheck
 HEALTHCHECK CMD discordhealthcheck || exit 1
 
-ENTRYPOINT [ "python3" ]
-
-CMD [ "run.py" ]
+CMD [ "python3", "run.py" ]

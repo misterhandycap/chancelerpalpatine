@@ -34,7 +34,7 @@ class BotClient(commands.Bot):
     scheduler_callbacks: List[Callable[[Scheduler], Any]] = []
     
     async def setup_hook(self) -> None:
-        testing_guild_id = int(os.environ.get("TESTING_GUILD_ID", 0))
+        testing_guild_id = int(os.environ.get("TESTING_GUILD_ID", 0) or 0)
         if testing_guild_id:
             guild = discord.Object(id=testing_guild_id)
             self.tree.copy_global_to(guild=guild)

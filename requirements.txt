@@ -34,7 +34,7 @@ multidict==4.7.6
 mwparserfromhell==0.6.4
 numpy==1.23.4
 Pillow==7.2.0
-psycopg2-binary==2.8.6
+psycopg2-binary==2.9.6
 pycparser==2.20
 pyswisseph==2.8.0.post1
 python-chess==0.31.4
@@ -60,4 +60,4 @@ vcrpy==4.1.1
 vcrpy-unittest==0.1.7
 webencodings==0.5.1
 wrapt==1.12.1
-yarl==1.5.1
+yarl==1.9.2
