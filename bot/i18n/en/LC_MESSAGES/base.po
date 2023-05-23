@@ -498,6 +498,22 @@ msgid ""
 "operation at its own."
 msgstr ""
 
+#: bot/sww_cmds.py:115
+msgid "Double redirect fix"
+msgstr ""
+
+#: bot/sww_cmds.py:118
+msgid "Fixing Star Wars Wiki's double redirects"
+msgstr ""
+
+#: bot/sww_cmds.py:120
+msgid "Redirect page"
+msgstr ""
+
+#: bot/sww_cmds.py:121
+msgid "Target page"
+msgstr ""
+
 #: bot/sww/leaderboard.py:38
 msgid "Error parsing content"
 msgstr ""
