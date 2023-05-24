@@ -57,6 +57,6 @@ COPY --chown=1000:1000 . /app
 WORKDIR /app
 
 # Bot healthcheck
-HEALTHCHECK CMD discordhealthcheck || exit 1
+HEALTHCHECK CMD python3 -m discordhealthcheck || exit 1
 
 CMD [ "python3", "run.py" ]
