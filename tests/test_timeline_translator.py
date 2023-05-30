@@ -118,6 +118,30 @@ class TestTimelineTranslator(VCRTestCase):
         
         self.assertEqual(result, {})
         
+    def test_build_new_references_ref_without_name(self):
+        timeline_translator = TimelineTranslator()
+        
+        timeline_translator._current_content = """
+        <ref name="named">Named translated</ref>
+        <ref name="959171f4040ece69390025112b6622c7">Unnamed translated</ref>
+        """
+        
+        timeline_translator._original_content = """
+        <ref name="named">Named ref</ref>
+        <ref name="new_named">New named ref</ref>
+        <ref>Unnamed ref</ref>
+        <ref>New unnamed ref</ref>
+        <ref>New unnamed ref [[2 BBY]]</ref>
+        """
+        
+        result = timeline_translator.build_new_references()
+        
+        self.assertEqual(result.keys(), set([
+            "new_named",
+            "c8e26b64231cc9078d74595799fa5ad3",
+            "2a99324bfc3351ce6d76ba04a0d1121b"
+        ]))
+        
     def test_add_reference_translation_new_ref(self):
         timeline_translator = TimelineTranslator()
         
@@ -197,6 +221,46 @@ class TestTimelineTranslator(VCRTestCase):
         self.assertEqual(result, timeline_translator.page)
         self.assertEqual(result.text, expected_content)
     
+    def test_translate_page_with_unnamed_references(self):
+        timeline_translator = TimelineTranslator()
+        timeline_translator.site = Site(
+            fam=StarWarsWikiFamily(), 
+            code='pt', 
+            user=os.environ.get("SWW_BOT_USERNAME")
+        )
+        
+        timeline_translator._current_content = """
+        {|
+        |}
+        {|
+        |
+        |}
+        """
+        timeline_translator._original_content = """
+        {|
+        |}
+        {|
+        |<ref>Some content in Lost Stars</ref>
+        |}
+        """
+        expected_content = """
+        {|
+        |}
+        {|
+        |<ref name="8a5bec216f3ae74840db2de2e46a7408">translated</ref>
+        |}
+        """
+            
+        timeline_translator._translated_refs = {
+            '8a5bec216f3ae74840db2de2e46a7408': 'translated',
+        }
+        timeline_translator.page = Page(timeline_translator.site, 'Star Wars Wiki:Testes')
+        
+        result = timeline_translator.translate_page()
+        
+        self.assertIsInstance(result, Page)
+        self.assertEqual(result, timeline_translator.page)
+        self.assertEqual(result.text, expected_content)
     
     def test_translate_page_raises_when_there_are_missing_refs(self):
         timeline_translator = TimelineTranslator()

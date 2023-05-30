@@ -1,5 +1,6 @@
 import logging
 import re
+from hashlib import md5
 from typing import Dict, List
 
 from aiohttp import ClientSession, ClientResponseError
@@ -56,6 +57,12 @@ class TimelineTranslator(WikiBot):
         current_refs = self._build_reference_dict(self._current_content)
         self._translated_refs = current_refs
         
+        all_original_refs = self._get_tags_from_wikitext(mwparse(self._original_content), 'ref')
+        for tag in all_original_refs:
+            if not tag.has("name") and tag.contents:
+                translated_contents = self._apply_translations(str(tag.contents))
+                original_refs[self._md5(translated_contents)] = str(tag.contents)
+        
         return {k: v for k, v in original_refs.items() if k not in current_refs}
     
     def add_reference_translation(self, reference_name: str, content: str) -> None:
@@ -69,15 +76,17 @@ class TimelineTranslator(WikiBot):
         
         translated_contents = self._apply_translations(str(original_main_table.contents))
         current_main_table.contents = translated_contents
+        
         all_refs = self._get_tags_from_wikitext(current_main_table.contents, 'ref')
         translated_ref_names = {self._apply_translations(k): k for k in self._translated_refs.keys()}
         try:
             for tag in all_refs:
-                if tag.contents:
-                    tag_name_attr = tag.get('name')
-                    tag_original_name = translated_ref_names[str(tag_name_attr.value)]
-                    tag.contents = self._translated_refs[tag_original_name]
-                    tag_name_attr.value = tag_original_name
+                if not tag.contents:
+                    continue
+                tag_name_attr = tag.get("name") if tag.has("name") else tag.add("name", self._md5(str(tag.contents)))
+                tag_original_name = translated_ref_names[str(tag_name_attr.value)]
+                tag.contents = self._translated_refs[tag_original_name]
+                tag_name_attr.value = tag_original_name
         except KeyError as e:
             raise Exception(f'Missing reference {e}')
         
@@ -101,11 +110,14 @@ class TimelineTranslator(WikiBot):
     def _build_reference_dict(self, wikitext: str) -> Dict[str, str]:
         parsed_content: Wikicode = mwparse(wikitext)
         all_refs = self._get_tags_from_wikitext(parsed_content, 'ref')
-        return {str(x.get('name').value): str(x.contents) for x in all_refs if x.contents}
+        return {str(x.get("name").value): str(x.contents) for x in all_refs if x.contents and x.has("name")}
         
     def _get_tags_from_wikitext(self, wikitext: Wikicode, tag: str) -> List[Tag]:
         all_tags: List[Tag] = wikitext.filter(forcetype=Tag)
         return [x for x in all_tags if x.tag == tag]
+    
+    def _md5(self, text: str) -> str:
+        return md5(text.encode()).hexdigest()
         
     _TRANSLATIONS = [
         # Years-related translations
@@ -266,7 +278,7 @@ class TimelineTranslator(WikiBot):
 
 if __name__ == "__main__":
     from asyncio import run
-    from pywikibot import Page, Site
+    from pywikibot import Page
     
     from dotenv import load_dotenv
     
