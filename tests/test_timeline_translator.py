@@ -1,51 +1,20 @@
 import json
-import logging
-import shutil
 import os
-import warnings
 from asyncio import run
-from unittest import skip
 
-from dotenv import load_dotenv
 from pywikibot import BaseSite, Page, Site, config
-from vcr_unittest import VCRTestCase
 
 from bot.sww.sww_family import StarWarsWikiFamily
 from bot.sww.timeline_translator import TimelineTranslator
+from tests.support.pywikibot_test_case import PywikibotTestCase
 
 
-class TestTimelineTranslator(VCRTestCase):
+class TestTimelineTranslator(PywikibotTestCase):
     
-    @classmethod
-    def setUpClass(cls):
-        load_dotenv()
-        warnings.simplefilter("ignore")
-        logging.disable(logging.WARNING)
-        config.put_throttle = 0
-        super().setUpClass()
-        
-    def setUp(self):
-        open('throttle.ctrl', 'w').close()
-        shutil.rmtree('apicache-py3', ignore_errors=True)
-        os.mkdir('apicache-py3')
-        super().setUp()
-        
-    @staticmethod
-    def skip_if_no_bot_config(func):
-        def wrapper(*args, **kwargs):
-            if os.environ.get('SWW_BOT_PASSWORD') is None:
-                return skip("No SWW bot configured")
-            return func(*args, **kwargs)
-        return wrapper
-    
-    @skip_if_no_bot_config
+    @PywikibotTestCase.skip_if_no_bot_config
     def test_login(self):
         timeline_translator = TimelineTranslator()
-        timeline_translator.site = Site(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        timeline_translator.site = self.get_test_site()
         
         run(timeline_translator.login())
         
@@ -62,11 +31,7 @@ class TestTimelineTranslator(VCRTestCase):
         
     def test_get_timeline_page(self):
         timeline_translator = TimelineTranslator()
-        timeline_translator.site = Site(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        timeline_translator.site = self.get_test_site()
         
         result = run(timeline_translator.get_timeline_page())
         
@@ -159,11 +124,7 @@ class TestTimelineTranslator(VCRTestCase):
         
     def test_translate_page_success(self):
         timeline_translator = TimelineTranslator()
-        timeline_translator.site = Site(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        timeline_translator.site = self.get_test_site()
         
         with open(os.path.join('tests', 'support', 'canon_media_timeline_sww.txt')) as f:
             timeline_translator._current_content = f.read()
@@ -182,11 +143,7 @@ class TestTimelineTranslator(VCRTestCase):
 
     def test_translate_page_translated_ref_name(self):
         timeline_translator = TimelineTranslator()
-        timeline_translator.site = Site(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        timeline_translator.site = self.get_test_site()
         
         timeline_translator._current_content = """
         {|
@@ -223,11 +180,7 @@ class TestTimelineTranslator(VCRTestCase):
     
     def test_translate_page_with_unnamed_references(self):
         timeline_translator = TimelineTranslator()
-        timeline_translator.site = Site(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        timeline_translator.site = self.get_test_site()
         
         timeline_translator._current_content = """
         {|
@@ -273,14 +226,10 @@ class TestTimelineTranslator(VCRTestCase):
         with self.assertRaises(Exception):
             timeline_translator.translate_page()
             
-    @skip_if_no_bot_config
+    @PywikibotTestCase.skip_if_no_bot_config
     def test_save_page_success(self):
         timeline_translator = TimelineTranslator()
-        timeline_translator.site = Site(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        timeline_translator.site = self.get_test_site()
         config.put_throttle = 0
         timeline_translator.page = Page(timeline_translator.site, 'Star Wars Wiki:Testes')
         
@@ -300,11 +249,7 @@ class TestTimelineTranslator(VCRTestCase):
     
     def test_get_diff_url(self):
         timeline_translator = TimelineTranslator()
-        timeline_translator.site = Site(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        timeline_translator.site = self.get_test_site()
         timeline_translator.page = Page(timeline_translator.site, 'Linha do tempo de mídia canônica')
         timeline_translator._current_revision = timeline_translator.page.latest_revision_id
         

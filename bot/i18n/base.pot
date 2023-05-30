@@ -489,6 +489,34 @@ msgid ""
 "translated, the bot can resume the rest of the operation at its own."
 msgstr ""
 
+#: bot/sww_cmds.py:119
+msgid "Delete unused images"
+msgstr ""
+
+#: bot/sww_cmds.py:123
+msgid "Deleting Star Wars Wiki's unused images and files"
+msgstr ""
+
+#: bot/sww_cmds.py:125
+msgid "Page title"
+msgstr ""
+
+#: bot/sww_cmds.py:126
+msgid "Result"
+msgstr ""
+
+#: bot/sww_cmds.py:126
+msgid "Deleted"
+msgstr ""
+
+#: bot/sww_cmds.py:136
+msgid "Page does not exist"
+msgstr ""
+
+#: bot/sww_cmds.py:136
+msgid "Image has categories"
+msgstr ""
+
 #: bot/sww_cmds.py:115
 msgid "Double redirect fix"
 msgstr ""
