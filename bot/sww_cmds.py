@@ -13,6 +13,7 @@ from bot.misc.scheduler import Scheduler
 from bot.sww.double_redirect_bot import DoubleRedirectBot
 from bot.sww.leaderboard import Leaderboard
 from bot.sww.timeline_translator import TimelineTranslator
+from bot.sww.unused_images_bot import UnusedImagesBot
 from bot.utils import paginate
 
 if TYPE_CHECKING:
@@ -28,6 +29,7 @@ class StarWarsWikiCmds(app_commands.Group):
         self.client = client
         self.client.scheduler_callbacks.append(self._schedule_timeline)
         self.double_redirect_bot: DoubleRedirectBot = DoubleRedirectBot()
+        self.unused_images_bot: UnusedImagesBot = UnusedImagesBot()
         self.timeline_translator: TimelineTranslator = TimelineTranslator()
         self.leaderboard_bot = Leaderboard()
         self.medals_paginated_embed_manager = PaginatedEmbedManager(self._build_medals_embed)
@@ -35,10 +37,15 @@ class StarWarsWikiCmds(app_commands.Group):
 
     def _schedule_timeline(self, scheduler_bot: Scheduler):
         scheduler_bot.register_function('translate_timeline', self.translate_timeline)
+        scheduler_bot.register_function('delete_unused_images', self.delete_unused_images)
         scheduler_bot.register_function('fix_double_redirect', self.fix_double_redirect)
         scheduler_bot.add_periodical_job('cron', {'hour': '12'}, 'translate_timeline',
                                        (os.environ.get('SWW_BOT_CHANNEL_ID'),),
                                        job_id='translate_timeline_scheduled_job')
+        scheduler_bot.add_periodical_job('cron', {'day_of_week': 'wed,sat', 'hour': '11', 'minute': '30'},
+                                       'delete_unused_images',
+                                       (os.environ.get('SWW_BOT_CHANNEL_ID'),),
+                                       job_id='delete_unused_images_scheduled_job')
         scheduler_bot.add_periodical_job('cron', {'hour': '11'}, 'fix_double_redirect',
                                        (os.environ.get('SWW_BOT_CHANNEL_ID'),),
                                        job_id='fix_double_redirect_scheduled_job')
@@ -99,6 +106,45 @@ class StarWarsWikiCmds(app_commands.Group):
             )
             await channel.send(embed=embed)
     
+    async def delete_unused_images(self, channel_id: str):
+        channel = await self.client.fetch_channel(channel_id)
+        
+        await self.unused_images_bot.get_site()
+        images = await self.unused_images_bot.get_unused_images()
+        await self.unused_images_bot.login()
+        try:
+            for image in images:
+                should_delete, reason = await self.unused_images_bot.check_for_deletion(image)
+                if should_delete:
+                    await self.unused_images_bot.delete_image(image)
+                    embed = Embed(
+                        title=i(channel, "Delete unused images"),
+                        url=image.full_url(),
+                        colour=discord.Color.green(),
+                        description=i(channel, "Deleting Star Wars Wiki's unused images and files")
+                    )
+                    embed.add_field(name=i(channel, 'Page title'), value=image.title(), inline=True)
+                    embed.add_field(name=i(channel, 'Result'), value=i(channel, "Deleted"), inline=True)
+                    await channel.send(embed=embed)
+                else:
+                    embed = Embed(
+                        title=i(channel, "Delete unused images"),
+                        url=image.full_url(),
+                        colour=discord.Color.orange(),
+                        description=i(channel, "Deleting Star Wars Wiki's unused images and files")
+                    )
+                    embed.add_field(name=i(channel, 'Page title'), value=image.title(), inline=True)
+                    embed.add_field(name=i(channel, 'Result'), value=i(channel, reason), inline=True)
+                    await channel.send(embed=embed)
+        except Exception as e:
+            logging.exception(e)
+            embed = Embed(
+                title=i(channel, "Delete unused images"),
+                colour=discord.Color.red(),
+                description=i(channel, "An error has occurred. Ask the admin to check for details.")
+            )
+            await channel.send(embed=embed)
+
     async def fix_double_redirect(self, channel_id: str):
         channel = await self.client.fetch_channel(channel_id)
         

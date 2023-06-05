@@ -531,6 +531,34 @@ msgstr ""
 "adequada. Depois que todas elas forem traduzidas, o bot pode terminar o "
 "resto do script por conta própria."
 
+#: bot/sww_cmds.py:119
+msgid "Delete unused images"
+msgstr "Deleção de imagens não utilizadas"
+
+#: bot/sww_cmds.py:123
+msgid "Deleting Star Wars Wiki's unused images and files"
+msgstr "Deletando imagens e arquivos não utilizados da Star Wars Wiki"
+
+#: bot/sww_cmds.py:125
+msgid "Page title"
+msgstr "Título da página"
+
+#: bot/sww_cmds.py:126
+msgid "Result"
+msgstr "Resultado"
+
+#: bot/sww_cmds.py:126
+msgid "Deleted"
+msgstr "Deletado"
+
+#: bot/sww_cmds.py:136
+msgid "Page does not exist"
+msgstr "Página não existe"
+
+#: bot/sww_cmds.py:136
+msgid "Image has categories"
+msgstr "Imagem possui categorias"
+
 #: bot/sww_cmds.py:115
 msgid "Double redirect fix"
 msgstr "Correção de redirecionamentos duplos"

@@ -1,48 +1,16 @@
-import logging
-import os
-import shutil
-import warnings
 from asyncio import run
-from unittest import skip
 
-from dotenv import load_dotenv
 from pywikibot import APISite, Page, config
-from vcr_unittest import VCRTestCase
 
 from bot.sww.double_redirect_bot import DoubleRedirectBot
 from bot.sww.sww_family import StarWarsWikiFamily
+from tests.support.pywikibot_test_case import PywikibotTestCase
 
 
-class TestDoubleRedirectBot(VCRTestCase):
-    @classmethod
-    def setUpClass(cls):
-        load_dotenv()
-        warnings.simplefilter("ignore")
-        logging.disable(logging.WARNING)
-        config.put_throttle = 0
-        super().setUpClass()
-        
-    def setUp(self):
-        open('throttle.ctrl', 'w').close()
-        shutil.rmtree('apicache-py3', ignore_errors=True)
-        os.mkdir('apicache-py3')
-        super().setUp()
-        
-    @staticmethod
-    def skip_if_no_bot_config(func):
-        def wrapper(*args, **kwargs):
-            if os.environ.get('SWW_BOT_PASSWORD') is None:
-                return skip("No SWW bot configured")
-            return func(*args, **kwargs)
-        return wrapper
-    
+class TestDoubleRedirectBot(PywikibotTestCase):
     def test_get_double_redirects(self):
         double_redirect_bot = DoubleRedirectBot()
-        double_redirect_bot.site = APISite(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        double_redirect_bot.site = self.get_test_site()
         
         result = run(double_redirect_bot.get_double_redirects())
         
@@ -50,11 +18,7 @@ class TestDoubleRedirectBot(VCRTestCase):
     
     def test_fix_double_redirect_success(self):
         double_redirect_bot = DoubleRedirectBot()
-        double_redirect_bot.site = APISite(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        double_redirect_bot.site = self.get_test_site()
         redirect_page = Page(double_redirect_bot.site, "Star Wars Wiki:Testes")
         intermediary_page = Page(double_redirect_bot.site, "User:BB-08")
         target_page = Page(double_redirect_bot.site, "Página principal")
@@ -73,11 +37,7 @@ class TestDoubleRedirectBot(VCRTestCase):
     
     def test_fix_double_redirect_raises_when_page_is_not_redirect(self):
         double_redirect_bot = DoubleRedirectBot()
-        double_redirect_bot.site = APISite(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        double_redirect_bot.site = self.get_test_site()
         page = Page(double_redirect_bot.site, "Star Wars Wiki:Testes")
         
         with self.assertRaises(Exception, msg="Redirect chain contains either non redirect page or non existent page"):
@@ -85,11 +45,7 @@ class TestDoubleRedirectBot(VCRTestCase):
     
     def test_fix_double_redirect_raises_when_intermediate_page_does_not_exist(self):
         double_redirect_bot = DoubleRedirectBot()
-        double_redirect_bot.site = APISite(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        double_redirect_bot.site = self.get_test_site()
         page = Page(double_redirect_bot.site, "Star Wars Wiki:Testes")
         page._isredir = True
         page._redirtarget = Page(double_redirect_bot.site, "Inexistent")
@@ -97,14 +53,10 @@ class TestDoubleRedirectBot(VCRTestCase):
         with self.assertRaises(Exception, msg="Redirect chain contains either non redirect page or non existent page"):
             run(double_redirect_bot.fix_double_redirect(page))
             
-    @skip_if_no_bot_config
+    @PywikibotTestCase.skip_if_no_bot_config
     def test_save_page_success(self):
         double_redirect_bot = DoubleRedirectBot()
-        double_redirect_bot.site = APISite(
-            fam=StarWarsWikiFamily(), 
-            code='pt', 
-            user=os.environ.get("SWW_BOT_USERNAME")
-        )
+        double_redirect_bot.site = self.get_test_site()
         page = Page(double_redirect_bot.site, "Star Wars Wiki:Testes")
         config.put_throttle = 0
         run(double_redirect_bot.login())
