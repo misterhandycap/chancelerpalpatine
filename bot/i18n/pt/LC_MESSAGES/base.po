@@ -587,6 +587,27 @@ msgstr "Informações sobre medalhas inválidas"
 msgid "Language updated to {lang}"
 msgstr "Idioma atualizado para {lang}"
 
+msgid "{user}: You have been invited to a game of Card-Jitsu!"
+msgstr "{user}: Você foi convidado para um jogo de Desafio Ninja!"
+
+msgid "Game started! Loading initial hands..."
+msgstr "Jogo iniciado! Carregando mãos iniciais..."
+
+msgid "Game aborted"
+msgstr "Partida abortada"
+
+msgid "Game over! {user} wins"
+msgstr "Fim de jogo! {user} vence"
+
+msgid "{user} timeout"
+msgstr "{user} não respondeu a tempo"
+
+msgid "Player(s) already in a game"
+msgstr "Um ou mais jogadores já estão em partidas"
+
+msgid "User not in a game"
+msgstr "Usuário não está jogando no momento"
+
 # Commands' help messages
 msgid "cmd_busca"
 msgstr ""

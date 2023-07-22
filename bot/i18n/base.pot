@@ -544,6 +544,27 @@ msgstr ""
 msgid "Language updated to {lang}"
 msgstr ""
 
+msgid "{user}: You have been invited to a game of Card-Jitsu!"
+msgstr ""
+
+msgid "Game started! Loading initial hands..."
+msgstr ""
+
+msgid "Game aborted"
+msgstr ""
+
+msgid "Game over! {user} wins"
+msgstr ""
+
+msgid "{user} timeout"
+msgstr ""
+
+msgid "Player(s) already in a game"
+msgstr ""
+
+msgid "User not in a game"
+msgstr ""
+
 # Commands' help messages
 msgid "cmd_busca"
 msgstr ""

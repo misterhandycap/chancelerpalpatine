@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from bot.across_the_stars_cmds import AcrossTheStarsCmds
 from bot.akinator_cmds import AkinatorCmds
 from bot.anime_cmds import AnimeCmds
+from bot.card_jitsu_cmds import CardJitsuCmds
 from bot.chess_cmds import ChessCmds
 from bot.general_cmds import GeneralCmds
 from bot.level_cmds import LevelCmds
@@ -88,6 +89,7 @@ client.tree.add_command(AnimeCmds(client))
 client.tree.add_command(StarWarsWikiCmds(client))
 client.tree.add_command(AcrossTheStarsCmds(client))
 client.tree.add_command(PalplatinaCmds(client))
+client.tree.add_command(CardJitsuCmds(client))
 
 astrology_bot = None
 if os.environ.get("DISABLE_ASTROLOGY") not in ['True', 'true']:
