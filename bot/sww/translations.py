@@ -124,8 +124,8 @@ MEDIA_TRANSLATIONS = [
     (r'\bDarth Vader and the Cry of Shadows\b', u'Darth Vader: O Clamor das Sombras'),
 ]
 WOOKIEE_TRANSLATIONS = [
-    (r'{{[Ii]ncomplete list}}', '{{Lista-completa}}'),
-    (r'{{[Mm]ore sources}}', '{{Fontes}}'),
+    (r'{{[Ii]ncomplete([ _]l|L)ist}}', '{{Lista-incompleta}}'),
+    (r'{{[Mm]ore([ _]s|S)ources}}', '{{Fontes}}'),
     (r'{{Film\|', u'{{Filme|'),
 ]
 
