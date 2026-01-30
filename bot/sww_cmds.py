@@ -54,8 +54,9 @@ class StarWarsWikiCmds(app_commands.Group):
         channel = await self.client.fetch_channel(channel_id)
         
         await self.timeline_translator.get_site()
-        await self.timeline_translator.get_wookiee_page()
+        await self.timeline_translator.get_wookiee_site()
         await self.timeline_translator.get_timeline_page()
+        await self.timeline_translator.get_wookiee_page()
         new_references = self.timeline_translator.build_new_references()
         for index, (ref_name, ref_txt) in enumerate(new_references.items()):
             timeline_view = TimelineView()

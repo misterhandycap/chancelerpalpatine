@@ -1,4 +1,4 @@
-FROM python:3.11-alpine as builder
+FROM python:3.11-alpine3.19 AS builder
 
 RUN apk add --no-cache gcc libc-dev libffi-dev
 

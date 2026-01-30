@@ -3,7 +3,6 @@ import re
 from hashlib import md5
 from typing import Dict, List
 
-from aiohttp import ClientSession, ClientResponseError
 from pywikibot import config, Page
 from mwparserfromhell import parse as mwparse
 from mwparserfromhell.wikicode import Wikicode
@@ -19,7 +18,6 @@ class TimelineTranslator(WikiBot):
     
     def __init__(self, auto_close_session: bool=False) -> None:
         self.auto_close_session = auto_close_session
-        self.client_session: ClientSession = None
         self.page: Page = None
         self._original_content: str = None
         self._current_content: str = None
@@ -29,19 +27,8 @@ class TimelineTranslator(WikiBot):
         super().__init__()
         
     async def get_wookiee_page(self) -> str:
-        if not self.client_session:
-            self.client_session = ClientSession(raise_for_status=True)
-            
-        try:
-            async with self.client_session.get(self.WOOKIEE_TIMELINE_URL) as response:
-                self._original_content = await response.text()
-                return self._original_content
-        except ClientResponseError as e:
-            logging.warning(e, exc_info=True)
-            raise Exception("Error fetching content")
-        finally:
-            if self.auto_close_session:
-                await self.client_session.close()
+        self._original_content = Page(self.wookiee_site, u"Timeline of canon media").text
+        return self._original_content
                 
     @run_blocking_io_task
     def get_timeline_page(self) -> Page:
@@ -219,8 +206,9 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.DEBUG)
         timeline_translator = TimelineTranslator()
         await timeline_translator.get_site()
-        await timeline_translator.get_wookiee_page()
+        await timeline_translator.get_wookiee_site()
         await timeline_translator.get_timeline_page()
+        await timeline_translator.get_wookiee_page()
         for ref_name, ref_txt in timeline_translator.build_new_references().items():
             translated_text = input(f'Translate ref {ref_name}: {ref_txt}') or ref_txt
             timeline_translator.add_reference_translation(ref_name, translated_text)

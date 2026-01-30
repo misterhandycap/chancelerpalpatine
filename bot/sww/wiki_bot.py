@@ -13,6 +13,7 @@ class WikiBot():
     
     def __init__(self) -> None:
         self.site: APISite = None
+        self.wookiee_site: APISite = None
         self.username: str = os.environ.get("SWW_BOT_USERNAME")
         self._password: str = os.environ.get("SWW_BOT_PASSWORD")
     
@@ -25,6 +26,11 @@ class WikiBot():
         config.password_file = self.PASSWORD_FILE_PATH
         
         return self.site
+    
+    @run_blocking_io_task
+    def get_wookiee_site(self) -> APISite:
+        self.wookiee_site = APISite(fam=StarWarsWikiFamily(), code='en', user=self.username)
+        return self.wookiee_site
     
     @run_blocking_io_task
     def login(self) -> None:
