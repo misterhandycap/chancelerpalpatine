@@ -1,0 +1,46 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Authorization:
+      - very_secret
+    method: GET
+    uri: https://www.99luca11.com/sww_helper
+  response:
+    body:
+      string: '{"data":"213213","timestamp":"2026-02-14T19:32:30+00:00"}
+
+        '
+    headers:
+      Access-Control-Allow-Methods:
+      - POST, GET, DELETE
+      Access-Control-Allow-Origin:
+      - '*'
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+    url: https://www.99luca11.com/sww_helper
+- request:
+    body: null
+    headers:
+      Authorization:
+      - very_secret
+    method: DELETE
+    uri: https://www.99luca11.com/sww_helper
+  response:
+    body:
+      string: ''
+    headers:
+      Access-Control-Allow-Methods:
+      - POST, GET, DELETE
+      Access-Control-Allow-Origin:
+      - '*'
+      Content-Type:
+      - text/html; charset=UTF-8
+    status:
+      code: 204
+      message: No Content
+    url: https://www.99luca11.com/sww_helper
+version: 1
