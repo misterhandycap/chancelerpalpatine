@@ -11,6 +11,7 @@ from discord.ui import TextInput, View, button, Modal
 from bot.discord_helpers import i, PaginatedEmbedManager
 from bot.misc.scheduler import Scheduler
 from bot.sww.double_redirect_bot import DoubleRedirectBot
+from bot.sww.icp_metric_fetcher import fetch_and_store_metrics
 from bot.sww.leaderboard import Leaderboard
 from bot.sww.timeline_translator import TimelineTranslator
 from bot.sww.unused_images_bot import UnusedImagesBot
@@ -36,9 +37,12 @@ class StarWarsWikiCmds(app_commands.Group):
         super().__init__(name='sww')
 
     def _schedule_timeline(self, scheduler_bot: Scheduler):
+        scheduler_bot.register_function('icp_metric_fetcher', fetch_and_store_metrics)
         scheduler_bot.register_function('translate_timeline', self.translate_timeline)
         scheduler_bot.register_function('delete_unused_images', self.delete_unused_images)
         scheduler_bot.register_function('fix_double_redirect', self.fix_double_redirect)
+        scheduler_bot.add_periodical_job('cron', {'hour': '11'}, 'icp_metric_fetcher', (),
+                                         job_id='icp_metric_fetcher_scheduled_job')
         scheduler_bot.add_periodical_job('cron', {'hour': '12'}, 'translate_timeline',
                                        (os.environ.get('SWW_BOT_CHANNEL_ID'),),
                                        job_id='translate_timeline_scheduled_job')
